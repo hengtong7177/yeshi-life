@@ -1,0 +1,3073 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f1220">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>夜市人生 · 摆摊模拟器</title>
+<link rel="icon" href="data:,">
+<style>
+  :root{
+    --bg:#0f1220;--bg2:#171b30;--card:#202643;--card2:#2b325a;
+    --line:#3a4270;--txt:#eef1ff;--sub:#a8b0d8;--gold:#ffcf5c;--red:#ff6b8a;
+    --green:#5ee6a8;--blue:#6ca8ff;--purple:#b18cff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+  html,body{height:100%;overscroll-behavior:none}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    background:radial-gradient(1200px 700px at 50% -10%,#252b52 0%,#0f1220 60%);
+    color:var(--txt);display:flex;align-items:center;justify-content:center;
+    min-height:100vh;min-height:100dvh;overflow:hidden;user-select:none;
+    -webkit-text-size-adjust:100%;text-size-adjust:100%;
+  }
+  #app{
+    width:min(430px,100vw);height:min(900px,100vh);height:min(900px,var(--appH,100dvh));position:relative;
+    background:linear-gradient(180deg,#141830,#0f1220);overflow:hidden;
+    box-shadow:0 0 60px rgba(0,0,0,.6);display:flex;flex-direction:column;
+  }
+  .screen{display:none;flex:1;flex-direction:column;min-height:0;animation:fade .35s ease}
+  .screen.on{display:flex}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .scroll{overflow-y:auto;flex:1;padding:16px 18px 90px;scrollbar-width:none}
+  .scroll::-webkit-scrollbar{display:none}
+  h1{font-size:26px;letter-spacing:1px}
+  h2{font-size:19px;margin-bottom:10px}
+  .sub{color:var(--sub);font-size:13px;line-height:1.6}
+  .btn{
+    border:none;border-radius:14px;padding:13px 18px;font-size:15px;font-weight:700;
+    color:#12152a;background:linear-gradient(135deg,var(--gold),#ff9d4d);
+    cursor:pointer;box-shadow:0 6px 18px rgba(255,160,70,.25);transition:.15s;font-family:inherit;
+  }
+  .btn:active{transform:scale(.96)}
+  .btn.ghost{background:var(--card2);color:var(--txt);box-shadow:none;border:1px solid var(--line)}
+  .btn.blue{background:linear-gradient(135deg,#6ca8ff,#8f7bff);color:#fff;box-shadow:0 6px 18px rgba(110,140,255,.25)}
+  .btn.sm{padding:9px 13px;font-size:13px;border-radius:11px}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px;margin-bottom:13px}
+
+  /* 开场 */
+  #intro{align-items:center;justify-content:center;text-align:center;padding:30px}
+  .logo{font-size:46px;margin-bottom:6px}
+  .tag{color:var(--gold);font-size:13px;letter-spacing:3px;margin-bottom:18px}
+  .intro-feat{display:flex;gap:8px;margin:22px 0;flex-wrap:wrap;justify-content:center}
+  .intro-feat span{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:7px 12px;font-size:12px;color:var(--sub)}
+
+  /* 顶部状态条 */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 16px;background:rgba(20,24,48,.9);border-bottom:1px solid var(--line);
+    position:relative;z-index:5;flex-wrap:wrap;gap:6px;
+  }
+  .stat{font-size:12px;color:var(--sub)}
+  .stat b{color:var(--txt);font-size:14px}
+  .stat .g{color:var(--gold)}
+  .day-tag{background:var(--card2);border-radius:10px;padding:5px 10px;color:var(--gold);font-weight:700;font-size:13px}
+
+  /* 底部导航 */
+  .navbar{
+    position:absolute;bottom:0;left:0;right:0;height:64px;background:rgba(18,21,44,.97);
+    border-top:1px solid var(--line);display:flex;z-index:10;
+  }
+  .nav{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:2px;cursor:pointer;color:var(--sub);font-size:11px;transition:.15s;
+  }
+  .nav .ico{font-size:20px}
+  .nav.on{color:var(--gold)}
+  .nav:active{transform:scale(.92)}
+
+  /* 摊位 */
+  .stall-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .stall{
+    background:var(--card2);border:2px solid transparent;border-radius:14px;padding:12px;
+    cursor:pointer;position:relative;transition:.15s;
+  }
+  .stall:active{transform:scale(.96)}
+  .stall.sel{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,207,92,.15)}
+  .stall.lock{opacity:.5}
+  .stall .em{font-size:28px}
+  .stall .nm{font-size:13px;font-weight:700;margin:5px 0 3px}
+  .stall .ds{font-size:11px;color:var(--sub);line-height:1.4}
+  .lock-badge{position:absolute;top:8px;right:8px;font-size:10px;color:var(--gold);background:rgba(0,0,0,.3);padding:2px 6px;border-radius:8px}
+
+  /* 食物行 */
+  .food-row{
+    display:flex;align-items:center;gap:11px;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;padding:11px 13px;margin-bottom:9px;cursor:pointer;transition:.15s;
+  }
+  .food-row:active{transform:scale(.98)}
+  .food-row.sel{border-color:var(--blue);background:var(--card2)}
+  .food-row .em{font-size:30px;width:38px;text-align:center}
+  .food-row .info{flex:1;min-width:0}
+  .food-row .nm{font-size:14px;font-weight:700}
+  .food-row .ds{font-size:11px;color:var(--sub);margin-top:3px}
+  .food-row .price{color:var(--green);font-weight:700;font-size:14px}
+  .food-row.lock{opacity:.45}
+
+  /* 营业 */
+  #play .stage{position:relative;flex:1;min-height:0;overflow:hidden}
+  .sky{
+    position:absolute;inset:0;
+    background:linear-gradient(180deg,#1b1533 0%,#2a1b46 45%,#3a2350 70%,#1a1730 100%);
+  }
+  .lantern{position:absolute;top:6px;font-size:22px;animation:swing 3s ease-in-out infinite}
+  @keyframes swing{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+  .ground{position:absolute;bottom:0;left:0;right:0;height:34%;background:linear-gradient(180deg,#3a2b45,#241d35);border-top:2px solid #5a3f66;z-index:0}
+  .stall-visual{
+    position:absolute;bottom:16%;left:50%;transform:translateX(-50%);text-align:center;z-index:3;width:190px;
+  }
+  /* CSS 绘制的真实摊车：棚顶 + 台面 + 老板 + 招牌 */
+  .stall-canopy{
+    width:150px;height:34px;margin:0 auto -2px;border-radius:46% 46% 8px 8px;
+    background:repeating-linear-gradient(90deg,#ff5f7e 0 22px,#ffd35c 22px 44px);
+    box-shadow:0 4px 10px rgba(0,0,0,.45);position:relative;
+  }
+  .stall-canopy:after{content:"";position:absolute;bottom:-7px;left:0;right:0;height:8px;
+    background:repeating-linear-gradient(90deg,#ff5f7e 0 11px,transparent 11px 22px);}
+  .stall-body{
+    width:150px;height:62px;margin:0 auto;background:linear-gradient(180deg,#8a5a3c,#5e3a26);
+    border:3px solid #3e2418;border-radius:4px 4px 8px 8px;position:relative;
+    box-shadow:0 8px 16px rgba(0,0,0,.5);
+  }
+  .stall-counter{position:absolute;top:-6px;left:-8px;right:-8px;height:12px;border-radius:5px;
+    background:linear-gradient(180deg,#d9a066,#a9713f);border:2px solid #6b4426}
+  .stall-boss{position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:34px;line-height:1;
+    filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
+  .stall-visual .sign{
+    display:inline-block;background:linear-gradient(90deg,#ff6b8a,#ffcf5c);color:#2a1630;font-weight:900;font-size:13px;
+    padding:4px 14px;border-radius:8px;margin-top:6px;box-shadow:0 3px 10px rgba(0,0,0,.4);
+  }
+  .stall-glow{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:170px;height:90px;
+    background:radial-gradient(ellipse,rgba(255,203,92,.28),transparent 70%);pointer-events:none;z-index:-1}
+  .customer{
+    position:absolute;bottom:14%;cursor:pointer;z-index:4;width:46px;
+    animation:custIn .35s cubic-bezier(.2,1.4,.5,1) both,bob 1.2s ease-in-out infinite .35s;
+  }
+  .person-svg{display:block;width:46px;height:60px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.45))}
+  .customer .order-tag{
+    position:absolute;top:-30px;left:50%;transform:translateX(-50%);
+    background:#fff;color:#222;border-radius:9px;padding:2px 6px;font-size:14px;white-space:nowrap;
+    box-shadow:0 2px 8px rgba(0,0,0,.3);z-index:2;
+  }
+  .customer.leaving{animation:custLeave .5s ease-in forwards;pointer-events:none}
+  @keyframes custIn{from{opacity:0;transform:translateX(var(--from,60px)) scale(.6)}to{opacity:1;transform:translateX(0) scale(1)}}
+  @keyframes custLeave{to{opacity:0;transform:translateX(var(--to,60px)) translateY(10px) scale(.7)}}
+  .customer:active{transform:scale(1.2)}
+  .customer.impatient{animation:bob .45s ease-in-out infinite}
+  .customer .bubble{
+    position:absolute;top:-28px;left:50%;transform:translateX(-50%);
+    background:#fff;color:#222;border-radius:10px;padding:3px 7px;font-size:16px;white-space:nowrap;
+    box-shadow:0 2px 8px rgba(0,0,0,.3);
+  }
+  .customer .patience{
+    position:absolute;top:-40px;left:50%;transform:translateX(-50%);
+    width:42px;height:6px;background:rgba(0,0,0,.5);border-radius:3px;overflow:hidden;
+    border:1px solid rgba(255,255,255,.25);
+  }
+  .customer .patience i{display:block;height:100%;width:100%;background:var(--green);transition:width .15s linear,background .2s}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  .queue-caption{
+    position:absolute;bottom:7%;left:50%;transform:translateX(-50%);z-index:3;
+    font-size:11px;color:#e9e0f0;background:rgba(0,0,0,.45);padding:3px 12px;border-radius:10px;
+    white-space:nowrap;pointer-events:none;
+  }
+  .flow-strip{
+    position:absolute;top:52px;left:50%;transform:translateX(-50%);z-index:6;
+    display:flex;gap:14px;font-size:11px;color:#e9e0f0;background:rgba(8,12,28,.82);
+    border:1px solid var(--line);padding:5px 12px;border-radius:10px;white-space:nowrap;pointer-events:none;
+  }
+  .flow-strip b{color:var(--gold)}
+  .street-layer{
+    position:absolute;left:0;right:0;top:0;bottom:33%;pointer-events:none;z-index:1;overflow:hidden;opacity:.95;
+  }
+  .street-building{
+    position:absolute;bottom:0;border-radius:6px 6px 0 0;
+    background:linear-gradient(180deg,rgba(80,70,120,.9),rgba(35,30,60,.96));
+    border:1px solid rgba(255,255,255,.08);
+  }
+  .street-window{
+    display:inline-block;width:8px;height:11px;margin:5px 3px 0 0;
+    background:rgba(255,214,120,.75);box-shadow:0 0 7px rgba(255,205,92,.5);border-radius:2px;
+  }
+  .ad-board{
+    position:absolute;top:9%;left:50%;transform:translateX(-50%);
+    max-width:78%;padding:6px 12px;border-radius:8px;text-align:center;
+    background:linear-gradient(90deg,#ffcf5c,#ff7a9c);color:#2a1630;font-weight:900;font-size:12px;
+    box-shadow:0 4px 14px rgba(0,0,0,.45);white-space:nowrap;
+  }
+  .neighbor-stall{
+    position:absolute;bottom:8%;width:86px;text-align:center;font-size:10px;color:#fff;
+    text-shadow:0 1px 3px #000;opacity:.88;
+  }
+  .n-canopy{
+    width:72px;height:18px;margin:0 auto;border-radius:40% 40% 4px 4px;
+    background:repeating-linear-gradient(90deg,#46b3a6 0 12px,#f6e58d 12px 24px);
+    box-shadow:0 3px 8px rgba(0,0,0,.4);
+  }
+  .neighbor-stall.red .n-canopy{background:repeating-linear-gradient(90deg,#e0524d 0 12px,#fff 12px 24px)}
+  .neighbor-stall.blue .n-canopy{background:repeating-linear-gradient(90deg,#4e79c7 0 12px,#d6e4ff 12px 24px)}
+  .walker{
+    position:absolute;bottom:2%;font-size:18px;opacity:.72;
+    animation:walkAcross 11s linear infinite;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5));
+  }
+  @keyframes walkAcross{from{transform:translateX(-30px)}to{transform:translateX(110vw)}}
+  .traffic-note{
+    position:absolute;top:18%;left:50%;transform:translateX(-50%);
+    background:rgba(8,12,28,.75);border:1px solid rgba(255,255,255,.15);border-radius:9px;
+    padding:3px 10px;font-size:10px;color:#e9e0f0;white-space:nowrap;
+  }
+  .neighbor-stall.has-errand::after{
+    content:"!";position:absolute;top:-14px;right:0;width:20px;height:20px;border-radius:50%;
+    background:var(--gold);color:#2a1630;font-weight:900;font-size:12px;
+    display:flex;align-items:center;justify-content:center;animation:pulseBadge 1s ease-in-out infinite;
+  }
+  @keyframes pulseBadge{50%{transform:scale(1.25)}}
+  .errand-card{
+    position:absolute;top:94px;left:50%;transform:translateX(-50%);z-index:9;
+    display:none;align-items:center;gap:9px;width:min(90%,370px);
+    background:rgba(24,30,52,.95);border:1px solid var(--gold);border-radius:14px;
+    padding:8px 10px;box-shadow:0 6px 18px rgba(0,0,0,.55);pointer-events:auto;
+  }
+  .errand-card .errand-em{font-size:26px;flex:0 0 auto}
+  .errand-card .errand-body{flex:1;min-width:0}
+  .errand-card .errand-title{font-size:12px;font-weight:800;color:var(--gold)}
+  .errand-card .errand-desc{font-size:10px;color:#e9e0f0;margin-top:2px}
+  .errand-card .errand-progress{font-size:10px;color:var(--green);margin-top:3px}
+  .errand-card button{flex:0 0 auto;white-space:nowrap}
+  .street-layer.city .street-building{background:linear-gradient(180deg,rgba(65,95,95,.9),rgba(30,48,48,.96))}
+  .street-layer.city .ad-board{background:linear-gradient(90deg,#8fd3c7,#f0c8ff)}
+  .play-hud{
+    position:absolute;top:0;left:0;right:0;z-index:6;padding:10px 14px;
+    display:flex;justify-content:space-between;align-items:center;
+    background:linear-gradient(180deg,rgba(15,18,32,.9),transparent);
+  }
+  .timer{font-size:22px;font-weight:900;color:var(--gold)}
+  .earn-live{font-size:18px;font-weight:900;color:var(--green)}
+  .event-toast{
+    position:absolute;top:70px;left:50%;transform:translateX(-50%);z-index:8;
+    background:rgba(20,24,48,.95);border:1px solid var(--gold);border-radius:14px;
+    padding:10px 16px;font-size:13px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.5);
+    animation:pop .4s ease;pointer-events:none;max-width:88%;
+  }
+  @keyframes pop{from{transform:translate(-50%,-14px) scale(.9);opacity:0}to{transform:translate(-50%,0) scale(1);opacity:1}}
+  .float{
+    position:absolute;z-index:9;font-weight:900;font-size:17px;pointer-events:none;
+    animation:floatUp 1s ease forwards;
+  }
+  @keyframes floatUp{to{transform:translateY(-70px);opacity:0}}
+
+  /* 制作小游戏 */
+  #cookModal{
+    position:absolute;inset:0;z-index:20;background:rgba(8,10,22,.88);
+    display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;
+  }
+  #cookModal.on{display:flex}
+  .cook-title{font-size:15px;color:var(--sub);margin-bottom:6px}
+  .cook-food{font-size:44px;margin-bottom:20px}
+  .track{
+    width:100%;height:46px;background:var(--card2);border-radius:23px;position:relative;
+    border:2px solid var(--line);overflow:hidden;margin-bottom:22px;
+  }
+  .zone{position:absolute;top:0;bottom:0;background:rgba(94,230,168,.25);border-left:2px solid var(--green);border-right:2px solid var(--green)}
+  .perfect{position:absolute;top:0;bottom:0;background:rgba(255,207,92,.35)}
+  .marker{position:absolute;top:-4px;bottom:-4px;width:6px;background:var(--gold);border-radius:3px;box-shadow:0 0 12px var(--gold);transform:translateX(-50%)}
+  .cook-tip{font-size:12px;color:var(--sub);margin-bottom:14px;text-align:center;line-height:1.6}
+
+  /* 结算 */
+  .result-hero{text-align:center;padding:16px 0}
+  .result-hero .em{font-size:52px}
+  .result-hero .big{font-size:34px;font-weight:900;color:var(--green);margin:6px 0}
+  .line{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13px}
+  .line:last-child{border:none}
+  .line b{color:var(--gold)}
+  .stars{color:var(--gold);font-size:16px;letter-spacing:2px}
+
+  /* 商店 */
+  .shop-tabs{display:flex;gap:8px;margin-bottom:14px}
+  .shop-tab{flex:1;text-align:center;padding:9px;background:var(--card2);border-radius:11px;font-size:13px;cursor:pointer;border:1px solid transparent}
+  .shop-tab.on{border-color:var(--gold);color:var(--gold);font-weight:700}
+  .shop-item{
+    display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;padding:12px;margin-bottom:10px;
+  }
+  .shop-item .em{font-size:32px;width:40px;text-align:center}
+  .shop-item .info{flex:1}
+  .shop-item .nm{font-size:14px;font-weight:700}
+  .shop-item .ds{font-size:11px;color:var(--sub);margin-top:3px}
+  .price-tag{font-size:13px;color:var(--gold);font-weight:800}
+
+  /* 弹窗 */
+  .modal{
+    position:absolute;inset:0;z-index:30;background:rgba(8,10,22,.85);
+    display:none;align-items:center;justify-content:center;padding:24px;
+  }
+  .modal.on{display:flex}
+  .modal-box{
+    background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;
+    width:100%;max-width:340px;text-align:center;animation:pop2 .3s ease;
+  }
+  @keyframes pop2{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+  .modal-box .em{font-size:46px;margin-bottom:8px}
+  .modal-box h3{font-size:18px;margin-bottom:10px}
+  .modal-box p{font-size:13px;color:var(--sub);line-height:1.7;margin-bottom:16px}
+  .disclaimer{font-size:11px;color:#8a93c0;background:rgba(0,0,0,.25);border-radius:10px;padding:9px;margin-top:12px;line-height:1.5}
+
+  .toast{
+    position:absolute;bottom:80px;left:50%;transform:translateX(-50%);z-index:40;
+    background:rgba(20,24,48,.96);border:1px solid var(--line);border-radius:12px;
+    padding:10px 16px;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.5);
+    opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;
+  }
+  .toast.on{opacity:1}
+  .progress{height:8px;background:var(--card2);border-radius:4px;overflow:hidden;margin:8px 0}
+  .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--green));transition:width .4s}
+  .badge{display:inline-block;background:var(--card2);border-radius:8px;padding:3px 8px;font-size:11px;color:var(--sub);margin:3px}
+  .achv{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px}
+  .achv .em{font-size:24px;opacity:.3}
+  .achv.got .em{opacity:1}
+  .achv .nm{font-size:13px;font-weight:700}
+  .achv .ds{font-size:11px;color:var(--sub)}
+
+  /* ===== v2 强化 ===== */
+  .sound-btn{
+    position:absolute;top:52px;right:12px;z-index:25;width:36px;height:36px;
+    background:rgba(32,38,67,.9);border:1px solid var(--line);border-radius:50%;
+    font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+  .combo{
+    position:absolute;top:96px;left:50%;transform:translateX(-50%);z-index:9;
+    font-size:13px;font-weight:900;color:var(--gold);text-shadow:0 2px 8px rgba(0,0,0,.7);
+    opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;
+  }
+  .combo.on{opacity:1}
+  .combo.big{font-size:19px;animation:comboPop .35s ease}
+  @keyframes comboPop{0%{transform:translateX(-50%) scale(1.6)}100%{transform:translateX(-50%) scale(1)}}
+  .shake{animation:shake .35s ease}
+  @keyframes shake{0%,100%{transform:none}20%{transform:translate(-5px,3px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-3px,2px)}80%{transform:translate(3px,-2px)}}
+  .flash{position:absolute;inset:0;z-index:7;background:#fff;opacity:0;pointer-events:none}
+  .flash.go{animation:flash .3s ease}
+  @keyframes flash{0%{opacity:.55}100%{opacity:0}}
+  .coin-particle{
+    position:absolute;z-index:9;font-size:16px;pointer-events:none;font-weight:900;
+    animation:coinFly .9s cubic-bezier(.2,.7,.3,1) forwards;
+  }
+  @keyframes coinFly{0%{transform:translate(0,0) scale(.5);opacity:1}70%{opacity:1}100%{transform:translate(var(--dx),-110px) scale(1.3);opacity:0}}
+  .task-card{background:linear-gradient(135deg,#2a3b52,#243a4a)}
+  .task-row{display:flex;align-items:center;gap:9px;margin:9px 0}
+  .task-row .ti{font-size:20px;width:26px;text-align:center}
+  .task-row .tb{flex:1}
+  .task-row .tt{font-size:12px;margin-bottom:3px}
+  .task-row .tdone{color:var(--green);font-size:12px;font-weight:800}
+  .task-reward{color:var(--gold);font-size:11px}
+  .daily-badge{
+    display:inline-block;background:linear-gradient(135deg,var(--gold),#ff9d4d);color:#2a1630;
+    font-weight:800;font-size:10px;padding:2px 7px;border-radius:8px;margin-left:5px;
+  }
+
+  /* ===== v3 平台 Hub ===== */
+  .hub-head{padding:26px 20px 14px;text-align:center}
+  .hub-head .logo{font-size:38px}
+  .hub-head h1{font-size:24px;margin-top:4px}
+  .hub-profile{
+    display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#2b325a,#3a2b5a);
+    border:1px solid var(--line);border-radius:18px;padding:14px;margin:6px 0 16px;
+  }
+  .hub-avatar{
+    width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#ff9d4d);
+    display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;
+  }
+  .hub-pinfo{flex:1;min-width:0}
+  .hub-pinfo .pname{font-size:15px;font-weight:800}
+  .hub-pinfo .plv{font-size:11px;color:var(--gold);margin-top:2px}
+  .hub-pstats{display:flex;gap:14px;margin-top:6px;font-size:11px;color:var(--sub)}
+  .hub-pstats b{color:var(--txt)}
+  .scene-card{
+    display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid var(--line);
+    border-radius:17px;padding:14px;margin-bottom:11px;cursor:pointer;transition:.15s;position:relative;overflow:hidden;
+  }
+  .scene-card:active{transform:scale(.98)}
+  .scene-card .sicon{
+    width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+    font-size:28px;flex-shrink:0;
+  }
+  .scene-card .sinfo{flex:1;min-width:0}
+  .scene-card .sname{font-size:15px;font-weight:800}
+  .scene-card .sdesc{font-size:11px;color:var(--sub);margin-top:3px;line-height:1.4}
+  .scene-card .sprog{font-size:10px;color:var(--gold);margin-top:5px}
+  .scene-card .arrow{font-size:20px;color:var(--sub)}
+  .scene-card.coming{opacity:.55;cursor:not-allowed}
+  .scene-card.coming .sicon{filter:grayscale(1)}
+  .coming-tag{position:absolute;top:8px;right:8px;font-size:9px;background:var(--card2);color:var(--sub);padding:2px 7px;border-radius:8px}
+  .hub-tip{text-align:center;font-size:11px;color:var(--sub);margin-top:8px;line-height:1.6}
+  .lifeline{display:flex;gap:8px;margin-top:12px}
+  .lifeline-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+  .lifebtn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 12px;line-height:1.25}
+  .lifebtn b{font-size:13px}
+  .lifebtn small{font-size:10px;opacity:.75;font-weight:600}
+  .lifebtn.dim{opacity:.45;cursor:not-allowed}
+  .lifebtn.hot{background:linear-gradient(135deg,#7a3b1f,#a85a1a);border-color:var(--gold)}
+  .mystery-card{background:linear-gradient(135deg,#241a3a,#3a2252);border:1px solid var(--purple);border-radius:16px;padding:14px;margin:0 0 16px;cursor:pointer;animation:fade .5s ease}
+  .mystery-card .mh{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--gold)}
+  .mystery-card .msub{font-size:11px;color:var(--sub);margin-top:6px;line-height:1.6}
+  .mystery-card .shards{display:flex;gap:6px;margin-top:10px}
+  .mystery-card .shard{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;background:#1a1230;border:1px dashed #5a4a7a}
+  .mystery-card .shard.on{background:linear-gradient(135deg,var(--gold),#c88a1a);border:1px solid var(--gold);box-shadow:0 0 10px rgba(255,200,80,.4)}
+  .mystery-card .cluebar{height:6px;background:#1a1230;border-radius:3px;overflow:hidden;margin-top:10px}
+  .mystery-card .cluebar i{display:block;height:100%;background:linear-gradient(90deg,var(--purple),var(--gold));transition:width .5s}
+  .mystery-card .hintline{font-size:10px;color:#c9b8e8;margin-top:8px}
+  .hub-teaser{background:linear-gradient(135deg,#3a2b52,#4a2b5e);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin:0 0 16px;animation:fade .5s ease}
+  .hub-teaser .ht-h{font-size:12px;color:var(--gold);font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  .hub-teaser .ht-row{font-size:11px;color:#e9e0f0;margin:7px 0;line-height:1.55;display:flex;gap:8px;align-items:flex-start}
+  .hub-teaser .ht-row .ht-em{font-size:16px;flex-shrink:0}
+  .hub-teaser .ht-row b{color:var(--gold)}
+  .hub-teaser .ht-row .ht-sub{display:block;font-size:10px;color:var(--sub);margin-top:2px}
+  .back-hub{
+    position:absolute;top:12px;left:12px;z-index:8;width:40px;height:40px;border-radius:50%;
+    background:rgba(20,24,48,.9);border:1px solid var(--line);color:var(--txt);
+    font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+
+  /* 手机 H5 适配 */
+  .btn,.nav,.scene-card,.food-row,.stall,.shop-item,.lifebtn,.back-hub,.sound-btn,.modal button{touch-action:manipulation}
+  .scroll{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  .scroll .card{content-visibility:auto;contain-intrinsic-size:180px}
+  #rotateTip{
+    display:none;position:fixed;inset:0;z-index:99;background:#0f1220;color:var(--txt);
+    align-items:center;justify-content:center;flex-direction:column;gap:10px;text-align:center;padding:28px;
+  }
+  #rotateTip .rt-icon{font-size:48px}
+  #rotateTip .rt-title{font-size:18px;font-weight:800;color:var(--gold)}
+  @media (max-width:480px){
+    body{align-items:stretch;justify-content:stretch;background:#0f1220}
+    #app{width:100vw;height:var(--appH,100dvh);max-height:none;box-shadow:none}
+    .topbar{padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px;gap:4px}
+    .stat{font-size:11px}
+    .day-tag{font-size:12px;padding:5px 8px}
+    .scroll{padding:12px 12px calc(84px + env(safe-area-inset-bottom,0px))}
+    .navbar{height:calc(64px + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px)}
+    .nav{font-size:12px;min-height:44px}
+    .nav .ico{font-size:21px}
+    .btn{min-height:46px;padding:12px 16px}
+    .btn.sm{min-height:40px;padding:9px 12px}
+    .shop-tab,.lifebtn,.food-row,.stall,.shop-item{min-height:44px}
+    .modal{padding:calc(16px + env(safe-area-inset-top,0px)) 14px calc(16px + env(safe-area-inset-bottom,0px))}
+    .modal-box{max-height:calc(var(--appH,100dvh) - 32px);overflow:auto;padding:18px}
+    .toast{bottom:calc(78px + env(safe-area-inset-bottom,0px));max-width:calc(100vw - 28px);white-space:normal;text-align:center}
+    .customer{width:52px}
+    .person-svg{width:52px;height:68px}
+    .flow-strip{font-size:10px;top:48px;padding:4px 9px}
+  }
+  @media (orientation:landscape) and (max-height:520px) and (max-width:900px){#rotateTip{display:flex}}
+  @media (prefers-reduced-motion:reduce){.screen,.modal-box,.customer,.lantern{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- 开场 -->
+  <div id="intro" class="screen on">
+    <div class="logo">🌃</div>
+    <h1>夜市人生</h1>
+    <div class="tag">摆 摊 模 拟 器</div>
+    <div class="sub">真实的夜，真实的烟火气。<br>从一张小桌开始，把日子过成想要的样子。</div>
+    <div class="intro-feat">
+      <span>🀄 零门槛上手</span><span>💰 真实经营</span><span>🎲 每日惊喜</span><span>📖 人生图鉴</span>
+    </div>
+    <button class="btn" id="startBtn" style="width:80%;font-size:17px;padding:16px">开始我的夜市人生</button>
+    <div class="sub" style="margin-top:16px;font-size:11px">进度自动保存在本机 · 无需登录 · 完全免费试玩</div>
+  </div>
+
+  <!-- 平台 Hub 场景选择 -->
+  <div id="hub" class="screen">
+    <div class="scroll">
+      <div class="hub-head">
+        <div class="logo">🌆</div>
+        <h1>真实人生模拟器</h1>
+        <div class="sub">选择一段人生，开始你的故事</div>
+      </div>
+      <div class="hub-profile" id="hubProfile"></div>
+
+      <div class="mystery-card" id="mysteryCard"></div>
+
+      <div class="mystery-card" id="hubLifeCard" style="background:linear-gradient(135deg,#1e3a34,#2b4a3a);border-color:var(--green)"></div>
+
+      <div class="hub-teaser" id="hubTeaser"></div>
+
+      <div class="scene-card" data-scene="yeshi">
+        <div class="sicon" style="background:linear-gradient(135deg,#4a2f5e,#7a3b6a)">🌃</div>
+        <div class="sinfo">
+          <div class="sname">夜市人生</div>
+          <div class="sdesc">摆摊经营 · 卡火候出锅 · 烟火气人生</div>
+          <div class="sprog" id="progYeshi">第 1 天 · 小吃 2/12</div>
+        </div>
+        <div class="arrow">›</div>
+      </div>
+
+      <div class="scene-card" data-scene="city">
+        <div class="sicon" style="background:linear-gradient(135deg,#2f5e4a,#3b6a52)">🏙️</div>
+        <div class="sinfo">
+          <div class="sname">小城创业记</div>
+          <div class="sdesc">县城开店 · 人情世故 · 熟人生意经</div>
+          <div class="sprog" id="progCity">第 1 天 · 尚未开店</div>
+        </div>
+        <div class="arrow">›</div>
+      </div>
+
+      <div class="scene-card coming">
+        <span class="coming-tag">敬请期待</span>
+        <div class="sicon" style="background:linear-gradient(135deg,#3a4a6e,#4a5a8e)">🎓</div>
+        <div class="sinfo">
+          <div class="sname">留学生活</div>
+          <div class="sdesc">签证选课 · 海外打工 · 毕业求职</div>
+        </div>
+        <div class="arrow">🔒</div>
+      </div>
+
+      <div class="scene-card coming">
+        <span class="coming-tag">敬请期待</span>
+        <div class="sicon" style="background:linear-gradient(135deg,#6e4a3a,#8e5a4a)">⚽</div>
+        <div class="sinfo">
+          <div class="sname">村超经理</div>
+          <div class="sdesc">草根球队 · 赞助赛事 · 乡村热血</div>
+        </div>
+        <div class="arrow">🔒</div>
+      </div>
+
+      <div class="scene-card coming">
+        <span class="coming-tag">敬请期待</span>
+        <div class="sicon" style="background:linear-gradient(135deg,#5a3a6e,#7a4a8e)">🌏</div>
+        <div class="sinfo">
+          <div class="sname">城市人生</div>
+          <div class="sdesc">北上广深 · 租房通勤 · 漂泊记忆</div>
+        </div>
+        <div class="arrow">🔒</div>
+      </div>
+
+      <div class="hub-tip">💡 所有场景共享金币、口碑、等级、装扮与成就<br>在任一场景赚的钱，都能在别的场景里花</div>
+    </div>
+  </div>
+
+  <!-- 主页（准备） -->
+  <div id="home" class="screen">
+    <div class="topbar">
+      <div class="day-tag" id="dayTag">第 1 天</div>
+      <div class="stat">💰 <b class="g" id="coins">180</b> 元</div>
+      <div class="stat">⭐ <b id="rep">3.0</b></div>
+      <div class="stat">🔥 <b id="streak">1</b> 天</div>
+    </div>
+    <div class="scroll">
+      <div class="card" style="background:linear-gradient(135deg,#2b325a,#3a2b5a)">
+        <h2 id="greet">今晚，去哪儿摆？</h2>
+        <div class="sub"> Weather：<span id="weather">☀️ 晴</span> · 人流预测：<span id="crowd">正常</span></div>
+      </div>
+
+      <div class="card">
+        <h2>📍 第一步 · 选摊位</h2>
+        <div class="stall-grid" id="stallGrid"></div>
+      </div>
+
+      <div class="card">
+        <h2>🍢 第二步 · 选今晚卖什么</h2>
+        <div id="foodList"></div>
+      </div>
+
+      <div class="card">
+        <h2>📋 今晚成本预览</h2>
+        <div class="line"><span>摊位租金</span><b id="rentCost">-20 元</b></div>
+        <div class="line"><span>食材成本</span><b id="foodCost">-6 元/份</b></div>
+        <div class="line"><span>预计客流</span><b id="trafficInfo">8 人</b></div>
+        <div class="line" style="border-top:1px dashed var(--line);margin-top:6px;padding-top:8px"><span>开门固定支出（租金）</span><b id="costTotal" style="color:var(--gold)">-20 元</b></div>
+        <div class="line"><span>保本需卖出</span><b id="breakEven" style="color:var(--green)">约 3 份</b></div>
+        <div class="sub" id="costHint" style="margin-top:6px;font-size:10px;line-height:1.5"></div>
+      </div>
+
+      <div class="card">
+        <h2>🧊 第三步 · 食材库存</h2>
+        <div class="sub" style="margin-bottom:8px">进货计入库存，可卖多天。不同食材保鲜期不同：多数当晚，面饼/糖葫芦/甜甜圈可放 2 天。</div>
+        <div class="line"><span>当前可卖库存</span><b id="yStockOnHand" style="color:var(--green)">0 份</b></div>
+        <div class="line"><span>临期（明天到期）</span><b id="yStockNearExp" style="color:var(--gold)">0 份</b></div>
+        <div id="yStockBatchList" class="sub" style="font-size:10px;margin:6px 0;line-height:1.6"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin:8px 0">
+          <button class="btn ghost sm" id="yStockMinus">−</button>
+          <div style="flex:1;text-align:center;font-size:18px;font-weight:800">备货 <span id="yStockNum">3</span> 份</div>
+          <button class="btn ghost sm" id="yStockPlus">+</button>
+        </div>
+        <button class="btn ghost sm" id="yStockBuyBtn" style="width:100%">🛒 进货入库 · <span id="yStockTotal">-18 元</span></button>
+      </div>
+
+      <div class="card task-card">
+        <h2>🎯 今日小目标 <span class="daily-badge">每日刷新</span></h2>
+        <div id="taskList"></div>
+      </div>
+
+      <button class="btn" id="openBtn" style="width:100%;font-size:17px;padding:16px">🚪 开门营业 · 食材从库存消耗</button>
+      <div class="sub" style="text-align:center;margin-top:10px;font-size:11px">营业时长 60 秒 · 顾客排队等候，点得快接得多 · 等太久会走</div>
+      <div class="lifeline-grid" id="lifelineGrid"></div>
+      <div class="sub" id="lifeLineHint" style="text-align:center;margin-top:6px;font-size:10px"></div>
+    </div>
+    <div id="homeNav" class="navbar">
+      <div class="nav on" data-go="home"><span class="ico">🏠</span>摆摊</div>
+      <div class="nav" data-go="stats"><span class="ico">📖</span>图鉴</div>
+      <div class="nav" data-go="shop"><span class="ico">🛍️</span>小店</div>
+    </div>
+  </div>
+
+  <!-- 营业 -->
+  <div id="play" class="screen">
+    <div class="stage" id="stage">
+      <div class="sky"></div>
+      <div class="street-layer" id="streetNight">
+        <div class="street-building" style="left:1%;width:23%;height:58%"><span class="street-window"></span><span class="street-window"></span><span class="street-window"></span><br><span class="street-window"></span><span class="street-window"></span></div>
+        <div class="street-building" style="right:2%;width:26%;height:66%"><span class="street-window"></span><span class="street-window"></span><span class="street-window"></span><br><span class="street-window"></span><span class="street-window"></span><span class="street-window"></span></div>
+        <div class="ad-board"><span id="nightAd">今晚特价 · 关注有好礼</span></div>
+        <div class="neighbor-stall red" style="left:5%"><div class="n-canopy"></div>🍢 烤串王</div>
+        <div class="neighbor-stall blue" style="right:5%"><div class="n-canopy"></div>🧋 柠檬茶</div>
+        <div class="walker" style="animation-delay:0s">🧍</div>
+        <div class="walker" style="animation-delay:3.5s;bottom:6%">🚶</div>
+        <div class="walker" style="animation-delay:7s;bottom:10%">🧍‍♀️</div>
+        <div class="traffic-note" id="nightTraffic">街况：正在观察人流…</div>
+      </div>
+      <div class="lantern" style="left:12%">🏮</div>
+      <div class="lantern" style="left:38%;animation-delay:.6s">🏮</div>
+      <div class="lantern" style="left:64%;animation-delay:1.2s">🏮</div>
+      <div class="lantern" style="left:86%;animation-delay:.3s">🏮</div>
+      <div class="ground"></div>
+      <div class="stall-visual">
+        <div class="stall-glow"></div>
+        <div class="stall-canopy"></div>
+        <div class="stall-body"><div class="stall-counter"></div><div class="stall-boss" id="stallBoss">🧑‍🍳</div></div>
+        <div class="sign" id="stallSign">我的小摊</div>
+      </div>
+      <div class="play-hud">
+        <div class="timer" id="timer">60s</div>
+        <div class="earn-live" id="earnLive">+0 元</div>
+        <button class="btn ghost sm" id="quitBtn">结束</button>
+      </div>
+      <div class="queue-caption" id="queueCaption">🧍 排队中 0 人 · 点顾客接单</div>
+      <div class="flow-strip" id="flowStrip"><span>本单流水：<b id="lastFlow">—</b></span><span>累计 <b id="flowTotal">+0</b> 元</span></div>
+      <div class="errand-card" id="errandCard">
+        <div class="errand-em" id="errandEm">🍢</div>
+        <div class="errand-body">
+          <div class="errand-title" id="errandTitle">邻摊求助</div>
+          <div class="errand-desc" id="errandDesc">顺手帮个忙</div>
+          <div class="errand-progress" id="errandProgress">帮忙 0/3 · 剩 14s</div>
+        </div>
+        <button class="btn sm" id="errandBtn">帮一把</button>
+      </div>
+      <div id="eventLayer"></div>
+      <div class="flash" id="flash"></div>
+      <div class="combo" id="combo"></div>
+      <div id="cookModal">
+        <div class="cook-title">🔥 卡准火候，点击出锅！</div>
+        <div class="cook-food" id="cookFood">🥞</div>
+        <div class="track" id="track">
+          <div class="zone" id="zone"></div>
+          <div class="perfect" id="perfect"></div>
+          <div class="marker" id="marker"></div>
+        </div>
+        <div class="cook-tip">指针进入<span style="color:var(--green)">绿色区域</span>即为成功<br>正中间<span style="color:var(--gold)">金色区域</span>＝完美出锅，收入更高！</div>
+        <button class="btn" id="cookBtn" style="width:70%;font-size:17px;padding:15px">出 锅！</button>
+      </div>
+      <div id="nDecision" class="modal" style="background:rgba(8,10,22,.7)">
+        <div class="modal-box" style="max-width:330px">
+          <div class="em" id="nDecEm">🧍</div>
+          <h3 id="nDecName">顾客 · 想来点什么？</h3>
+          <p id="nDecText">先定接待方式，再卡火候出锅</p>
+          <div id="nDecOptions"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 结算 -->
+  <div id="result" class="screen">
+    <div class="scroll">
+      <div class="result-hero">
+        <div class="em" id="resEm">🎉</div>
+        <h2 id="resTitle">今晚收摊！</h2>
+        <div class="big" id="resProfit">+0 元</div>
+        <div class="stars" id="resStars">⭐⭐⭐</div>
+      </div>
+      <div class="card">
+        <div class="line"><span>🍜 卖出份数</span><b id="resSold">0 份</b></div>
+        <div class="line"><span>💵 营业收入</span><b id="resRevenue">0 元</b></div>
+        <div class="line"><span>🧾 食材+租金</span><b id="resCost">0 元</b></div>
+        <div class="line"><span>😊 顾客好评</span><b id="resGood">0 位</b></div>
+        <div class="line"><span>😤 等不及走了</span><b id="resLost" style="color:var(--red)">0 位</b></div>
+        <div class="line"><span>📈 口碑变化</span><b id="resRep">0.0</b></div>
+      </div>
+      <div class="card">
+        <h2>🧾 收支明细</h2>
+        <div class="line"><span>营业收入</span><b id="ledRevenue">0 元</b></div>
+        <div class="line"><span>摊位租金</span><b id="ledRent">0 元</b></div>
+        <div class="line"><span>食材核销</span><b id="ledIngredient">0 元</b></div>
+        <div class="line"><span>顾客打赏</span><b id="ledTips">0 元</b></div>
+        <div class="line"><span>🤝 邻摊委托</span><b id="ledErrand">0 元</b></div>
+        <div class="line" style="border-top:1px dashed var(--line);margin-top:6px;padding-top:8px"><span>本晚净利</span><b id="ledNet" style="color:var(--green)">0 元</b></div>
+        <div class="sub" id="ledNote" style="margin-top:6px;font-size:10px;line-height:1.6"></div>
+      </div>
+      <div class="card" id="resEventCard" style="display:none">
+        <h2>📰 今晚的特别故事</h2>
+        <div class="sub" id="resEvent"></div>
+      </div>
+      <div class="card" id="unlockCard" style="display:none">
+        <h2>🎁 解锁了</h2>
+        <div class="sub" id="unlockText"></div>
+      </div>
+      <div class="card" style="background:linear-gradient(135deg,#3a2b5a,#2b3a5a)" id="chapterCard">
+        <h2 id="chapTitle">第一章 · 支起摊子</h2>
+        <div class="sub" id="chapTip"></div>
+        <div class="progress" style="margin-top:10px"><i id="chapBar" style="width:0%"></i></div>
+        <div class="sub" id="chapNext" style="margin-top:8px;font-size:11px;color:var(--gold)"></div>
+      </div>
+      <div class="card" id="nearMissCard" style="display:none;background:linear-gradient(135deg,#5a3a2b,#4a2b3a)">
+        <h2>✨ 就差一点点</h2>
+        <div class="sub" id="nearMissText"></div>
+      </div>
+      <div class="card" style="background:linear-gradient(135deg,#2b4a3a,#2b3a4a)">
+        <h2>📋 今晚复盘</h2>
+        <div class="sub" id="reviewText" style="line-height:1.7"></div>
+        <h2 style="margin-top:12px">🌙 明晚预告</h2>
+        <div class="sub" id="tomorrowText" style="color:var(--gold);line-height:1.7"></div>
+      </div>
+      <button class="btn" id="nextDayBtn" style="width:100%;font-size:17px;padding:16px">🌙 迎接明天 →</button>
+      <div class="sub" style="text-align:center;margin-top:12px;font-size:11px">连续摆摊 <b id="resStreak">1</b> 天 · 断签将重置</div>
+    </div>
+  </div>
+
+  <!-- 图鉴 -->
+  <div id="stats" class="screen">
+    <div class="topbar"><div class="day-tag">📖 人生图鉴</div><div class="stat">累计营收 <b class="g" id="totalRevenue">0</b> 元</div></div>
+    <div class="scroll">
+      <div class="card" style="background:linear-gradient(135deg,#2b3a5a,#3a2b5a)">
+        <h2>🎯 人生清单 <span class="sub" id="lifePctTag"></span></h2>
+        <div id="lifeListBox"></div>
+        <button class="btn ghost sm" id="claimLifeBtn" style="width:100%;margin-top:10px">🎁 领取已达成的里程碑奖励</button>
+      </div>
+      <div class="card">
+        <h2>🤝 合伙人 · 融资明细</h2>
+        <div id="partnerListBox"></div>
+        <div class="sub" style="font-size:10px;margin-top:8px;line-height:1.6">融资明码标价：合伙人只分净利、收益封顶自动退股，绝不碰本钱、无隐藏扣费。想招新人回摆摊/开店页。</div>
+      </div>
+      <div class="card">
+        <h2>🏆 我的成就</h2>
+        <div id="achvList"></div>
+      </div>
+      <div class="card">
+        <h2>🍜 小吃图鉴 <span class="sub" id="foodProgress"></span></h2>
+        <div id="foodAtlas"></div>
+      </div>
+      <div class="card" style="background:linear-gradient(135deg,#3a2b5a,#2b3a5a)">
+        <h2>💌 街坊羁绊 <span class="sub" id="bondProgress"></span></h2>
+        <div class="sub" style="margin-bottom:8px">多接待几次熟客，他们会跟你讲自己的故事。</div>
+        <div id="bondList"></div>
+      </div>
+      <div class="card">
+        <h2>📊 经营数据</h2>
+        <div class="line"><span>摆摊天数</span><b id="statDays">0 天</b></div>
+        <div class="line"><span>最高单日利润</span><b id="statBest">0 元</b></div>
+        <div class="line"><span>累计顾客</span><b id="statCustomers">0 位</b></div>
+        <div class="line"><span>完美出锅</span><b id="statPerfect">0 次</b></div>
+      </div>
+    </div>
+    <div class="navbar">
+      <div class="nav" data-go="home"><span class="ico">🏠</span>摆摊</div>
+      <div class="nav on" data-go="stats"><span class="ico">📖</span>图鉴</div>
+      <div class="nav" data-go="shop"><span class="ico">🛍️</span>小店</div>
+    </div>
+  </div>
+
+  <!-- 商店 -->
+  <div id="shop" class="screen">
+    <div class="topbar"><div class="day-tag">🛍️ 夜市小店</div><div class="stat">💰 <b class="g" id="shopCoins">180</b> 元</div></div>
+    <div class="scroll">
+      <div class="shop-tabs">
+        <div class="shop-tab on" data-tab="skin">🎨 装扮</div>
+        <div class="shop-tab" data-tab="food">🍜 小吃</div>
+        <div class="shop-tab" data-tab="vip">👑 会员</div>
+      </div>
+      <div id="shopContent"></div>
+      <div class="disclaimer">
+        💡 这是<b>演示版</b>：所有付费仅用游戏金币模拟，<b>不会发生任何真实扣款</b>。<br>
+        正式上线将明码标价、自愿购买、绝不自动扣费，并对未成年人做消费限制。
+      </div>
+    </div>
+    <div class="navbar">
+      <div class="nav" data-go="home"><span class="ico">🏠</span>摆摊</div>
+      <div class="nav" data-go="stats"><span class="ico">📖</span>图鉴</div>
+      <div class="nav on" data-go="shop"><span class="ico">🛍️</span>小店</div>
+    </div>
+  </div>
+
+  <!-- ========== 场景：小城创业记 ========== -->
+  <div id="cityHome" class="screen">
+    <button class="back-hub" data-hub>🏠</button>
+    <div class="topbar">
+      <div class="day-tag">🏙️ 第 <span id="cDay">1</span> 天</div>
+      <div class="stat">💰 <b class="g" id="cCoins">180</b> 元</div>
+      <div class="stat">⭐ <b id="cRep">3.0</b></div>
+    </div>
+    <div class="scroll">
+      <div class="card" style="background:linear-gradient(135deg,#2f5e4a,#254a52)">
+        <h2>小城创业记</h2>
+        <div class="sub">在熟人社会里做生意，靠的不是精明，是人情和口碑。</div>
+      </div>
+      <div class="card">
+        <div class="line"><span>🤝 人缘值</span><b id="cRenqing">50</b></div>
+        <div class="progress"><i id="cRenqingBar" style="width:50%"></i></div>
+        <div class="line"><span>🏅 店铺口碑</span><b id="cFame">50</b></div>
+        <div class="progress"><i id="cFameBar" style="width:50%;background:linear-gradient(90deg,var(--purple),var(--gold))"></i></div>
+        <div class="sub" style="margin-top:8px;font-size:11px">人缘影响客流与赊账，口碑影响回头客。亲切待人，生意才长久。</div>
+      </div>
+      <div class="card">
+        <h2>🏪 第一步 · 选店铺类型</h2>
+        <div class="stall-grid" id="cShopGrid"></div>
+      </div>
+      <div class="card">
+        <h2>📦 第二步 · 库存管理</h2>
+        <div class="sub" style="margin-bottom:8px">进货计入库存、可卖多天，不会当天失效。不同店铺保质期不同，卖不完会临期折价。每份成本 <b class="g" id="cStockCost">4 元</b></div>
+        <div class="line"><span>当前可售库存</span><b id="cStockOnHand" style="color:var(--green)">0 份</b></div>
+        <div class="line"><span>临期（明天到期）</span><b id="cStockNearExp" style="color:var(--gold)">0 份</b></div>
+        <div id="stockBatchList" class="sub" style="font-size:10px;margin:6px 0;line-height:1.6"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin:8px 0">
+          <button class="btn ghost sm" id="cStockMinus">−</button>
+          <div style="flex:1;text-align:center;font-size:18px;font-weight:800">补货 <span id="cStockNum">12</span> 份</div>
+          <button class="btn ghost sm" id="cStockPlus">+</button>
+        </div>
+        <button class="btn ghost sm" id="cStockBuyBtn" style="width:100%">🛒 补货入库 · <span id="cStockTotal">-48 元</span></button>
+      </div>
+      <button class="btn" id="cOpenBtn" style="width:100%;font-size:17px;padding:16px">🚪 打开店门 · 开始营业</button>
+      <div class="sub" style="text-align:center;margin-top:10px;font-size:11px">营业 60 秒 · 点击顾客接待 · 你的选择会改变人缘与口碑</div>
+      <div class="lifeline-grid" id="cLifelineGrid" style="margin-top:14px"></div>
+      <div class="sub" id="cLifeLineHint" style="text-align:center;margin-top:6px;font-size:10px"></div>
+    </div>
+    <div class="navbar">
+      <div class="nav" data-hub><span class="ico">🌆</span>场景</div>
+      <div class="nav on" data-cgo="cityHome"><span class="ico">🏪</span>开店</div>
+      <div class="nav" data-cgo="cityBook"><span class="ico">📖</span>账本</div>
+    </div>
+  </div>
+
+  <!-- 小城营业 -->
+  <div id="cityPlay" class="screen">
+    <button class="back-hub" data-hub>🏠</button>
+    <div class="stage" id="cStage">
+      <div class="sky" style="background:linear-gradient(180deg,#1a2a3a 0%,#2a3a4a 50%,#3a4a44 100%)"></div>
+      <div class="street-layer city" id="streetCity">
+        <div class="street-building" style="left:0;width:28%;height:62%"><span class="street-window"></span><span class="street-window"></span><span class="street-window"></span><br><span class="street-window"></span><span class="street-window"></span></div>
+        <div class="street-building" style="right:0;width:32%;height:56%"><span class="street-window"></span><span class="street-window"></span><br><span class="street-window"></span><span class="street-window"></span><span class="street-window"></span></div>
+        <div class="ad-board"><span id="cityAd">社区便民日 · 今天人不少</span></div>
+        <div class="neighbor-stall red" style="left:6%"><div class="n-canopy"></div>🥬 菜摊</div>
+        <div class="neighbor-stall blue" style="right:6%"><div class="n-canopy"></div>📮 快递驿</div>
+        <div class="walker" style="animation-delay:1s">🧍</div>
+        <div class="walker" style="animation-delay:5s;bottom:8%">🚶‍♀️</div>
+        <div class="traffic-note" id="cityTraffic">街况：正在观察人流…</div>
+      </div>
+      <div class="ground" style="background:linear-gradient(180deg,#4a5a48,#2a3a32)"></div>
+      <div class="stall-visual" id="cStallVisual">
+        <div class="stall-glow"></div>
+        <div class="stall-canopy" id="cCanopy"></div>
+        <div class="stall-body"><div class="stall-counter"></div><div class="stall-boss" id="cShopBoss">🧑‍💼</div></div>
+        <div class="sign" id="cShopSign">我的小店</div>
+      </div>
+      <div class="play-hud">
+        <div class="timer" id="cTimer">60s</div>
+        <div class="earn-live" id="cEarnLive">+0 元</div>
+        <button class="btn ghost sm" id="cQuitBtn">打烊</button>
+      </div>
+      <div class="queue-caption" id="cQueueCaption">🧍 店里 0 位客人 · 点击接待</div>
+      <div class="flow-strip" id="cFlowStrip"><span>本单流水：<b id="cLastFlow">—</b></span><span>累计 <b id="cFlowTotal">+0</b> 元</span></div>
+      <div class="errand-card" id="cErrandCard">
+        <div class="errand-em" id="cErrandEm">🥬</div>
+        <div class="errand-body">
+          <div class="errand-title" id="cErrandTitle">街坊求助</div>
+          <div class="errand-desc" id="cErrandDesc">顺手帮个忙</div>
+          <div class="errand-progress" id="cErrandProgress">帮忙 0/3 · 剩 14s</div>
+        </div>
+        <button class="btn sm" id="cErrandBtn">帮一把</button>
+      </div>
+      <div id="cEventLayer"></div>
+      <div class="combo" id="cCombo"></div>
+      <div id="cDecision" class="modal" style="background:rgba(8,10,22,.7)">
+        <div class="modal-box" style="max-width:330px">
+          <div class="em" id="dEm">🧑</div>
+          <h3 id="dName">熟客</h3>
+          <p id="dText">顾客想说什么？</p>
+          <div id="dOptions"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 小城结算 -->
+  <div id="cityResult" class="screen">
+    <div class="scroll">
+      <div class="result-hero">
+        <div class="em" id="cResEm">🎉</div>
+        <h2 id="cResTitle">今天打烊啦！</h2>
+        <div class="big" id="cResProfit">+0 元</div>
+        <div class="stars" id="cResStars">⭐⭐⭐</div>
+      </div>
+      <div class="card">
+        <div class="line"><span>🛍️ 卖出</span><b id="cResSold">0 份</b></div>
+        <div class="line"><span>💵 营业收入</span><b id="cResRevenue">0 元</b></div>
+        <div class="line"><span>🧾 已售商品成本</span><b id="cResCost">0 元</b></div>
+        <div class="line"><span>😤 等不及走了</span><b id="cResLost" style="color:var(--red)">0 位</b></div>
+        <div class="line"><span>🤝 人缘变化</span><b id="cResRenqing">0</b></div>
+        <div class="line"><span>🏅 口碑变化</span><b id="cResFame">0</b></div>
+      </div>
+      <div class="card">
+        <h2>🧾 收支明细</h2>
+        <div class="line"><span>营业收入</span><b id="cLedRevenue">0 元</b></div>
+        <div class="line"><span>已售商品成本</span><b id="cLedCost">0 元</b></div>
+        <div class="line"><span>临期折价回收</span><b id="cLedSalvage">0 元</b></div>
+        <div class="line"><span>🤝 街坊委托</span><b id="cLedErrand">0 元</b></div>
+        <div class="line"><span>等客流失影响</span><b id="cLedLost" style="color:var(--red)">0 位 · 人缘 -0</b></div>
+        <div class="line" style="border-top:1px dashed var(--line);margin-top:6px;padding-top:8px"><span>本日净利</span><b id="cLedNet" style="color:var(--green)">0 元</b></div>
+        <div class="sub" id="cLedNote" style="margin-top:6px;font-size:10px;line-height:1.6"></div>
+      </div>
+      <div class="card" id="cResEventCard" style="display:none">
+        <h2>📰 街坊轶事</h2>
+        <div class="sub" id="cResEvent"></div>
+      </div>
+      <div class="card" id="cUnlockCard2" style="display:none">
+        <h2>🎁 解锁了</h2>
+        <div class="sub" id="cUnlockText2"></div>
+      </div>
+      <div class="card" style="background:linear-gradient(135deg,#2b4a3a,#2b3a4a)">
+        <h2>📋 今日复盘</h2>
+        <div class="sub" id="cReviewText" style="line-height:1.7"></div>
+        <h2 style="margin-top:12px">🌙 明天预告</h2>
+        <div class="sub" id="cTomorrowText" style="color:var(--gold);line-height:1.7"></div>
+      </div>
+      <button class="btn" id="cNextDayBtn" style="width:100%;font-size:17px;padding:16px">🌙 迎接明天 →</button>
+      <button class="btn ghost" data-hub style="width:100%;margin-top:9px">🌆 返回场景选择</button>
+    </div>
+  </div>
+
+  <!-- 小城账本 -->
+  <div id="cityBook" class="screen">
+    <button class="back-hub" data-hub>🏠</button>
+    <div class="topbar"><div class="day-tag">📖 创业账本</div><div class="stat">累计营收 <b class="g" id="cTotalRevenue">0</b> 元</div></div>
+    <div class="scroll">
+      <div class="card" style="background:linear-gradient(135deg,#2b3a5a,#3a2b5a)">
+        <h2>🎯 人生清单 <span class="sub" id="cLifePctTag"></span></h2>
+        <div id="cLifeListBox"></div>
+        <button class="btn ghost sm" id="cClaimLifeBtn" style="width:100%;margin-top:10px">🎁 领取已达成的里程碑奖励</button>
+      </div>
+      <div class="card">
+        <h2>🤝 合伙人 · 融资明细</h2>
+        <div id="cPartnerListBox"></div>
+      </div>
+      <div class="card">
+        <h2>🏆 我的成就（与夜市共享）</h2>
+        <div id="cAchvList"></div>
+      </div>
+      <div class="card">
+        <h2>📊 经营数据</h2>
+        <div class="line"><span>开店天数</span><b id="cStatDays">0 天</b></div>
+        <div class="line"><span>最高单日利润</span><b id="cStatBest">0 元</b></div>
+        <div class="line"><span>累计顾客</span><b id="cStatCustomers">0 位</b></div>
+        <div class="line"><span>人缘 / 口碑</span><b id="cStatRF">50 / 50</b></div>
+      </div>
+      <div class="card">
+        <h2>🛍️ 共用小店</h2>
+        <div class="sub">金币、装扮、会员在所有场景通用。去夜市的小店也能花在这里赚的钱。</div>
+        <button class="btn blue sm" id="toShopBtn" style="margin-top:10px">前往小店 →</button>
+      </div>
+    </div>
+    <div class="navbar">
+      <div class="nav" data-hub><span class="ico">🌆</span>场景</div>
+      <div class="nav" data-cgo="cityHome"><span class="ico">🏪</span>开店</div>
+      <div class="nav on" data-cgo="cityBook"><span class="ico">📖</span>账本</div>
+    </div>
+  </div>
+
+  <!-- 通用弹窗 -->
+  <div class="modal" id="modal">
+    <div class="modal-box">
+      <div class="em" id="modalEm">🎁</div>
+      <h3 id="modalTitle">提示</h3>
+      <p id="modalText"></p>
+      <button class="btn" id="modalOk" style="width:100%">知道了</button>
+      <div id="modalChoices" style="display:none;flex-direction:column;gap:6px"></div>
+      <div class="disclaimer" id="modalNote" style="display:none"></div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <div class="sound-btn" id="soundBtn" title="音效开关">🔊</div>
+</div>
+<div id="rotateTip">
+  <div class="rt-icon">📱</div>
+  <div class="rt-title">请竖屏体验夜市人生</div>
+  <div class="sub">竖屏更适合单手经营、接客和查看账本</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $=function(id){return document.getElementById(id)};
+
+  function fitAppHeight(){
+    var h=(window.visualViewport&&window.visualViewport.height)||window.innerHeight||document.documentElement.clientHeight;
+    document.documentElement.style.setProperty('--appH',Math.min(900,Math.max(320,h))+'px');
+  }
+  fitAppHeight();
+  window.addEventListener('resize',fitAppHeight,{passive:true});
+  window.addEventListener('orientationchange',function(){setTimeout(fitAppHeight,120)},{passive:true});
+  document.addEventListener('gesturestart',function(e){e.preventDefault()},{passive:false});
+
+  var AD_SLOTS={
+    enabled:false,
+    placements:{
+      junk_extra:{unitId:"",label:"每日额外翻找"},
+      clue_extra:{unitId:"",label:"线索补片"},
+      traffic_boost:{unitId:"",label:"临时客流"},
+      revive:{unitId:"",label:"亏损救急"},
+      oldfriend:{unitId:"",label:"老友剧情加一次"}
+    }
+  };
+  var _rewardAds={};
+  function wxRewardAd(unitId){
+    if(_rewardAds[unitId])return _rewardAds[unitId];
+    var ad=wx.createRewardedVideoAd({adUnitId:unitId});_rewardAds[unitId]=ad;return ad;
+  }
+  function requestRewardAd(slot,reason,onDone){
+    var cfg=AD_SLOTS.placements[slot];
+    if(!AD_SLOTS.enabled||typeof wx==='undefined'||!wx.createRewardedVideoAd||!cfg||!cfg.unitId){
+      if(onDone)onDone({ok:true,skipped:true,slot:slot,reason:reason||cfg&&cfg.label||""});
+      return;
+    }
+    try{
+      var ad=wxRewardAd(cfg.unitId),closed=false;
+      var onClose=function(res){
+        if(closed)return;closed=true;ad.offClose(onClose);
+        if(onDone)onDone({ok:!!(res&&res.isEnded),completed:!!(res&&res.isEnded),slot:slot,reason:reason||cfg.label});
+      };
+      ad.onClose(onClose);
+      ad.show().catch(function(){return ad.load().then(function(){return ad.show()})}).catch(function(){
+        closed=true;ad.offClose(onClose);
+        if(onDone)onDone({ok:false,skipped:true,slot:slot,reason:reason||cfg.label});
+      });
+    }catch(e){
+      if(onDone)onDone({ok:false,skipped:true,slot:slot,reason:reason||cfg.label});
+    }
+  }
+  function showBannerAd(slot,show){
+    var cfg=AD_SLOTS.placements[slot];
+    if(!AD_SLOTS.enabled||typeof wx==='undefined'||!wx.createBannerAd||!cfg||!cfg.unitId)return null;
+    try{
+      var ad=_rewardAds["banner_"+slot];
+      if(show===false){if(ad)ad.hide();return ad}
+      if(!ad){ad=wx.createBannerAd({adUnitId:cfg.unitId,style:{left:0,top:0,width:320}});_rewardAds["banner_"+slot]=ad}
+      ad.show();return ad;
+    }catch(e){return null}
+  }
+  window.YESHI_ADS={config:AD_SLOTS,requestRewardAd:requestRewardAd,showBannerAd:showBannerAd};
+
+  /* ---------- 音效引擎（Web Audio 程序化合成，零外部资源） ---------- */
+  var SFX=(function(){
+    var ctx=null,on=true;
+    function ac(){if(!ctx){try{ctx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(ctx&&ctx.state==='suspended')ctx.resume();return ctx}
+    function tone(freq,dur,type,vol,delay){
+      if(!on)return;var c=ac();if(!c)return;
+      var t=c.currentTime+(delay||0),o=c.createOscillator(),g=c.createGain();
+      o.type=type||'sine';o.frequency.setValueAtTime(freq,t);
+      g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol||0.08,t+0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+      o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+dur+0.02);
+    }
+    return {
+      toggle:function(){on=!on;$("soundBtn").textContent=on?"🔊":"🔇";if(on)tone(660,.1,'sine',.06);return on},
+      play:function(k){
+        if(k==='click')tone(620,.06,'sine',.05);
+        else if(k==='coin'){tone(880,.09,'square',.05);tone(1320,.12,'sine',.05,.07)}
+        else if(k==='perfect'){[523,659,784,1047].forEach(function(f,i){tone(f,.18,'sine',.07,i*.07)})}
+        else if(k==='good'){tone(784,.12,'sine',.06);tone(988,.14,'sine',.05,.08)}
+        else if(k==='fail')tone(180,.25,'sawtooth',.05);
+        else if(k==='customer'){tone(1047,.08,'sine',.045);tone(1319,.1,'sine',.04,.08)}
+        else if(k==='levelup'){[523,659,784,1047,1319].forEach(function(f,i){tone(f,.16,'triangle',.06,i*.08)})}
+        else if(k==='vip'){[659,784,988,1319,1568].forEach(function(f,i){tone(f,.28,'sine',.05,i*.1)})}
+      }
+    };
+  })();
+  $("soundBtn").onclick=function(){SFX.toggle()};
+
+  /* ---------- 钩子系统：常客羁绊 / 章节 / 稀有客人 ---------- */
+  var REGULARS=[
+    {id:"laozhang",em:"👴",name:"老张头",lines:["还是老样子，来份家常的。","我孙女说你这儿的最好吃。","今天多给你带了个自己种的瓜。"],reward:"老张头成了你的忠实顾客，每晚必来，客流+1"},
+    {id:"xiaomei",em:"👩‍🎓",name:"小美",lines:["加班到现在，饿死了～","今天发了工资，要好好犒劳自己！","下周我可能就调走了，会想你的。"],reward:"小美把你推荐给了同事，人缘小涨"},
+    {id:"xiaoming",em:"🧑‍🏫",name:"明哥",lines:["辅导班下课，顺路过来。","给我留一份，老规矩。","你家东西实在，我信得过。"],reward:"明哥介绍了学生家长来，回头客增多"},
+    {id:"ayi",em:"👵",name:"李阿姨",lines:["小伙子，今天生意咋样？","我家那口子就爱吃你这口。","天冷了，你也早点收摊。"],reward:"李阿姨天天来唠嗑，把你的摊子当成了第二个家"}
+  ];
+  var RARE=[
+    {id:"foodcritic",em:"🌟",name:"神秘美食达人",bonus:88,text:"一位美食达人悄悄来尝了一口，当场加了你的微信，说要帮你宣传！"},
+    {id:"nightowl",em:"🎩",name:"深夜的西装客",bonus:66,text:"一位衣着讲究的客人多付了钱，只说了一句：'今晚，谢谢。'"},
+    {id:"oldfriend",em:"🎈",name:"多年未见的老同学",bonus:50,text:"老同学认出了你，聊了很久，走时坚持要多给一份钱。"}
+  ];
+  var CHAPTERS=[
+    {n:1,title:"第一章 · 支起摊子",goal:1,tip:"从一张小桌开始，把日子过起来。"},
+    {n:2,title:"第二章 · 熟客盈门",goal:3,tip:"留住老客人，生意才有根。"},
+    {n:3,title:"第三章 · 小有名气",goal:6,tip:"街坊开始认得你的摊位了。"},
+    {n:4,title:"第四章 · 夜市红人",goal:10,tip:"有人专程绕路来买你的东西。"},
+    {n:5,title:"第五章 · 这道街的传奇",goal:15,tip:"你的摊子，成了这条街的一部分。"}
+  ];
+  function chapterOf(day){var c=CHAPTERS[0];for(var i=0;i<CHAPTERS.length;i++)if(day>=CHAPTERS[i].goal)c=CHAPTERS[i];return c}
+  function nextChapter(day){for(var i=0;i<CHAPTERS.length;i++)if(day<CHAPTERS[i].goal)return CHAPTERS[i];return null}
+  function addBond(id){
+    PLAT.shared.bonds[id]=(PLAT.shared.bonds[id]||0)+1;
+    save();
+    var r=REGULARS.filter(function(x){return x.id===id})[0];
+    if(r&&PLAT.shared.bonds[id]===3){SFX.play('levelup');toast("💌 "+r.name+"："+r.reward);return r}
+    return null;
+  }
+  function maybeRare(g){
+    if(Math.random()<0.12){
+      var r=RARE[Math.floor(Math.random()*RARE.length)];
+      var isNew=PLAT.shared.rareMet.indexOf(r.id)<0;
+      if(isNew){PLAT.shared.rareMet.push(r.id);addClue("神秘客人「"+r.name+"」留下了一片碎纸",1)}
+      g.bonusCoin+=r.bonus;g.rare=r;save();
+      return r;
+    }
+    return null;
+  }
+
+  /* ---------- 神秘匣子：线索碎片 → 渐进解锁的探秘线 ---------- */
+  var MYSTERY_STORY=[
+    {need:0,title:"上锁的旧木匣",text:"摊子底下压着一只落灰的木匣，锁孔旁刻着一行小字：「凑齐六片，才配知道这条街的秘密。」"},
+    {need:6,title:"第一片 · 泛黄的收据",text:"「1998年，夜市西口。有人用一碗热汤救了赶夜路的我。」——字迹被水浸过，落款只有一个模糊的「谢」字。"},
+    {need:15,title:"第二片 · 半张旧照片",text:"照片上是这同一条街，只是摊位更旧、灯更暗。背面写着：「她每天都在等一个人，后来那人真的来了。」"},
+    {need:30,title:"第三片 · 摊主的日记",text:"「把生意做好，自然会有人替你把故事讲下去。」你忽然明白，你接过的从来不只是一个摊子。"},
+    {need:50,title:"匣底 · 未寄出的信",text:"信没有署名，只有一句：「给愿意把这行做下去的人——这条街会记得你。」木匣空了，但你的故事，才刚开始。"}
+  ];
+  function mysteryStageNow(){
+    var st=0;for(var i=0;i<MYSTERY_STORY.length;i++)if((S.clues||0)>=MYSTERY_STORY[i].need)st=i;
+    return st;
+  }
+  var pendingClueStage=null;
+  function showClueStage(st){
+    var m=MYSTERY_STORY[st];if(!m)return;
+    modal("🔮","神秘匣子松动了","你拼出了一段往事——<br><b style='color:var(--gold)'>"+m.title+"</b><br>"+m.text,
+      "线索 "+S.clues+" 片 · 匣子里还有更深的故事，继续经营就会慢慢浮现");
+  }
+  function addClue(reason,n,deferStage){
+    var before=mysteryStageNow();
+    S.clues=(S.clues||0)+(n||1);save();
+    var after=mysteryStageNow();
+    if(after>before){
+      SFX.play('levelup');
+      if(deferStage){pendingClueStage=after;toast("🔮 匣子有动静，先完成眼前选择")}
+      else setTimeout(function(){showClueStage(after)},400);
+    }else if(reason){
+      toast("🔮 线索 +"+(n||1)+" · "+reason+"（"+S.clues+" 片）");
+    }
+  }
+  function renderMystery(){
+    var box=$("mysteryCard");if(!box)return;
+    var st=mysteryStageNow(),next=MYSTERY_STORY[Math.min(MYSTERY_STORY.length-1,st+1)];
+    var shards="";for(var i=0;i<6;i++)shards+='<div class="shard'+((S.clues||0)>i?' on':'')+'">'+(i<6?'✦':'·')+'</div>';
+    var pct=next&&next.need>0?Math.min(100,Math.round(S.clues/next.need*100)):100;
+    var hint=next&&next.need>(S.clues||0)?("再找到 <b style='color:var(--gold)'>"+(next.need-(S.clues||0))+"</b> 片线索，解锁「"+next.title+"」")
+      :"匣子的故事已全部拼齐 ✦";
+    box.innerHTML='<div class="mh">🔮 神秘匣子 · '+MYSTERY_STORY[st].title+'</div>'+
+      '<div class="msub">'+MYSTERY_STORY[st].text+'</div>'+
+      '<div class="shards">'+shards+'</div>'+
+      '<div class="cluebar"><i style="width:'+pct+'%"></i></div>'+
+      '<div class="hintline">线索 '+S.clues+' 片 · '+hint+'</div>';
+    box.onclick=function(){
+      SFX.play('click');
+      var lines=MYSTERY_STORY.slice(0,st+1).map(function(m,i){return "<b style='color:var(--gold)'>"+m.title+"</b><br>"+m.text}).join("<br><br>");
+      modal("🔮","你拼出的往事",lines,"线索只能靠经营慢慢攒 · 稀有客人、常客羁绊、完成委托、盈利收摊都会留下碎片");
+    };
+  }
+
+  /* ---------- 合伙 / 融资 / 利润分成：层层递进，收益封顶自动退出 ---------- */
+  var PARTNER_TIERS=[
+    {id:"street",em:"🧑‍🌾",name:"街坊合伙",invest:60,share:0.20,cap:90,need:"",tip:"街坊信你，先给 60 元本钱，只分每晚净利的 20%，分够 90 元就自动退股"},
+    {id:"angel",em:"👩‍💼",name:"天使投资人",invest:180,share:0.25,cap:270,need:"口碑≥3.8 或 累计营收≥500",tip:"大额注资 180 元，分净利 25%，分够 270 元退出——用未来的钱换今天的底气"},
+    {id:"kin",em:"👨‍👩‍👧",name:"亲友入股",invest:350,share:0.30,cap:490,need:"口碑≥4.2 且 清单完成度≥50%",tip:"亲友押上 350 元，分净利 30%，分够 490 元退出——信任越大，责任越大"},
+    {id:"friend",em:"🧑‍🤝‍🧑",name:"老友介绍的新伙伴",invest:120,share:0.22,cap:165,need:"老友回访 3 次后由老友推荐",tip:"退股老友介绍的新伙伴：先给 120 元本钱，分净利 22%，分够 165 元体面退出——人脉会自己长大"}
+  ];
+  function activePartners(){return (S.partners||[]).filter(function(p){return p.paid<p.cap-0.001})}
+  function retiredPartners(){return (S.partners||[]).filter(function(p){return p.paid>=p.cap-0.001})}
+  function partnerStory(p){
+    var v=p.visits||0,lines={
+      street:v>=3?"街坊已经把你当自己人：赚够就收，买卖不成情义在，缺本钱随时来找我。":"街坊说：赚够就收，买卖不成情义在，缺本钱随时来找我。",
+      angel:v>=3?"投资人回话：这一单我看明白了，后面有稳当项目，先想到你。":"投资人发来消息：这一单我看明白了，后会有期。",
+      kin:v>=3?"家里人说：钱够不够都回来吃饭，日子稳了，比赚快钱重要。":"家里人说：钱你留着把日子过稳，记得常回来吃饭。",
+      friend:"新伙伴把名片压在账本里：有活一起干，有风险也说明白。"
+    };
+    return lines[p.tier]||"老朋友捎话：生意长长久久，比一时分钱重要。";
+  }
+  function nextOldFriend(){
+    var rp=retiredPartners();
+    return rp.length?rp.slice().sort(function(a,b){return (a.visits||0)-(b.visits||0)})[0]:null;
+  }
+  function partnerScene(p){
+    var scenes={
+      street:[
+        {title:"旧伞下的摊位",text:"街坊提起从前：这把伞下卖过热汤，也躲过雨。他说，你摆摊的样子像极了当年那个不肯认输的人。"},
+        {title:"一碗热汤的旧账",text:"街坊翻出泛黄小票：有年冬夜，有人赊了一碗汤，后来真的回来还了钱。他说，做生意先学做人。"},
+        {title:"夜市西口的老路灯",text:"街坊说西口那盏灯坏了又修、修了又坏，照亮过不少赶路的人。他忽然压低声音：木匣的事，也许和那盏灯有关。"},
+        {title:"老摊主的交代",text:"街坊把一张旧菜单塞给你：别只惦记赚多少，记得让客人吃完还想再来。"}
+      ],
+      angel:[
+        {title:"一份折起来的商业计划",text:"投资人说，最初看中的不是你赚了多少，而是你没赚到钱时也没乱承诺。"},
+        {title:"稳当项目与快钱项目",text:"投资人摊开两张纸：一张回报慢但稳，一张来钱快却要压上口碑。他让你选，说不替别人做决定。"},
+        {title:"会议室外的旧照片",text:"投资人指着照片里的一条老街：他年轻时也在这里摆过摊，后来才明白人脉比一次利润更长。"},
+        {title:"下一轮小试",text:"投资人说：真正靠谱的人，会把风险写在前面。他愿意再给你一次小规模试错的机会。"}
+      ],
+      kin:[
+        {title:"家里寄来的土特产",text:"家里人没问赚没赚，只问你吃饭没有。你突然想起，最初想做生意，只是想让日子过得更稳。"},
+        {title:"一笔急用钱",text:"家里说有笔小钱急用，但不是催你还。你明白，亲情不是账目，可账目里也藏着人情。"},
+        {title:"旧相册里的摊位",text:"亲戚翻出老照片：你小时候在巷口帮人收摊，收完还认真擦桌子。他们说，你一直都适合做这行。"},
+        {title:"一顿迟到的家常饭",text:"家里人说：赚够就回来，别把自己熬成一台机器。"}
+      ],
+      friend:[
+        {title:"新伙伴的第一张名片",text:"老友介绍的人很实在：先问库存，再问回款，最后才问利润。你说，这人靠谱。"},
+        {title:"一起盘的新摊",text:"新伙伴带你去看一个空摊位，说位置一般，但人流稳。他把风险算得很清楚，你反而放心。"},
+        {title:"试错的小单子",text:"新伙伴拿出一份小批量计划：赚得不多，但能验证一条新路。失败也只亏一点本钱。"},
+        {title:"合伙人的规矩",text:"新伙伴说：分成、退出、风险都写明白，朋友才做得长久。"}
+      ]
+    };
+    var arr=scenes[p.tier]||scenes.street;
+    return arr[Math.max(0,Math.min((p.visits||1)-1,arr.length-1))];
+  }
+  function logPartnerEvent(p,text,delta,clue){
+    if(!S.partnerLog)S.partnerLog=[];
+    S.partnerLog.push({day:S.day||1,scene:PLAT.current,name:p.name,em:p.em,text:text,delta:delta||0,clue:clue||0,at:Date.now()});
+    if(S.partnerLog.length>30)S.partnerLog=S.partnerLog.slice(-30);
+  }
+  function partnerLogForResult(){
+    var d=(S.day||1)-1;
+    return (S.partnerLog||[]).filter(function(x){return x.day===d&&x.scene===PLAT.current}).map(function(x){
+      return x.em+x.name+"："+x.text+((x.delta||0)!==0?"（金币"+(x.delta>0?"+":"")+x.delta+"）":"")+((x.clue||0)>0?"（线索+"+x.clue+"）":"");
+    }).join("");
+  }
+  function partnerChoiceFor(p){
+    var i=Math.max(0,((p.visits||3)-3)%3),table={
+      street:[
+        {label:"帮街坊看一会儿摊",sub:"时间换钱 · 金币 +18",delta:18,result:"你替他守了一小段摊，客人照旧来。街坊说：手脚麻利的人，走到哪儿都不缺饭吃。"},
+        {label:"陪他翻旧箱子",sub:"不收钱 · 线索 +1",clue:1,reason:"街坊旧箱里的收据",result:"旧箱底压着一张票据，落款只有一个模糊的「谢」字。街坊说：这条街，以前也有人这样帮过忙。"},
+        {label:"把热汤钱还回去",sub:"金币 -8 · 线索 +1",delta:-8,clue:1,reason:"一碗热汤背后的旧账",can:function(){return S.coins>=8},cant:"金币不足 8 元，先选不花钱的",result:"街坊愣了一下，收下钱，却把一段旧事讲得更认真了。"}
+      ],
+      angel:[
+        {label:"接下稳健小单",sub:"回款慢一点 · 金币 +22",delta:22,result:"投资人按约结了小单。他说：稳，不是慢，是能一直做下去。"},
+        {label:"试投一批样品",sub:"金币 -12 · 线索 +2",delta:-12,clue:2,reason:"投资人项目书夹页里的旧照片",can:function(){return S.coins>=12},cant:"金币不足 12 元，先选稳健小单",result:"样品卖得一般，但项目书夹页里有张旧街照片，投资人说，那是他第一次做生意的地方。"},
+        {label:"婉拒快钱项目",sub:"金币 +10 · 保住口碑",delta:10,result:"你没接来钱快却伤口碑的单子。投资人点头：会拒绝，才算真的会经营。"}
+      ],
+      kin:[
+        {label:"给家里汇一笔钱",sub:"金币 -20 · 线索 +1",delta:-20,clue:1,reason:"家里旧相册背面的字",can:function(){return S.coins>=20},cant:"金币不足 20 元，先选不花钱的选择",result:"钱不多，却让家里高兴了很久。相册背面还写着一句旧地址，像是某个故事的开头。"},
+        {label:"收下土特产去卖",sub:"金币 +14",delta:14,result:"你把家里带来的土特产分着卖了，客人说味儿地道。钱不大，心里暖。"},
+        {label:"只聊家常，不收钱",sub:"线索 +1",clue:1,reason:"家常话里提到的老摊主",result:"你陪他们聊了一晚上。临走时一句话被你记下：以前西口那位摊主，也爱把故事写在收据背面。"}
+      ],
+      friend:[
+        {label:"一起跑个新摊位",sub:"金币 +20",delta:20,result:"新伙伴找的位置不算显眼，但人流稳。你发现，靠谱的人会把最坏情况先说清。"},
+        {label:"小批量试新品",sub:"金币 -10 · 线索 +2",delta:-10,clue:2,reason:"新品包装纸内侧的旧印章",can:function(){return S.coins>=10},cant:"金币不足 10 元，先选新摊位",result:"新品没大赚，包装纸内侧却有个旧印章，像是木匣故事的另一个落点。"},
+        {label:"先留名片，下次合作",sub:"金币 +8",delta:8,result:"你没急着扩张，只留了联系方式。新伙伴说：留着余地，才留得住朋友。"}
+      ]
+    };
+    var arr=table[p.tier]||table.street;
+    return [0,1,2].map(function(j){
+      var o=arr[(i+j)%arr.length];
+      return {label:o.label,sub:o.sub,can:o.can,cant:o.cant,run:function(){resolvePartnerChoice(p,o)}};
+    });
+  }
+  function resolvePartnerChoice(p,o){
+    if((o.delta||0)<0&&S.coins<(-o.delta)){toast("金币不够，换一个选择吧");return}
+    p.chosen=(p.chosen||0)+1;
+    var clue=o.clue||0;
+    if(clue)addClue(o.reason||"老友故事里的线索",clue,true);
+    S.coins=Math.max(0,Math.round((S.coins+(o.delta||0))*100)/100);
+    logPartnerEvent(p,"做出选择「"+o.label+"」",o.delta||0,clue);
+    save();SFX.play((o.delta||0)>=0?'coin':'click');
+    var detail=[];
+    if(o.delta)detail.push("金币 "+(o.delta>0?"+":"")+o.delta);
+    if(clue)detail.push("线索 +"+clue);
+    var pending=pendingClueStage;pendingClueStage=null;
+    modal(p.em,"老友会 · 你的选择",o.result||o.label,detail.join(" · ")+" · 已如实写入老友往来账本");
+    if(pending)setTimeout(function(){showClueStage(pending)},500);
+    if(PLAT.current==="city")renderCityHome();else renderHome();
+  }
+  function partnerTierOpen(t){
+    if(t.id==="street")return true;
+    if(t.id==="angel")return S.rep>=3.8||PLAT.shared.totalRevenue>=500;
+    if(t.id==="kin")return S.rep>=4.2&&lifePct()>=50;
+    if(t.id==="friend")return !!S.friendReferral;
+    return false;
+  }
+  function partnerCount(tid){return activePartners().filter(function(p){return p.tier===tid}).length}
+  function canPartner(tid){var t=PARTNER_TIERS.filter(function(x){return x.id===tid})[0];
+    return t&&partnerTierOpen(t)&&activePartners().length<3&&partnerCount(tid)<1&&S.partnerDay!==today()}
+  function doPartner(tid){
+    var t=PARTNER_TIERS.filter(function(x){return x.id===tid})[0];
+    if(!t||!partnerTierOpen(t)){toast("这层融资还没解锁，先把口碑和清单做上去");return}
+    if(activePartners().length>=3){toast("合伙人最多同时 3 位，先让到期的退股");return}
+    if(partnerCount(tid)>=1){toast("这类合伙人已经有一位了，等他退出再招");return}
+    S.partnerDay=today();
+    if(!S.partners)S.partners=[];
+    S.partners.push({tier:t.id,name:t.name,em:t.em,invest:t.invest,share:t.share,cap:t.cap,paid:0,day:PLAT.scenes.yeshi.day||1});
+    S.coins+=t.invest;save();SFX.play('coin');
+    modal(t.em,t.name+"入股","「这买卖我看好。」先给你 <b>"+t.invest+" 元</b> 本钱。<br>往后每晚只从<b>净利</b>里分 <b>"+Math.round(t.share*100)+"%</b> 给他，累计分够 <b>"+t.cap+" 元</b>就自动退股，绝不会一直分下去。","利润分成只动赚到的钱，不碰你的本钱 · 随时可在图鉴查看合伙明细");
+    if(PLAT.current==="city")renderCityHome();else renderHome();
+  }
+  function doPartnerVisit(){
+    var p=nextOldFriend();
+    if(!p){toast("还没有退股的老朋友，先把当前合作做到封顶吧");return}
+    if(S.partnerVisitDay===today()){toast("今天已经见过老朋友啦，明天再来");return}
+    S.partnerVisitDay=today();p.visits=(p.visits||0)+1;p.lastVisit=today();
+    var gift=8+Math.floor(Math.random()*11)+(p.tier==="kin"?8:0),scene=partnerScene(p),clueAdd=0,extra="";
+    S.coins+=gift;
+    if(p.visits===3&&!S.friendReferral){
+      S.friendReferral=true;addClue("老友递来的新合伙人名片",1,true);clueAdd=1;
+      extra+="，还介绍了「老友介绍的新伙伴」";
+    }else if(p.visits%3===0){
+      addClue("老友会旧账本里的一页收据",1,p.visits>=3);clueAdd=1;extra+="，还夹着一片线索碎片";
+    }
+    logPartnerEvent(p,"第"+p.visits+"次回访："+scene.title+" +"+gift+"元",gift,clueAdd);
+    SFX.play('coin');save();
+    if(PLAT.current==="city")renderCityHome();else renderHome();
+    if(p.visits>=3){
+      var opts=partnerChoiceFor(p);
+      choiceModal(p.em,"老友会 · "+scene.title,
+        scene.text+"<br><br>他带来 <b>"+gift+" 元</b> 小生意"+extra+"。今天还带来一个选择：",
+        opts,"每个选择都明码标价、如实记账 · 已退股的合伙人不再分走净利");
+    }else{
+      modal(p.em,"老朋友回访 · "+scene.title,
+        scene.text+"<br><br>他顺手给你带来 <b>"+gift+" 元</b> 小生意"+extra+"。<br>"+partnerStory(p),
+        "已退股的合伙人不再分走净利 · 每天一次，回访到第 3 次会有新故事和新机会");
+    }
+  }
+  function settlePartners(profit){
+    var ap=activePartners(),total=0,retired=[],note=[],stories=[];
+    if(!ap.length||profit<=0)return {paid:0,retired:[],note:[],stories:[]};
+    ap.forEach(function(p){
+      var room=p.cap-p.paid;
+      var cut=Math.min(Math.round(profit*p.share*100)/100,room);
+      if(cut>0){p.paid=Math.round((p.paid+cut)*100)/100;total+=cut}
+      note.push(p.name+"本次分走"+cut+"元(累计"+p.paid+"/"+p.cap+")");
+      if(p.paid>=p.cap-0.001){
+        p.retiredDay=today();p.visits=p.visits||0;p.lastVisit=p.lastVisit||"";
+        retired.push(p.name);stories.push(partnerStory(p));
+      }
+    });
+    S.coins=Math.max(0,Math.round((S.coins-total)*100)/100);save();
+    return {paid:Math.round(total*100)/100,retired:retired,note:note,stories:stories};
+  }
+  function renderPartnerList(box){
+    if(!box)return;
+    var ap=activePartners(),rp=retiredPartners(),html="";
+    if(!ap.length&&!rp.length){box.innerHTML='<div class="sub" style="font-size:11px">目前没有合伙人 · 缺本钱时可在摆摊/开店页招人合伙，明码标价、收益封顶</div>';return}
+    if(ap.length){
+      html+=ap.map(function(p){
+        var pct=Math.min(100,Math.round(p.paid/p.cap*100));
+        return '<div class="line" style="align-items:center"><span>'+p.em+' '+p.name+' <span class="sub">分'+Math.round(p.share*100)+'%</span></span>'+
+          '<b style="font-size:11px">'+p.paid+'/'+p.cap+' 元</b></div><div class="progress" style="height:6px;margin:2px 0 8px"><i style="width:'+pct+'%"></i></div>';
+      }).join("");
+    }
+    if(rp.length){
+      html+='<div class="sub" style="font-size:11px;margin-top:8px">📞 老友会 · 赚够封顶已体面退股，仍会偶尔回访</div>';
+      html+=rp.map(function(p){
+        return '<div class="line" style="align-items:center"><span>'+p.em+' '+p.name+' <span class="sub">已退股 · 回访'+(p.visits||0)+'次 · 选择'+(p.chosen||0)+'次</span></span>'+
+          '<b style="font-size:11px">'+p.cap+'/'+p.cap+' 元</b></div><div class="sub" style="font-size:10px;margin:-2px 0 8px">'+partnerStory(p)+'</div>';
+      }).join("");
+    }
+    var logs=(S.partnerLog||[]).slice(-3).reverse();
+    if(logs.length){
+      html+='<div class="sub" style="font-size:11px;margin-top:6px">🧾 老友往来账本 · 最近 '+logs.length+' 笔</div>';
+      html+=logs.map(function(x){
+        return '<div class="sub" style="font-size:10px;margin:2px 0">第'+x.day+'天 '+x.em+x.name+'：'+x.text+
+          (((x.delta||0)!==0)?'（金币'+(x.delta>0?'+':'')+x.delta+'）':'')+(((x.clue||0)>0)?'（线索+'+x.clue+'）':'')+'</div>';
+      }).join("");
+    }
+    box.innerHTML=html;
+  }
+
+  /* ---------- 捡废品：翻找式随机收益，附赠线索/食材 ---------- */
+  function doJunk(){
+    if(S.junkDay===today()){toast("今天已经翻过啦，回收站也讲先来后到");return}
+    S.junkDay=today();S.junkCnt=(S.junkCnt||0)+1;SFX.play('click');
+    var base=8+Math.floor(Math.random()*15),roll=Math.random(),extra="",gained=[];
+    if(roll<0.18){addClue("旧纸箱里夹着的半张票据",1);extra="，还翻到一片线索碎片"}
+    else if(roll<0.40){var qty=1+Math.floor(Math.random()*2);
+      if(PLAT.current==="city"){addStock(PLAT.scenes.city.shopType||"snack",qty)}else{addYStock(selFood,qty)}
+      extra="，捡到 "+qty+" 份还能用的食材（已入库存）"}
+    else if(roll>0.93){base+=25;extra="，运气爆棚捡到一台旧电器，回收多给了 25 元"}
+    S.coins+=base;save();
+    modal("🗑️","在回收站翻了翻","翻出些能换钱的东西，卖了 <b>"+base+" 元</b>"+extra+"。<br>钱虽不多，但起步的时候，每一分都算数。","每天一次 · 零成本、零风险，就是费点力气");
+    if(PLAT.current==="city")renderCityHome();else renderHome();
+  }
+
+  /* ---------- 人生清单：分层里程碑，完成度驱动「不集齐不罢休」 ---------- */
+  var LIFE_LIST=[
+    {id:"first",tier:"起步",em:"🌱",t:"摆出第一个摊子",hint:"完成一晚营业",ok:function(){return PLAT.shared.totalCustomers>0},rw:15},
+    {id:"earn100",tier:"起步",em:"💰",t:"累计营收破 100",hint:"多卖几晚就到",ok:function(){return PLAT.shared.totalRevenue>=100},rw:20},
+    {id:"stock",tier:"起步",em:"🧊",t:"第一次进货囤货",hint:"在摆摊页买一次食材",ok:function(){return (PLAT.scenes.yeshi.stockBatches||[]).length>0||(PLAT.scenes.city.stockBatches||[]).length>0},rw:15},
+    {id:"rare1",tier:"起步",em:"🌟",t:"遇见第一位神秘客人",hint:"他们不按日子来",ok:function(){return PLAT.shared.rareMet.length>=1},rw:25},
+    {id:"day5",tier:"成长",em:"📅",t:"连续经营 5 天",hint:"坚持摆摊或开店",ok:function(){return PLAT.scenes.yeshi.day>=5||PLAT.scenes.city.day>=5},rw:30},
+    {id:"food4",tier:"成长",em:"🍜",t:"解锁 4 种小吃",hint:"去小店用金币解锁",ok:function(){return PLAT.scenes.yeshi.unlockedFoods.length>=4},rw:30},
+    {id:"bond1",tier:"成长",em:"💌",t:"和一位常客成为朋友",hint:"同一位熟客招待 3 次",ok:function(){var b=S.bonds||{};return Object.keys(b).some(function(k){return b[k]>=3})},rw:35},
+    {id:"clue6",tier:"成长",em:"🔮",t:"拼出第一段匣中往事",hint:"集齐 6 片线索",ok:function(){return (S.clues||0)>=6},rw:35},
+    {id:"partner1",tier:"成长",em:"🤝",t:"招到第一位合伙人",hint:"缺本钱时拉人合伙",ok:function(){return (S.partners||[]).length>0},rw:30},
+    {id:"partnerRetire",tier:"成长",em:"🤝",t:"和合伙人好聚好散",hint:"让一位合伙人分够封顶自动退股",ok:function(){return retiredPartners().length>0},rw:35},
+    {id:"partnerVisit",tier:"成长",em:"📞",t:"接到老朋友回访",hint:"退股合伙人仍会惦记你",ok:function(){return retiredPartners().some(function(p){return (p.visits||0)>0})},rw:25},
+    {id:"partnerChoice",tier:"成长",em:"🎭",t:"老友带来一次选择",hint:"回访老友并做个决定",ok:function(){return retiredPartners().some(function(p){return (p.chosen||0)>0})},rw:30},
+    {id:"friendReferral",tier:"成长",em:"🧑‍🤝‍🧑",t:"老友介绍新合伙人",hint:"同一位老友回访到第 3 次",ok:function(){return !!S.friendReferral},rw:45},
+    {id:"city",tier:"成长",em:"🏙️",t:"开一家小城店铺",hint:"去小城创业记开店",ok:function(){return !!PLAT.scenes.city.shopType},rw:40},
+    {id:"earn1000",tier:"传奇",em:"🏆",t:"累计营收破 1000",hint:"把生意做大",ok:function(){return PLAT.shared.totalRevenue>=1000},rw:60},
+    {id:"rep5",tier:"传奇",em:"⭐",t:"口碑达到满星",hint:"少让客人等，多给好评",ok:function(){return S.rep>=5},rw:60},
+    {id:"clue30",tier:"传奇",em:"📖",t:"拼出匣中第三段往事",hint:"集齐 30 片线索",ok:function(){return (S.clues||0)>=30},rw:80},
+    {id:"allfood",tier:"传奇",em:"🍲",t:"解锁全部 12 种小吃",hint:"小店里慢慢收集",ok:function(){return PLAT.scenes.yeshi.unlockedFoods.length>=12},rw:90},
+    {id:"vip",tier:"传奇",em:"👑",t:"成为会员合伙人",hint:"小店会员区",ok:function(){return !!S.vip},rw:90},
+    {id:"last",tier:"传奇",em:"🔮",t:"拼齐匣底最后一封信",hint:"集齐 50 片线索",ok:function(){return (S.clues||0)>=50},rw:150}
+  ];
+  function lifeDone(){return LIFE_LIST.filter(function(it){return it.ok()})}
+  function lifePct(){return Math.round(lifeDone().length/LIFE_LIST.length*100)}
+  function claimLife(){
+    var got=0,names=[];
+    LIFE_LIST.forEach(function(it){
+      if(it.ok()&&(S.listClaimed||[]).indexOf(it.id)<0){S.listClaimed.push(it.id);S.coins+=it.rw;got+=it.rw;names.push(it.em+it.t+" +"+it.rw)}
+    });
+    if(got>0){save();SFX.play('levelup');
+      modal("🎯","人生清单达成","你点亮了新的人生里程碑：<br><b style='color:var(--gold)'>"+names.join("<br>")+"</b>","奖励已到账 · 完成度 "+lifePct()+"% · 还剩 "+(LIFE_LIST.length-lifeDone().length)+" 项没完成");
+    }else toast("清单进度已更新，继续完成就能领奖");
+    return got;
+  }
+  function renderLifeList(box){
+    if(!box)return;
+    var done=lifeDone().length,pct=lifePct();
+    var undone=LIFE_LIST.filter(function(it){return !it.ok()});
+    var nexts=undone.slice(0,4).map(function(it){return '<div class="line"><span>'+it.em+' '+it.t+'</span><b class="sub">'+it.hint+'</b></div>'}).join("");
+    box.innerHTML='<div class="line"><span>🎯 人生清单完成度</span><b style="color:var(--gold)">'+done+'/'+LIFE_LIST.length+' · '+pct+'%</b></div>'+
+      '<div class="progress"><i style="width:'+pct+'%"></i></div>'+
+      '<div class="sub" style="font-size:10px;margin:8px 0">点亮里程碑即可领金币 · 集齐全部，才算把这一生活明白</div>'+nexts;
+  }
+
+  /* ---------- 本金渠道：新手保底 / 借款 / 预售订金 ---------- */
+  function reliefEligible(){return S.day<=3&&PLAT.shared.coins<60&&S.reliefDay!==today()}
+  function renderLifeline(){
+    var box=$("lifelineGrid");if(!box)return;
+    var td=today(),jobDone=S.oddJobDay===td;
+    var loanOut=(S.debt||0)>0;
+    var depositOK=(S.rep>=3.5)||((S.bonds&&Object.keys(S.bonds).filter(function(k){return S.bonds[k]>=2}).length)>0);
+    var items=[];
+    items.push({id:"oddJob",em:"💼",title:jobDone?"今日已打零工":"打零工 +25元",sub:"稳稳的辛苦钱 · 每天一次",dim:jobDone});
+    items.push({id:"junk",em:"🗑️",title:S.junkDay===td?"今天翻过了":"翻回收站 · 碰运气",sub:"零成本 · 8~22元，还可能捡到食材/线索",dim:S.junkDay===td});
+    if(reliefEligible())items.push({id:"relief",em:"🎁",title:"街坊凑的救急钱 +80",sub:"只给开头最难的前几天 · 不必还",hot:true});
+    items.push({id:"loan",em:"🤝",title:loanOut?"有借款未还":"向街坊借本钱 +60",sub:loanOut?("欠 "+(S.debt||0)+" 元 · 收摊时扣还"):"收摊连本带利还 68 · 信用救急",dim:loanOut});
+    items.push({id:"deposit",em:"📦",title:depositOK?"接预售订金 +40":"预售订金（熟客解锁）",sub:depositOK?"今晚多卖，履约还能赚人气":"口碑 3.5 或熟客羁绊 2 次解锁",dim:!depositOK});
+    PARTNER_TIERS.forEach(function(t){
+      var open=partnerTierOpen(t),full=activePartners().length>=3;
+      var got=partnerCount(t.id)>0||S.partnerDay===td;
+      items.push({id:"partner_"+t.id,em:t.em,title:open?(t.name+" +"+t.invest):(t.name+" · 未解锁"),
+        sub:open?(("分净利"+Math.round(t.share*100)+"% · 分够"+t.cap+"退股"+(got?"（今日已招）":""))):t.need,dim:!open||full||got});
+    });
+    var nf=nextOldFriend();
+    if(nf){
+      var nv=(nf.visits||0)+1;
+      items.push({id:"partner_visit",em:"📞",title:S.partnerVisitDay===td?"今天已回访":(nv>=3?"老友剧情选择 · 第"+nv+"次":"老朋友回访 +8~20"),
+        sub:nv>=3?"新故事 + 三选一事件 · 明码记账":("第"+nv+"次回访 · 小生意和旧故事"),dim:S.partnerVisitDay===td,hot:S.partnerVisitDay!==td});
+    }
+    var lifeReady=LIFE_LIST.some(function(it){return it.ok()&&(S.listClaimed||[]).indexOf(it.id)<0});
+    items.push({id:"claim",em:"🎯",title:lifeReady?"领取清单奖励":"人生清单 "+lifePct()+"%",sub:lifeReady?"有里程碑达成 · 点此领奖":"去图鉴看还差哪几项",hot:lifeReady});
+    items.push({id:"skip",em:"😴",title:"今天歇业",sub:"不亏钱 · 休整一天",dim:false});
+    box.innerHTML=items.map(function(it){
+      return '<button class="btn ghost sm lifebtn'+(it.hot?" hot":"")+(it.dim?" dim":"")+'" data-life="'+it.id+'"><b>'+it.em+" "+it.title+'</b><small>'+it.sub+'</small></button>'
+    }).join("");
+    var hint=$("lifeLineHint");
+    if(hint)hint.innerHTML=(S.debt||0)>0?("🤝 你还有 <b style='color:var(--gold)'>"+S.debt+" 元</b> 借款待还，收摊结算时自动扣除（利息已算清，无隐藏费用）")
+      :"钱不够也能继续：打零工、借本钱、预售订金各有代价，量力而行 · 或歇业休整";
+    Array.prototype.forEach.call(box.querySelectorAll('[data-life]'),function(b){
+      b.onclick=function(){if(b.classList.contains("dim")&&b.getAttribute("data-life")!=="skip"){return}handleLifeline(b.getAttribute("data-life"))};
+    });
+  }
+  function handleLifeline(id){
+    SFX.play('click');
+    if(id==="oddJob"){
+      if(S.oddJobDay===today()){toast("今天已经打过零工啦，明天再来");return}
+      S.oddJobDay=today();S.coins+=25;save();
+      modal("💼","帮街坊搬了半天货","赚了 <b>25 元</b> 辛苦钱。<br>够开门的本钱了，今晚要不要再试一次？","每天只能打零工一次 · 这是应急，不是长久之计");
+    }else if(id==="relief"){
+      if(!reliefEligible()){toast("这份救济只留给开头最难的几天");return}
+      S.reliefDay=today();S.coins+=80;save();
+      modal("🎁","街坊们凑的救急钱","看你开头不顺，大家凑了 <b>80 元</b> 塞给你：「别慌，谁都有起步难的时候。」<br>这笔不用还。","仅限开头几天、手头很紧时 · 好好把摊子做下去");
+    }else if(id==="loan"){
+      if((S.debt||0)>0){toast("先把上一笔借款还清再借新的");return}
+      if(S.loanDay===today()){toast("借款每天只能办一次，明天再来");return}
+      S.loanDay=today();S.debt=68;S.coins+=60;save();
+      modal("🤝","街坊借你 60 元","先拿 <b>60 元</b> 救急，说好收摊时连本带利还 <b>68 元</b>（利息 8 元）。<br>只要你开门做生意，就还得起。","利息写在这里，收摊自动扣 · 没有任何隐藏费用");
+    }else if(id==="junk"){
+      doJunk();return;
+    }else if(id==="deposit"){
+      var ok=(S.rep>=3.5)||((S.bonds&&Object.keys(S.bonds).filter(function(k){return S.bonds[k]>=2}).length)>0);
+      if(!ok){toast("先攒点口碑、和熟客混熟，才能接到预售订金");return}
+      if(S.depositDay===today()){toast("今天的预售额度已经用掉了");return}
+      S.depositDay=today();S.coins+=40;save();
+      modal("📦","预售订金到账","老顾客提前订了明天的货，先付你 <b>40 元</b> 订金。<br>这是熟客给你的信任——别让他们失望。","预付的信任，靠一晚晚的好生意慢慢还");
+    }else if(id==="partner_visit"){
+      doPartnerVisit();return;
+    }else if(id.indexOf("partner_")===0){
+      doPartner(id.slice(8));
+    }else if(id==="claim"){
+      claimLife();
+    }else if(id==="skip"){
+      doSkipDay();return;
+    }
+    if(PLAT.current==="city")renderCityHome();else renderHome();
+  }
+  function doSkipDay(){
+    var inCity=PLAT.current==="city";
+    modal("😴","今天歇业",
+      "歇一天不扣钱，也不会断掉连续经营。<br>明天再来，生意一直给你留着。",
+      "歇业不计营收与任务 · 养足精神再开门");
+    $("modalOk").onclick=function(){
+      $("modal").classList.remove("on");
+      S.lastDay=today();save();
+      if(inCity){
+        PLAT.scenes.city.day=(PLAT.scenes.city.day||1)+1;save();
+        show("cityHome");renderCityHome();
+      }else{
+        PLAT.scenes.yeshi.restDays=(PLAT.scenes.yeshi.restDays||0)+1;
+        S.day++;save();show("home");renderHome();
+      }
+      toast("休息了一晚，精神饱满地迎接明天 ☀️");
+      $("modalOk").onclick=function(){$("modal").classList.remove("on")};
+    };
+  }
+  function renderCityLifeline(){
+    var box=$("cLifelineGrid");if(!box)return;
+    var td=today(),jobDone=S.oddJobDay===td,loanOut=(S.debt||0)>0;
+    var items=[];
+    items.push({id:"oddJob",em:"💼",title:jobDone?"今日已打零工":"打零工 +25元",sub:"稳稳的辛苦钱 · 每天一次",dim:jobDone});
+    items.push({id:"junk",em:"🗑️",title:S.junkDay===td?"今天翻过了":"翻回收站 · 碰运气",sub:"零成本 · 8~22元，还可能捡到食材/线索",dim:S.junkDay===td});
+    if(reliefEligible())items.push({id:"relief",em:"🎁",title:"街坊凑的救急钱 +80",sub:"只给开头最难的前几天 · 不必还",hot:true});
+    items.push({id:"loan",em:"🤝",title:loanOut?"有借款未还":"向街坊借本钱 +60",sub:loanOut?("欠 "+S.debt+" 元 · 收摊时扣还"):"收摊连本带利还 68 · 信用救急",dim:loanOut});
+    PARTNER_TIERS.forEach(function(t){
+      var open=partnerTierOpen(t),full=activePartners().length>=3,got=partnerCount(t.id)>0||S.partnerDay===td;
+      items.push({id:"partner_"+t.id,em:t.em,title:open?(t.name+" +"+t.invest):(t.name+" · 未解锁"),
+        sub:open?(("分净利"+Math.round(t.share*100)+"% · 分够"+t.cap+"退股"+(got?"（今日已招）":""))):t.need,dim:!open||full||got});
+    });
+    var nf=nextOldFriend();
+    if(nf){
+      var nv=(nf.visits||0)+1;
+      items.push({id:"partner_visit",em:"📞",title:S.partnerVisitDay===td?"今天已回访":(nv>=3?"老友剧情选择 · 第"+nv+"次":"老朋友回访 +8~20"),
+        sub:nv>=3?"新故事 + 三选一事件 · 明码记账":("第"+nv+"次回访 · 小生意和旧故事"),dim:S.partnerVisitDay===td,hot:S.partnerVisitDay!==td});
+    }
+    var lifeReady=LIFE_LIST.some(function(it){return it.ok()&&(S.listClaimed||[]).indexOf(it.id)<0});
+    items.push({id:"claim",em:"🎯",title:lifeReady?"领取清单奖励":"人生清单 "+lifePct()+"%",sub:lifeReady?"有里程碑达成 · 点此领奖":"去账本看还差哪几项",hot:lifeReady});
+    items.push({id:"skip",em:"😴",title:"今天歇业",sub:"不亏钱 · 休整一天",dim:false});
+    box.innerHTML=items.map(function(it){
+      return '<button class="btn ghost sm lifebtn'+(it.hot?" hot":"")+(it.dim?" dim":"")+'" data-life="'+it.id+'"><b>'+it.em+" "+it.title+'</b><small>'+it.sub+'</small></button>'
+    }).join("");
+    var hint=$("cLifeLineHint");
+    if(hint)hint.innerHTML=(S.debt||0)>0?("🤝 你还有 <b style='color:var(--gold)'>"+S.debt+" 元</b> 借款待还，收摊结算时自动扣除")
+      :"钱不够也能继续：打零工、借本钱都是明码标价的应急手段";
+    Array.prototype.forEach.call(box.querySelectorAll('[data-life]'),function(b){
+      b.onclick=function(){if(b.classList.contains("dim"))return;handleLifeline(b.getAttribute("data-life"))};
+    });
+  }
+
+  /* ---------- 数据 ---------- */
+  var FOODS={
+    jianbing:{name:"煎饼果子",em:"🥞",cost:6,price:14},
+    kaolengmian:{name:"烤冷面",em:"🍜",cost:7,price:16},
+    zhachuan:{name:"炸串",em:"🍢",cost:8,price:19},
+    naicha:{name:"手打柠檬茶",em:"🥤",cost:5,price:13},
+    malatang:{name:"麻辣烫",em:"🍲",cost:11,price:26},
+    shaobing:{name:"烤炉饼",em:"🫓",cost:4,price:11},
+    tanghulu:{name:"冰糖葫芦",em:"🍡",cost:6,price:15},
+    kaochang:{name:"烤肠",em:"🌭",cost:5,price:12},
+    xiaolongbao:{name:"小笼包",em:"🥟",cost:9,price:22},
+    bingjiuling:{name:"冰镇酸梅汤",em:"🧃",cost:4,price:12},
+    tiantianquan:{name:"甜甜圈",em:"🍩",cost:7,price:17},
+    kaoyu:{name:"烤鱿鱼",em:"🦑",cost:12,price:30}
+  };
+  var FOOD_ORDER=["jianbing","kaolengmian","shaobing","naicha","zhachuan","kaochang","tanghulu","bingjiuling","malatang","xiaolongbao","tiantianquan","kaoyu"];
+  // 夜市食材保鲜天数：生鲜短保，面饼/糖葫芦/甜甜圈可多放一天
+  var FOOD_SHELF={jianbing:1,kaolengmian:1,shaobing:2,naicha:1,zhachuan:1,kaochang:1,tanghulu:2,bingjiuling:1,malatang:1,xiaolongbao:1,tiantianquan:2,kaoyu:1};
+  var STALLS=[
+    {id:"corner",name:"街角空位",em:"🛒",rent:20,traffic:8,desc:"租金便宜，试试水",unlock:0},
+    {id:"school",name:"学校后门",em:"🎒",rent:45,traffic:14,desc:"学生多，晚高峰爆满",unlock:60},
+    {id:"square",name:"广场入口",em:"🏙️",rent:80,traffic:22,desc:"黄金地段，客流大",unlock:200},
+    {id:"temple",name:"庙会摊位",em:"🏮",rent:120,traffic:32,desc:"节日限定，日进斗金",unlock:500}
+  ];
+  var SKINS=[
+    {id:"default",name:"朴素小摊",em:"🛒",price:0,desc:"一切从简"},
+    {id:"neon",name:"霓虹灯摊",em:"🌈",price:30,desc:"年轻人的打卡地"},
+    {id:"retro",name:"复古木摊",em:"🪵",price:60,desc:"满满的烟火气"},
+    {id:"pink",name:"少女粉摊",em:"🎀",price:100,desc:"拍照超出片"},
+    {id:"star",name:"星空主题",em:"✨",price:180,desc:"夜市最靓的仔"}
+  ];
+  var VIP={price:88,desc:"免广告·离线收益翻倍·专属金色招牌·每日资源礼包"};
+  var ACHV=[
+    {id:"first",em:"🌱",name:"第一步",desc:"完成第一次摆摊"},
+    {id:"perfect10",em:"🔥",name:"火候大师",desc:"累计完美出锅10次"},
+    {id:"earn500",em:"💰",name:"小有积蓄",desc:"累计营收达到500元"},
+    {id:"day7",em:"📅",name:"坚持一周",desc:"连续摆摊7天"},
+    {id:"allfood",em:"🍜",name:"夜市大厨",desc:"解锁全部12种小吃"},
+    {id:"viral",em:"📸",name:"网红摊位",desc:"触发一次网红探店"},
+    {id:"rep5",em:"⭐",name:"五星口碑",desc:"口碑达到5.0"},
+    {id:"vip",em:"👑",name:"尊贵会员",desc:"开通一次会员"}
+  ];
+  // 周边街景：广告与邻摊会真实影响本场客流，不只是背景装饰
+  var STREET_SCENES={
+    night:[
+      {em:"🍢",ad:"烤串王买二送一 · 隔壁排长队",neighbor:"隔壁烤串摊排队，抢走一部分客人",bonus:-2,text:"邻摊促销抢客"},
+      {em:"📣",ad:"夜市入口喇叭：今晚小吃全场 9 折",neighbor:"入口广播把人流引向小吃区",bonus:2,text:"广播引流"},
+      {em:"🧋",ad:"奶茶第二杯半价 · 年轻人扎堆",neighbor:"奶茶摊人气旺，顺带带来路过客流",bonus:1,text:"邻摊聚人气"},
+      {em:"🚧",ad:"入口施工绕行 · 请走侧门",neighbor:"入口围挡让不少人改道",bonus:-3,text:"入口施工"},
+      {em:"🎪",ad:"广场小舞台今晚开演",neighbor:"演出散场后人群涌向夜市",bonus:3,text:"演出散场"}
+    ],
+    city:[
+      {em:"🥬",ad:"社区便民日 · 菜摊前人挤人",neighbor:"早市菜摊人多，顺路客增加",bonus:2,text:"便民早市"},
+      {em:"🧋",ad:"隔壁奶茶第二杯半价",neighbor:"隔壁奶茶促销，分走年轻客",bonus:-2,text:"邻店促销"},
+      {em:"🏥",ad:"社区义诊今天开始",neighbor:"义诊聚集了街坊，路过店门口的人变多",bonus:2,text:"社区义诊"},
+      {em:"🚧",ad:"门前道路维护 · 请绕行",neighbor:"门前围挡挡住客流",bonus:-3,text:"道路维护"},
+      {em:"📚",ad:"放学时间 · 家长接送高峰",neighbor:"接送孩子的家长顺路进店",bonus:1,text:"接送高峰"}
+    ]
+  };
+  // 营业中段的街况流转：真实改变客流，并记入结算复盘（delta=本段客流增量）
+  var STREET_SHIFTS={
+    night:[
+      {em:"🎪",text:"演出散场，人群涌向夜市",delta:3},
+      {em:"🌧️",text:"飘起小雨，路人加快脚步",delta:-3},
+      {em:"📣",text:"入口广播吆喝，客流被拉过来",delta:2},
+      {em:"🚓",text:"夜巡经过，人群暂时散开",delta:-2},
+      {em:"🍢",text:"隔壁摊买二送一，抢走客人",delta:-2}
+    ],
+    city:[
+      {em:"🎒",text:"放学高峰，家长学生涌进街",delta:3},
+      {em:"🌦️",text:"阵雨突至，街上人变少",delta:-3},
+      {em:"📢",text:"社区促销活动开始，路过的人变多",delta:2},
+      {em:"🧹",text:"环卫车经过挡了半条路",delta:-2}
+    ]
+  };
+  // 邻摊临时委托：不是背景板，顺手帮忙有真实金币/客流/口碑收益
+  var ERRANDS={
+    night:[
+      {em:"🍢",from:"烤串王",title:"隔壁烤串王忙不过来",desc:"帮忙串 3 串，马上回来！",need:3,coin:12,traffic:1,rep:0},
+      {em:"🧋",from:"柠檬茶",title:"柠檬茶摊递下杯子",desc:"搭把手递 2 次杯",need:2,coin:8,traffic:0,rep:0},
+      {em:"📦",from:"夜市快递点",title:"代收一个快递",desc:"签收一下就行",need:1,coin:15,traffic:0,rep:0},
+      {em:"🎪",from:"广场舞台",title:"后台搬道具",desc:"帮忙搬 3 箱道具",need:3,coin:10,traffic:2,rep:0}
+    ],
+    city:[
+      {em:"🥬",from:"便民菜摊",title:"菜摊搭把手",desc:"帮忙搬 3 箱菜",need:3,coin:12,traffic:0,rep:1},
+      {em:"📦",from:"社区快递驿",title:"代收快递",desc:"签收一下就行",need:1,coin:10,traffic:0,rep:0},
+      {em:"🏥",from:"义诊台",title:"帮着登记街坊",desc:"登记 2 位街坊",need:2,coin:8,traffic:0,rep:2}
+    ]
+  };
+
+  /* ---------- 夜市食材库存：进货跨天、FIFO、按食材保鲜 ---------- */
+  function yShelf(k){return FOOD_SHELF[k]||1}
+  function yStockFresh(b,k,day){
+    if(!b||b.qty<=0)return false;
+    if(k&&b.food!==k)return false;
+    return (day-b.buyDay)<yShelf(b.food);
+  }
+  function yStockOf(k,day){
+    var y=PLAT.scenes.yeshi,dd=day===undefined?y.day:day,total=0;
+    (y.stockBatches||[]).forEach(function(b){if(yStockFresh(b,k,dd))total+=b.qty});
+    return total;
+  }
+  function addYStock(k,qty){
+    var y=PLAT.scenes.yeshi;
+    if(!y.stockBatches)y.stockBatches=[];
+    y.stockBatches.push({food:k,qty:qty,buyDay:y.day});
+    save();
+  }
+  function consumeYStock(k,qty){
+    var y=PLAT.scenes.yeshi,left=qty;
+    var list=(y.stockBatches||[]).filter(function(b){return yStockFresh(b,k,y.day)}).sort(function(a,b){return a.buyDay-b.buyDay});
+    for(var i=0;i<list.length&&left>0;i++){var take=Math.min(left,list[i].qty);list[i].qty-=take;left-=take}
+    y.stockBatches=(y.stockBatches||[]).filter(function(b){return b.qty>0});
+    save();
+    return qty-left;
+  }
+  function expireYStock(){
+    var y=PLAT.scenes.yeshi,expired=0,salvage=0,fresh=[];
+    (y.stockBatches||[]).forEach(function(b){
+      if(b.qty>0&&!yStockFresh(b,null,y.day)){
+        var f=FOODS[b.food];
+        expired+=b.qty;
+        salvage+=Math.round(b.qty*(f?f.cost:4)*0.3);
+      }else fresh.push(b);
+    });
+    y.stockBatches=fresh;save();
+    return {expired:expired,salvage:salvage};
+  }
+
+  /* ---------- 街景/广告/邻摊：可见表现 + 真实客流修正 ---------- */
+  function rollStreet(kind){
+    var pool=STREET_SCENES[kind]||STREET_SCENES.night;
+    var s=pool[Math.floor(Math.random()*pool.length)];
+    return {em:s.em,ad:s.ad,neighbor:s.neighbor,bonus:s.bonus,text:s.text};
+  }
+  function renderStreet(kind,s){
+    if(!s)return;
+    var sign=(s.bonus>=0?"+":"-")+Math.abs(s.bonus);
+    if(kind==="night"){
+      var a=$("nightAd"),n=$("nightTraffic");
+      if(a)a.textContent=s.ad;
+      if(n)n.textContent=s.em+" "+s.text+" · 客流 "+sign;
+    }else{
+      var a2=$("cityAd"),n2=$("cityTraffic");
+      if(a2)a2.textContent=s.ad;
+      if(n2)n2.textContent=s.em+" "+s.text+" · 客流 "+sign;
+    }
+  }
+  // 营业中段触发：改变客流 + 更新可见街况 + 记入复盘
+  function applyStreetShift(kind,g){
+    var pool=STREET_SHIFTS[kind]||STREET_SHIFTS.night;
+    var s=pool[Math.floor(Math.random()*pool.length)];
+    g.shifts=g.shifts||[];g.shifts.push({em:s.em,text:s.text,delta:s.delta});
+    if(kind==="night")g.bonusTraffic=(g.bonusTraffic||0)+s.delta;
+    else g.trafficBonus=(g.trafficBonus||0)+s.delta;
+    var sign=(s.delta>=0?"+":"")+s.delta;
+    var ad=kind==="night"?$("nightAd"):$("cityAd");
+    var note=kind==="night"?$("nightTraffic"):$("cityTraffic");
+    if(ad)ad.textContent="街况： "+s.text;
+    if(note)note.textContent=s.em+" "+s.text+" · 客流 "+sign;
+    var t=document.createElement("div");t.className="event-toast";
+    t.innerHTML=s.em+" <b>街况变化</b><br>"+s.text+"<br><b>客流 "+sign+"</b>";
+    var layer=kind==="night"?$("eventLayer"):$("cEventLayer");
+    if(layer){layer.appendChild(t);setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t)},3500)}
+    SFX.play('click');
+  }
+  // 营业钟冻结：正在接待/火候决策时不计时间，也不让其他顾客流失
+  function clockPause(g){if(!g)return;g.clockPaused=true;if(!g.pauseStart)g.pauseStart=Date.now()}
+  function clockResume(g){if(!g)return;if(g.pauseStart){g.pauseAccum=(g.pauseAccum||0)+(Date.now()-g.pauseStart);g.pauseStart=0}g.clockPaused=false}
+  function elapsedOf(g){if(!g)return 0;return (Date.now()-g.start-(g.pauseAccum||0)-(g.pauseStart?Date.now()-g.pauseStart:0))/1000}
+  // 邻摊临时委托
+  function clearErrandMark(kind){
+    Array.prototype.forEach.call(document.querySelectorAll(kind==="night"?"#streetNight .neighbor-stall":"#streetCity .neighbor-stall"),function(n){n.classList.remove('has-errand')});
+  }
+  function spawnErrand(kind,g){
+    var pool=ERRANDS[kind]||ERRANDS.night;
+    var def=pool[Math.floor(Math.random()*pool.length)];
+    g.errand={def:def,progress:0,deadline:Date.now()+14000};
+    var night=kind==="night",card=$(night?"errandCard":"cErrandCard");
+    if(!card)return;
+    $(night?"errandEm":"cErrandEm").textContent=def.em;
+    $(night?"errandTitle":"cErrandTitle").textContent=def.from+" · "+def.title;
+    $(night?"errandDesc":"cErrandDesc").textContent=def.desc;
+    $(night?"errandProgress":"cErrandProgress").textContent="帮忙 0/"+def.need+" · 剩 14s";
+    card.style.display="flex";
+    var ns=document.querySelectorAll(night?"#streetNight .neighbor-stall":"#streetCity .neighbor-stall");
+    if(ns.length)ns[Math.floor(Math.random()*ns.length)].classList.add('has-errand');
+    SFX.play('customer');
+  }
+  function tickErrand(kind,g){
+    if(!g.errand)return;
+    var night=kind==="night",left=Math.ceil((g.errand.deadline-Date.now())/1000);
+    if(left<=0){g.errand=null;var c=$(night?"errandCard":"cErrandCard");if(c)c.style.display="none";clearErrandMark(kind);return}
+    var p=$(night?"errandProgress":"cErrandProgress");
+    if(p)p.textContent="帮忙 "+g.errand.progress+"/"+g.errand.def.need+" · 剩 "+left+"s";
+  }
+  function doErrand(kind,g){
+    if(!g||!g.errand)return;
+    var e=g.errand,def=e.def,night=kind==="night";
+    e.progress++;SFX.play('click');
+    var p=$(night?"errandProgress":"cErrandProgress");
+    if(p)p.textContent="帮忙 "+e.progress+"/"+def.need+" · 剩 "+Math.ceil((e.deadline-Date.now())/1000)+"s";
+    if(e.progress<def.need)return;
+    g.errand=null;
+    var card=$(night?"errandCard":"cErrandCard");if(card)card.style.display="none";clearErrandMark(kind);
+    g.errandCoin=(g.errandCoin||0)+(def.coin||0);
+    if(!night)PLAT.shared.coins+=(def.coin||0); // 小城金币即时到账，夜市在结算统一入账
+    g.errands=g.errands||[];g.errands.push(def.from);
+    if(def.traffic){if(night)g.bonusTraffic=(g.bonusTraffic||0)+def.traffic;else g.trafficBonus=(g.trafficBonus||0)+def.traffic}
+    if(def.rep){if(night)g.good=(g.good||0)+def.rep;else g.bFame=(g.bFame||0)+def.rep}
+    SFX.play('levelup');coinBurst();
+    if(S.errandClueDay!==today()){S.errandClueDay=today();addClue("帮"+(night?"邻摊":"街坊")+"跑腿",1)}
+    toast("🤝 "+def.from+"：谢啦！+"+(def.coin||0)+" 元"+(def.traffic?" · 客流+"+def.traffic:"")+(def.rep?" · 口碑+"+def.rep:""));
+  }
+  var EVENTS=[
+    {em:"📸",name:"网红探店",text:"一位美食博主路过你的摊位拍照！今晚客流暴增，声名远扬～",apply:function(g){g.bonusTraffic+=6;g.viral=true;}},
+    {em:"🌧️",name:"突降大雨",text:"雨说下就下，路人匆匆躲雨。今晚客人少了一些……",apply:function(g){g.bonusTraffic-=4;}},
+    {em:"👮",name:"城管巡查",text:"规范经营，配合检查。短暂停顿后一切恢复正常。",apply:function(g){g.pauseUntil=Date.now()+3000;}},
+    {em:"🎓",name:"放学高峰",text:"学校放学啦！成群的学生涌向夜市，生意红火。",apply:function(g){g.bonusTraffic+=5;}},
+    {em:"🤝",name:"回头客",text:"昨天的客人带着朋友又来了，夸你的手艺好！",apply:function(g){g.bonusTraffic+=3;g.good+=2;}},
+    {em:"⚔️",name:"同行竞争",text:"隔壁新开了个摊位抢生意，各显神通吧！",apply:function(g){g.bonusTraffic-=2;}},
+    {em:"🎁",name:"神秘顾客的打赏",text:"一位大叔吃完笑着多给了钱，说就喜欢这份实在。",apply:function(g){g.bonusCoin+=25;}}
+  ];
+  /* ---------- 内联 SVG 小人生成器（零外部资源，纯矢量绘制） ---------- */
+  var PERSON_STYLES=[
+    {skin:"#f6c9a0",hair:"#3a2a22",hairStyle:"short",shirt:"#e0524d",pants:"#2f4a6b",acc:""},
+    {skin:"#f3c69a",hair:"#2a1d16",hairStyle:"long",shirt:"#5b8def",pants:"#37424f",acc:"skirt"},
+    {skin:"#e8b487",hair:"#1f1610",hairStyle:"short",shirt:"#3fa66b",pants:"#333",acc:"bag"},
+    {skin:"#f7d2ab",hair:"#8a5a2b",hairStyle:"bun",shirt:"#c861d6",pants:"#4a3a5e",acc:"skirt"},
+    {skin:"#d9a066",hair:"#d8d2c8",hairStyle:"short",shirt:"#e08a3c",pants:"#3a3a3a",acc:""},
+    {skin:"#f2c39a",hair:"#241a12",hairStyle:"short",shirt:"#e6b622",pants:"#2c4a3a",acc:"cap"},
+    {skin:"#f6c9a0",hair:"#4a2f1a",hairStyle:"long",shirt:"#ef6f9c",pants:"#3b3b52",acc:"skirt"},
+    {skin:"#c98d63",hair:"#161010",hairStyle:"short",shirt:"#2e8b9e",pants:"#2a2a2a",acc:"bag"},
+    {skin:"#f7d6b0",hair:"#b8860b",hairStyle:"bun",shirt:"#7e57c2",pants:"#3a3050",acc:"skirt"},
+    {skin:"#eab38a",hair:"#5a3a22",hairStyle:"short",shirt:"#e04b4b",pants:"#274060",acc:"cap"}
+  ];
+  function personSVG(st){
+    var hair='';
+    if(st.hairStyle==="long")hair='<path d="M13 18 Q12 6 24 6 Q36 6 35 18 L37 30 L33 30 L32 18 Q24 13 16 18 L15 30 L11 30 Z" fill="'+st.hair+'"/>';
+    else if(st.hairStyle==="bun")hair='<circle cx="24" cy="5" r="5" fill="'+st.hair+'"/><path d="M14 17 Q14 7 24 7 Q34 7 34 17 L34 14 Q24 10 14 14 Z" fill="'+st.hair+'"/>';
+    else hair='<path d="M14 17 Q13 8 24 8 Q35 8 34 17 L32 14 Q24 11 16 14 Z" fill="'+st.hair+'"/>';
+    var legs=st.acc==="skirt"
+      ? '<rect x="19" y="40" width="4" height="13" rx="2" fill="'+st.pants+'"/><rect x="25" y="40" width="4" height="13" rx="2" fill="'+st.pants+'"/>'
+      : '<rect x="18" y="40" width="5" height="13" rx="2" fill="'+st.pants+'"/><rect x="25" y="40" width="5" height="13" rx="2" fill="'+st.pants+'"/>';
+    var body=st.acc==="skirt"
+      ? '<path d="M16 26 L32 26 L36 43 L12 43 Z" fill="'+st.shirt+'"/>'
+      : '<rect x="16" y="26" width="16" height="17" rx="6" fill="'+st.shirt+'"/>';
+    var acc='';
+    if(st.acc==="cap")acc='<path d="M13 12 Q24 4 35 12 L35 13 L13 13 Z" fill="'+st.shirt+'"/><rect x="13" y="12" width="9" height="3" rx="1.5" fill="'+st.shirt+'"/>';
+    if(st.acc==="bag")acc='<rect x="6" y="30" width="7" height="9" rx="2" fill="#6b4a2a"/><path d="M7 30 Q9 24 12 30" stroke="#6b4a2a" stroke-width="1.4" fill="none"/>';
+    var sway=st.acc==="skirt"?'':'<rect x="12" y="28" width="4" height="11" rx="2" fill="'+st.skin+'"/><rect x="32" y="28" width="4" height="11" rx="2" fill="'+st.skin+'"/>';
+    return '<svg class="person-svg" viewBox="0 0 48 56" xmlns="http://www.w3.org/2000/svg">'+
+      legs+body+sway+acc+
+      '<circle cx="24" cy="18" r="10" fill="'+st.skin+'"/>'+
+      '<circle cx="20" cy="18" r="1.3" fill="#2a2018"/><circle cx="28" cy="18" r="1.3" fill="#2a2018"/>'+
+      '<path d="M21 23 Q24 25 27 23" stroke="#a9524a" stroke-width="1.2" fill="none" stroke-linecap="round"/>'+
+      hair+'</svg>';
+  }
+  function personFor(emoji){
+    var idx=0;
+    for(var i=0;i<CUSTOMERS.length;i++)if(CUSTOMERS[i]===emoji){idx=i%PERSON_STYLES.length;break}
+    return personSVG(PERSON_STYLES[idx]);
+  }
+  var CUSTOMERS=["🧑","👩","👨","👧","🧓","👦","👩‍🎓","🧑‍💼","👨‍👩‍👧","🕺","💃","👴"];
+
+  /* ---------- 平台化存档：全局档案 + 场景独立进度 ---------- */
+  var SHARED_KEYS=["coins","rep","streak","lastDay","vip","skins","skin","achv","comboMax","totalRevenue","totalCustomers","perfect","bonds","rareMet","lastVisit","chapter","oddJobDay","reliefDay","loanDay","debt","depositDay","clues","mysteryStage","clueDay","errandClueDay","partners","junkDay","junkCnt","partnerDay","partnerVisitDay","friendReferral","partnerLog","listClaimed","cityOpenDay"];
+  var DEF_SHARED={coins:180,rep:3.0,streak:1,lastDay:"",vip:false,skins:["default"],skin:"default",achv:[],comboMax:0,totalRevenue:0,totalCustomers:0,perfect:0,
+    bonds:{},rareMet:[],lastVisit:"",chapter:1,oddJobDay:"",reliefDay:"",loanDay:"",debt:0,depositDay:"",clues:0,mysteryStage:0,clueDay:"",errandClueDay:"",partners:[],junkDay:"",junkCnt:0,partnerDay:"",partnerVisitDay:"",friendReferral:false,partnerLog:[],listClaimed:[],cityOpenDay:""};
+  var DEF_YESHI={day:1,best:0,unlockedFoods:["jianbing","kaolengmian"],unlockedStalls:["corner"],viral:false,firstPlay:"",taskDay:"",taskProgress:{},taskClaimed:false,firstBiteDone:false,restDays:0,stockBatches:[]};
+  var DEF_CITY={day:1,best:0,shopType:"",shopLevel:1,renqing:50,fame:50,unlockedBusiness:["snack"],firstPlay:"",taskDay:"",taskProgress:{},taskClaimed:false,stock:0,soldToday:0,stockBatches:[]};
+  var PLAT=null,SCENE_KEYS=[];
+  var KEY="lifesim_platform_v1";
+  function load(){
+    try{var r=localStorage.getItem(KEY);if(r)PLAT=JSON.parse(r)}catch(e){}
+    if(!PLAT){
+      PLAT={shared:Object.assign({},DEF_SHARED),scenes:{yeshi:Object.assign({},DEF_YESHI),city:Object.assign({},DEF_CITY)},current:"yeshi"};
+      try{var old=localStorage.getItem("yeshi_life_v1");if(old){var o=JSON.parse(old);
+        SHARED_KEYS.forEach(function(k){if(o[k]!==undefined)PLAT.shared[k]=o[k]});
+        Object.keys(DEF_YESHI).forEach(function(k){if(o[k]!==undefined)PLAT.scenes.yeshi[k]=o[k]});
+      }}catch(e){}
+    }
+    if(!PLAT.shared)PLAT.shared=Object.assign({},DEF_SHARED);
+    Object.keys(DEF_SHARED).forEach(function(k){if(PLAT.shared[k]===undefined)PLAT.shared[k]=DEF_SHARED[k]});
+    if(!PLAT.scenes)PLAT.scenes={};
+    if(!PLAT.scenes.yeshi)PLAT.scenes.yeshi=Object.assign({},DEF_YESHI);
+    if(!PLAT.scenes.city)PLAT.scenes.city=Object.assign({},DEF_CITY);
+    Object.keys(DEF_YESHI).forEach(function(k){if(PLAT.scenes.yeshi[k]===undefined)PLAT.scenes.yeshi[k]=DEF_YESHI[k]});
+    Object.keys(DEF_CITY).forEach(function(k){if(PLAT.scenes.city[k]===undefined)PLAT.scenes.city[k]=DEF_CITY[k]});
+    if(!PLAT.current)PLAT.current="yeshi";
+    SCENE_KEYS=Object.keys(DEF_YESHI).concat(Object.keys(DEF_CITY).filter(function(k){return DEF_YESHI[k]===undefined}));
+  }
+  load();
+  function buildS(){
+    var o={};
+    SHARED_KEYS.forEach(function(k){
+      Object.defineProperty(o,k,{configurable:true,enumerable:true,get:function(){return PLAT.shared[k]},set:function(v){PLAT.shared[k]=v}});
+    });
+    SCENE_KEYS.forEach(function(k){
+      Object.defineProperty(o,k,{configurable:true,enumerable:true,get:function(){return PLAT.scenes[PLAT.current][k]},
+        set:function(v){PLAT.scenes[PLAT.current][k]=v}});
+    });
+    return o;
+  }
+  var S=buildS();
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(PLAT))}catch(e){}}
+  function switchScene(name){if(!PLAT.scenes[name])return;PLAT.current=name;save()}
+  function levelOf(){return Math.floor((PLAT.shared.totalRevenue||0)/300)+1}
+  function today(){var d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
+
+  /* ---------- UI 工具 ---------- */
+  function show(id){var ss=document.querySelectorAll(".screen");for(var i=0;i<ss.length;i++)ss[i].classList.remove("on");$(id).classList.add("on")}
+  function toast(msg){var t=$("toast");t.textContent=msg;t.classList.add("on");clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove("on")},1800)}
+  function modal(em,title,text,note){$("modalEm").textContent=em;$("modalTitle").textContent=title;$("modalText").innerHTML=text;
+    if(note){$("modalNote").style.display="block";$("modalNote").innerHTML=note}else{$("modalNote").style.display="none"}
+    var ch=$("modalChoices");if(ch){ch.style.display="none";ch.innerHTML=""}
+    $("modalOk").style.display="block";
+    $("modal").classList.add("on")}
+  function choiceModal(em,title,text,choices,note){
+    modal(em,title,text,note);
+    var ok=$("modalOk"),box=$("modalChoices");ok.style.display="none";box.style.display="flex";box.innerHTML="";
+    (choices||[]).forEach(function(c){
+      var b=document.createElement("button");b.className="btn ghost sm";b.style.cssText="width:100%;text-align:left;padding:10px 12px";
+      b.innerHTML="<b>"+c.label+"</b><small>"+(c.sub||"")+"</small>";
+      b.onclick=function(){if(c.can&&!c.can()){toast(c.cant||"当前还不满足这个选择");return}
+        box.innerHTML="";box.style.display="none";ok.style.display="block";$("modal").classList.remove("on");c.run()};
+      box.appendChild(b);
+    });
+  }
+  $("modalOk").onclick=function(){$("modal").classList.remove("on")};
+  function stars(n){var s="",full=Math.floor(n);for(var i=0;i<5;i++)s+=i<full?"⭐":"☆";return s}
+
+  /* ---------- 每日任务 ---------- */
+  var TASKS=[
+    {id:"sold",em:"🍜",title:"卖出 6 份小吃",goal:6,reward:20},
+    {id:"perfect",em:"🔥",title:"完美出锅 3 次",goal:3,reward:30},
+    {id:"profit",em:"💰",title:"单晚净赚 80 元",goal:80,reward:25}
+  ];
+  function ensureTasks(){
+    if(S.taskDay!==today()){S.taskDay=today();S.taskProgress={};S.taskClaimed=false;save()}
+  }
+  function renderTasks(){
+    ensureTasks();
+    var box=$("taskList");if(!box)return;box.innerHTML="";
+    TASKS.forEach(function(t){
+      var cur=Math.min(S.taskProgress[t.id]||0,t.goal),done=cur>=t.goal;
+      var d=document.createElement("div");d.className="task-row";
+      d.innerHTML='<div class="ti">'+t.em+'</div><div class="tb"><div class="tt">'+t.title+
+        ' <span class="sub">('+cur+'/'+t.goal+')</span></div><div class="progress"><i style="width:'+(cur/t.goal*100)+'%"></i></div></div>'+
+        '<div class="task-reward">+'+t.reward+'元</div>'+(done?'<div class="tdone">✓</div>':'');
+      box.appendChild(d);
+    });
+    if(S.taskClaimed){
+      var tip=document.createElement("div");tip.className="sub";tip.style.cssText="text-align:center;margin-top:6px;color:var(--green)";
+      tip.textContent="✓ 今日奖励已领取，明天再来！";box.appendChild(tip);
+    }
+  }
+  function updateTask(id,val){
+    ensureTasks();if(S.taskClaimed)return;
+    S.taskProgress[id]=Math.max(S.taskProgress[id]||0,val);save();
+  }
+  function claimTasksIfDone(){
+    ensureTasks();if(S.taskClaimed)return 0;
+    var allDone=TASKS.every(function(t){return (S.taskProgress[t.id]||0)>=t.goal});
+    if(!allDone)return 0;
+    var reward=TASKS.reduce(function(s,t){return s+t.reward},0);
+    S.coins+=reward;S.taskClaimed=true;save();
+    return reward;
+  }
+
+  /* ---------- 粒子特效 ---------- */
+  function coinBurst(){
+    var stage=$("stage");if(!stage)return;
+    for(var i=0;i<7;i++){
+      var p=document.createElement("div");p.className="coin-particle";p.textContent=i%2?"💰":"✨";
+      p.style.left=(35+Math.random()*30)+"%";p.style.top=(40+Math.random()*15)+"%";
+      p.style.setProperty('--dx',(Math.random()*120-60)+'px');
+      p.style.animationDelay=(i*0.04)+'s';
+      stage.appendChild(p);(function(el){setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el)},1100)})(p);
+    }
+  }
+  function flashPerfect(){
+    var f=$("flash");if(!f)return;f.classList.remove("go");void f.offsetWidth;f.classList.add("go");
+  }
+  function showCombo(n){
+    var c=$("combo");if(!c)return;
+    if(n>=2){c.textContent="🔥 连击 ×"+n+"！";c.classList.add("on");c.classList.toggle("big",n>=3);
+      clearTimeout(c._t);c._t=setTimeout(function(){c.classList.remove("on");c.classList.remove("big")},1200)}
+    else{c.classList.remove("on")}
+  }
+
+  /* ---------- 回归钩子：离线礼包 + 今晚预告 ---------- */
+  function dayDiff(a,b){
+    var pa=(a||"").split("-"),pb=(b||"").split("-");
+    if(pa.length<3||pb.length<3)return 0;
+    var da=new Date(+pa[0],+pa[1]-1,+pa[2]),db=new Date(+pb[0],+pb[1]-1,+pb[2]);
+    if(isNaN(da.getTime())||isNaN(db.getTime()))return 0;
+    return Math.round((db-da)/86400000);
+  }
+  function checkReturnGift(){
+    var last=PLAT.shared.lastVisit||"",t=today();
+    if(!last){PLAT.shared.lastVisit=t;save();return}
+    var d=dayDiff(last,t);
+    if(d<=0){PLAT.shared.lastVisit=t;save();return}
+    var gift=10+Math.min(d,5)*12;
+    PLAT.shared.coins+=gift;PLAT.shared.lastVisit=t;save();
+    SFX.play('coin');
+    var line=d===1?"昨晚没见你，摊子一直给你留着。":("你离开了 "+d+" 天，街坊都念叨你呢。");
+    modal("🎁","欢迎回来",line+"<br>这是一点心意，接着把日子过下去。","<b style='color:var(--gold);font-size:15px'>+"+gift+" 金币</b> 已到账 · 没有倒计时，慢慢玩就好");
+  }
+  function renderTeaser(){
+    var box=$("hubTeaser");if(!box)return;
+    var day=PLAT.scenes.yeshi.day,nc=nextChapter(day),rows=[];
+    if(nc)rows.push({em:"📖",t:"再摆 <b>"+(nc.goal-day)+"</b> 晚，解锁「"+nc.title+"」",s:nc.tip});
+    else rows.push({em:"👑",t:"你已成为这条街的传奇",s:"后续章节筹备中，先去别的场景逛逛？"});
+    var unseen=RARE.filter(function(r){return PLAT.shared.rareMet.indexOf(r.id)<0}).length;
+    if(unseen>0)rows.push({em:"🌟",t:"还有 <b>"+unseen+"</b> 位神秘客人没见过",s:"他们不按日子来，某个夜晚会突然出现"});
+    var bonds=PLAT.shared.bonds||{},near=null;
+    REGULARS.forEach(function(r){var c=bonds[r.id]||0;if(c>0&&c<3&&(!near||c>near.c))near={r:r,c:c}});
+    if(near)rows.push({em:near.r.em,t:"再遇到「"+near.r.name+"」<b>"+(3-near.c)+"</b> 次，解锁一段隐藏故事",s:"常客的羁绊，攒够了才有回响"});
+    else rows.push({em:"💌",t:"街坊里藏着几段没讲完的故事",s:"多招待几位熟客，也许就有人提起"});
+    var st=mysteryStageNow(),mx=MYSTERY_STORY[Math.min(MYSTERY_STORY.length-1,st+1)];
+    if(mx&&mx.need>(S.clues||0))rows.push({em:"🔮",t:"神秘匣子还差 <b>"+(mx.need-(S.clues||0))+"</b> 片线索",s:"稀有客人、熟客羁绊、跑腿、盈利收摊都会留下碎片"});
+    box.innerHTML='<div class="ht-h">🔮 今晚预告</div>'+rows.map(function(r){
+      return '<div class="ht-row"><span class="ht-em">'+r.em+'</span><span>'+r.t+'<span class="ht-sub">'+r.s+'</span></span></div>';
+    }).join("");
+  }
+
+  /* ---------- 平台 Hub ---------- */
+  function renderHub(){
+    var lv=levelOf();
+    $("hubProfile").innerHTML=
+      '<div class="hub-avatar">😎</div><div class="hub-pinfo">'+
+      '<div class="pname">夜市小老板</div><div class="plv">Lv.'+lv+' · '+stars(Math.min(5,PLAT.shared.rep))+'</div>'+
+      '<div class="hub-pstats"><span>💰 <b>'+PLAT.shared.coins+'</b></span><span>🔥 <b>'+PLAT.shared.streak+'</b>天</span>'+
+      '<span>🏆 <b>'+PLAT.shared.achv.length+'/8</b></span></div></div>';
+    $("progYeshi").textContent="第 "+PLAT.scenes.yeshi.day+" 天 · 小吃 "+PLAT.scenes.yeshi.unlockedFoods.length+"/12";
+    var c=PLAT.scenes.city;
+    $("progCity").textContent=c.shopType?("第 "+c.day+" 天 · "+c.shopType+" · 人缘"+c.renqing):("第 1 天 · 尚未开店");
+    renderMystery();
+    // 人生清单进度卡：完成度 + 最接近的未完成项 + 合伙人概览
+    var lc=$("hubLifeCard");
+    if(lc){
+      var dn=lifeDone().length,pct=lifePct(),ap=activePartners(),rp=retiredPartners();
+      var near=LIFE_LIST.filter(function(it){return !it.ok()}).slice(0,2).map(function(it){return it.em+" "+it.t}).join(" · ");
+      lc.innerHTML='<div class="mh">🎯 人生清单 · '+dn+'/'+LIFE_LIST.length+' 项（'+pct+'%）</div>'+
+        '<div class="cluebar"><i style="width:'+pct+'%;background:linear-gradient(90deg,var(--green),var(--gold))"></i></div>'+
+        '<div class="hintline">下一步：'+(near||"全部集齐，传奇达成 ✦")+'</div>'+
+        '<div class="hintline">🤝 合伙人 '+(ap.length?ap.length+" 位在分红（"+Math.round(ap.reduce(function(s,p){return s+p.share},0)*100)+"%净利）":"暂无 · 缺本钱时可拉人合伙")+'</div>'+
+        (rp.length?'<div class="hintline">📞 老友会 '+rp.length+' 位已退股 · 首页可回访</div>':'');
+      lc.onclick=function(){SFX.play('click');renderStats();show("stats")};
+    }
+    renderTeaser();
+  }
+  function goHub(){save();renderHub();show("hub")}
+  Array.prototype.forEach.call(document.querySelectorAll('[data-hub]'),function(b){b.onclick=function(){SFX.play('click');goHub()}});
+  Array.prototype.forEach.call(document.querySelectorAll('.scene-card[data-scene]'),function(c){c.onclick=function(){
+    SFX.play('click');var s=c.getAttribute("data-scene");switchScene(s);
+    if(s==="yeshi"){show("home");renderHome()}else{show("cityHome");renderCityHome()}
+  }});
+
+  /* ---------- 开场 ---------- */
+  $("startBtn").onclick=function(){
+    PLAT.scenes.yeshi.firstPlay=today();save();
+    SFX.play('click');checkReturnGift();renderHub();show("hub");
+  };
+
+  /* ---------- 主页渲染 ---------- */
+  var selStall="corner",selFood="jianbing",yStock=3;
+  function renderHome(){
+    // 连续签到判定
+    if(S.lastDay&&S.lastDay!==today()){
+      var y=new Date();y.setDate(y.getDate()-1);var ys=y.getFullYear()+"-"+(y.getMonth()+1)+"-"+y.getDate();
+      S.streak=(S.lastDay===ys)?S.streak+1:1;
+    }
+    $("dayTag").textContent="第 "+S.day+" 天";
+    $("coins").textContent=S.coins;$("rep").textContent=S.rep.toFixed(1);$("streak").textContent=S.streak;
+    var weathers=[["☀️ 晴",0],["⛅ 多云",0],["🌧️ 雨",-3],["🌙 凉风",1]];
+    var w=weathers[Math.floor(Math.random()*weathers.length)];
+    $("weather").textContent=w[0];$("crowd").textContent=w[1]>0?"旺盛":w[1]<0?"较少":"正常";
+    $("greet").textContent=S.day===1?"今晚，去哪儿摆？":"第 "+S.day+" 天了，继续加油！";
+
+    // 摊位
+    var sg=$("stallGrid");sg.innerHTML="";
+    STALLS.forEach(function(st){
+      var unlocked=S.unlockedStalls.indexOf(st.id)>=0;
+      var d=document.createElement("div");
+      d.className="stall"+(selStall===st.id?" sel":"")+(unlocked?"":" lock");
+      d.innerHTML=(unlocked?"":'<span class="lock-badge">🔒 '+st.unlock+'转盘</span>')+
+        '<div class="em">'+st.em+'</div><div class="nm">'+st.name+'</div><div class="ds">'+st.desc+'<br>租金'+st.rent+'元/客流'+st.traffic+'</div>';
+      d.onclick=function(){
+        if(!unlocked){modal("🔒","摊位未解锁","累计营收达到 <b>"+st.unlock+"元</b> 即可解锁「"+st.name+"」。","营业结束后按累计营收自动解锁。");return}
+        selStall=st.id;renderHome();
+      };
+      sg.appendChild(d);
+    });
+
+    // 食物
+    var fl=$("foodList");fl.innerHTML="";
+    FOOD_ORDER.forEach(function(k){
+      var f=FOODS[k],unlocked=S.unlockedFoods.indexOf(k)>=0;
+      var d=document.createElement("div");
+      d.className="food-row"+(selFood===k?" sel":"")+(unlocked?"":" lock");
+      d.innerHTML='<div class="em">'+f.em+'</div><div class="info"><div class="nm">'+f.name+(unlocked?"":" 🔒")+
+        '</div><div class="ds">成本'+f.cost+'元 · 售价'+f.price+'元 · 毛利'+(f.price-f.cost)+'元</div></div>'+
+        '<div class="price">'+(unlocked?f.price+"元":"锁")+'</div>';
+      d.onclick=function(){
+        if(!unlocked){modal("🔒","小吃未解锁","「"+f.name+"」还未解锁，可在 <b>小店 → 小吃</b> 中用金币解锁。","解锁后每晚都可以卖，图鉴也会点亮。");return}
+        selFood=k;renderHome();
+      };
+      fl.appendChild(d);
+    });
+
+    var st=STALLS.filter(function(x){return x.id===selStall})[0];
+    var fd=FOODS[selFood],y=PLAT.scenes.yeshi;
+    var onHand=yStockOf(selFood,y.day),near=0;
+    (y.stockBatches||[]).forEach(function(b){
+      if(b.food===selFood&&yStockFresh(b,selFood,y.day)&&(y.day-b.buyDay)===yShelf(selFood)-1)near+=b.qty;
+    });
+    $("yStockNum").textContent=yStock;
+    $("yStockTotal").textContent="-"+(fd.cost*yStock)+" 元";
+    $("yStockOnHand").textContent=onHand+" 份";
+    $("yStockNearExp").textContent=near+" 份";
+    var yList=$("yStockBatchList");
+    if(yList){
+      var yb=(y.stockBatches||[]).filter(function(b){return yStockFresh(b,selFood,y.day)});
+      yList.innerHTML=yb.length?yb.map(function(b){
+        var age=y.day-b.buyDay,left=yShelf(selFood)-age;
+        return "· "+b.qty+"份 · 第"+b.buyDay+"天进货 · "+(left<=1?"<b style='color:var(--red)'>明天到期</b>":"剩"+left+"天");
+      }).join("<br>"):"📭 暂无「"+fd.name+"」库存，先进货再开门";
+    }
+    $("rentCost").textContent="-"+st.rent+" 元";
+    $("foodCost").textContent="-"+fd.cost+" 元/份 · 库存"+onHand+"份";
+    $("trafficInfo").textContent="约 "+st.traffic+" 人"+(w[1]?"("+w[1]+")":"");
+    // 成本总预览：固定支出只有租金；食材按库存批次跨天核销
+    var prepay=st.rent;
+    var margin=fd.price-fd.cost;
+    var breakEven=Math.ceil(prepay/Math.max(1,margin));
+    $("costTotal").textContent="-"+prepay+" 元";
+    $("breakEven").textContent="约 "+breakEven+" 份";
+    var estProfit=st.traffic*margin-prepay;
+    $("costHint").innerHTML="已备货 <b>"+onHand+" 份</b>（价值 "+(fd.cost*onHand)+" 元，保鲜"+yShelf(selFood)+"天）。"+
+      "按预计客流满卖估算："+(estProfit>=0?"预计净赚 <b style='color:var(--green)'>+"+estProfit+" 元</b>":"即使满卖仍可能亏 <b style='color:var(--red)'>"+Math.abs(estProfit)+" 元</b>")+
+      "。卖出时按 FIFO 从库存核销成本，跨天未卖完会临期折价。";
+    // 本金渠道（打零工/救济/借款/预售/歇业）动态渲染
+    renderLifeline();
+    renderTasks();
+    save();
+  }
+  $("yStockMinus").onclick=function(){yStock=Math.max(1,yStock-1);renderHome()};
+  $("yStockPlus").onclick=function(){yStock=Math.min(40,yStock+1);renderHome()};
+  $("yStockBuyBtn").onclick=function(){
+    var f=FOODS[selFood],cost=f.cost*yStock;
+    if(PLAT.shared.coins<cost){modal("💸","备货钱不够","进货需要 <b>"+cost+" 元</b>，你现在只有 "+PLAT.shared.coins+" 元。<br>可以先打零工，或减少备货数量。","进货会计入库存而不是当天作废");return}
+    PLAT.shared.coins-=cost;addYStock(selFood,yStock);SFX.play('coin');
+    toast("🧊 "+f.name+" 进货 "+yStock+" 份（保鲜"+yShelf(selFood)+"天）");
+    renderHome();
+  };
+
+  /* ---------- 营业 ---------- */
+  var G=null;
+  $("openBtn").onclick=function(){
+    var st=STALLS.filter(function(x){return x.id===selStall})[0];
+    var fd=FOODS[selFood],exp=expireYStock();
+    if(exp.expired>0){PLAT.shared.coins+=exp.salvage;toast("🗑️ "+exp.expired+"份食材过期清仓，折价回收 +"+exp.salvage+" 元")}
+    var onHand=yStockOf(selFood,PLAT.scenes.yeshi.day);
+    if(onHand<=0){
+      modal("🧊","食材库存空了","今晚只有 <b>租金</b> 需要现付，食材要从库存里出。<br>先回准备页给「"+fd.name+"」进货 "+yStock+" 份吧。","进货能跨天保存；保鲜期短的食材卖不完会临期折价。");
+      $("modalOk").onclick=function(){$("modal").classList.remove("on");show("home");renderHome();
+        $("modalOk").onclick=function(){$("modal").classList.remove("on")}};
+      return;
+    }
+    var cost=st.rent;
+    if(PLAT.shared.coins<cost){
+      modal("💸","本钱不够啦","开门需要 <b>"+cost+"元</b> 租金，你目前只有 "+PLAT.shared.coins+" 元。<br>可以先「打零工」赚 25 元应急，或换个便宜摊位。","回到摆摊页，下方有 💼打零工 和 😴歇业 两个应急入口。");
+      $("modalOk").onclick=function(){$("modal").classList.remove("on");show("home");renderHome();
+        $("modalOk").onclick=function(){$("modal").classList.remove("on")}};
+      return;
+    }
+    PLAT.shared.coins-=cost;save();
+    var street=rollStreet("night");
+    G={stall:st,food:fd,foodKey:selFood,duration:60,start:Date.now(),revenue:0,sold:0,
+       good:0,perfect:0,bonusTraffic:street.bonus,street:street,bonusCoin:0,pauseUntil:0,viral:false,customers:[],nextCustomer:0,
+       served:0,eventFired:false,combo:0,lost:0,patienceMs:15000,cookOpen:false,
+       pauseAccum:0,pauseStart:0,clockPaused:false,errandCoin:0,errands:[],errandFired:false,errand:null,
+       ingredientCost:0,expired:exp.expired,salvage:exp.salvage};
+    cookCust=null;cookCustObj=null;
+    ensureTasks();
+    SFX.play('click');
+    show("play");
+    renderStreet("night",street);
+    showCombo(0);
+    var bossMap={corner:"🧑‍🍳",school:"👩‍🍳",square:"👨‍🍳",temple:"🧑‍🍳"};
+    $("stallBoss").textContent=bossMap[st.id]||"🧑‍🍳";
+    $("stallSign").textContent=st.name;
+    $("earnLive").textContent="+0 元";
+    $("eventLayer").innerHTML="";
+    var qc0=$("queueCaption");if(qc0)qc0.textContent="🧍 排队中 0 人 · 点顾客接单";
+    var lf0=$("lastFlow"),ft0=$("flowTotal");if(lf0)lf0.textContent="—";if(ft0)ft0.textContent="+0";
+    var fs=$("flowStrip");if(fs){
+      var oldTip=fs.querySelector('.partner-tip');if(oldTip)oldTip.remove();
+      var ap=activePartners(),rp=retiredPartners();
+      var tip=document.createElement("span");tip.className="partner-tip";tip.style.cssText="color:var(--gold);font-size:10px";
+      if(ap.length){var rate=ap.reduce(function(s,p){return s+p.share},0);tip.textContent="🤝 净利分成 "+Math.round(rate*100)+"% · "+ap.length+"位合伙人"}
+      else if(rp.length){tip.textContent="📞 "+rp.length+"位老朋友仍惦记你 · 首页可回访"}
+      if(ap.length||rp.length)fs.appendChild(tip)
+    }
+    var layer=$("stage");
+    var olds=layer.querySelectorAll('.customer,.float');
+    for(var i=olds.length-1;i>=0;i--)olds[i].remove();
+    playLoop();
+  };
+  $("quitBtn").onclick=function(){endDay()};
+
+  /* ---------- 止损手段已并入 lifeline（打零工/救济/借款/预售/歇业） ---------- */
+
+  $("errandBtn").onclick=function(){doErrand("night",G)};
+  $("cErrandBtn").onclick=function(){doErrand("city",CG)};
+
+  function playLoop(){
+    var tick=setInterval(function(){
+      if(!$("play").classList.contains("on")){clearInterval(tick);return}
+      var elapsed=elapsedOf(G);
+      var left=Math.max(0,Math.ceil(G.duration-elapsed));
+      $("timer").textContent=left+"s";
+
+      // 随机事件
+      if(!G.eventFired&&elapsed>8&&elapsed<12){
+        G.eventFired=true;
+        var ev=EVENTS[Math.floor(Math.random()*EVENTS.length)];
+        ev.apply(G);
+        var t=document.createElement("div");t.className="event-toast";
+        t.innerHTML=ev.em+" <b>"+ev.name+"</b><br>"+ev.text;
+        $("eventLayer").appendChild(t);
+        setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t)},4000);
+        if(G.viral)S.viral=true;
+      }
+      // 稀有客人（可变比率强化：不定时出现的惊喜）
+      if(!G.rareFired&&elapsed>15&&elapsed<40){
+        G.rareFired=true;
+        var rr=maybeRare(G);
+        if(rr){
+          SFX.play('vip');flashPerfect();coinBurst();
+          var rt=document.createElement("div");rt.className="event-toast";
+          rt.style.borderColor="var(--gold)";
+          rt.innerHTML=rr.em+" <b style='color:var(--gold)'>"+rr.name+"</b><br>"+rr.text+"<br><b>+"+rr.bonus+" 元</b>";
+          $("eventLayer").appendChild(rt);
+          setTimeout(function(){if(rt.parentNode)rt.parentNode.removeChild(rt)},5000);
+        }
+      }
+
+      // 营业中段街况流转：真实改变本场客流
+      if(!G.shift1&&elapsed>16&&elapsed<20){G.shift1=true;applyStreetShift("night",G)}
+      if(!G.shift2&&elapsed>36&&elapsed<40){G.shift2=true;applyStreetShift("night",G)}
+      // 邻摊临时委托：顺手帮忙换金币/客流/口碑
+      if(!G.errandFired&&elapsed>8&&elapsed<12){G.errandFired=true;spawnErrand("night",G)}
+      tickErrand("night",G);
+
+      // 暂停（城管）
+      if(Date.now()<G.pauseUntil)return;
+
+      // 生成顾客（连续排队：只要没到客流上限就持续补位）
+      var totalTraffic=Math.max(3,G.stall.traffic+G.bonusTraffic);
+      var maxCustomers=Math.min(18,Math.round(totalTraffic/1.6));
+      var wantQueue=Math.min(4,2+Math.floor(S.rep/2)); // 口碑越高，同时排队的人越多
+      var stockLeft=yStockOf(G.foodKey,PLAT.scenes.yeshi.day);
+      if(elapsed<G.duration-4&&stockLeft>0&&G.customers.length<wantQueue&&G.served+G.lost<maxCustomers&&Date.now()>G.nextCustomer){
+        spawnCustomer();
+        G.nextCustomer=Date.now()+Math.max(450,1400-S.rep*180); // 手快点得快：补位更积极
+      }
+      var qc=$("queueCaption");
+      if(qc)qc.textContent="🧍 排队中 "+G.customers.length+" 人 · 点顾客接单"+(G.lost?" · 已走 "+G.lost+" 人":"")+(stockLeft<=0?" · 食材卖完了":"");
+
+      if(left<=0){clearInterval(tick);endDay()}
+    },200);
+  }
+
+  var QUEUE_SLOTS=[12,32,52,72]; // 排队站位（百分比），从左到右
+  function spawnCustomer(){
+    var em=CUSTOMERS[Math.floor(Math.random()*CUSTOMERS.length)];
+    var regular=null;
+    // 常客：有羁绊记录的优先复现，或小概率新面孔
+    var bondIds=Object.keys(PLAT.shared.bonds||{}).filter(function(k){return PLAT.shared.bonds[k]>0});
+    if((bondIds.length&&Math.random()<0.4)||Math.random()<0.15){
+      var pool=REGULARS.filter(function(r){return bondIds.indexOf(r.id)>=0});
+      var pick=(pool.length?pool:REGULARS)[Math.floor(Math.random()*(pool.length?pool.length:REGULARS.length))];
+      regular=pick;em=pick.em;
+    }
+    // 选一个未被占用的排队位
+    var used=G.customers.map(function(c){return c.slot});
+    var free=QUEUE_SLOTS.filter(function(s){return used.indexOf(s)<0});
+    var slot=free.length?free[Math.floor(Math.random()*free.length)]:QUEUE_SLOTS[G.customers.length%QUEUE_SLOTS.length];
+    var d=document.createElement("div");
+    d.className="customer";
+    d.style.left=slot+"%";
+    d.style.setProperty('--from',(slot<42?-70:70)+'px');
+    d.innerHTML='<div class="order-tag">'+(regular?'💬':G.food.em)+'</div><div class="patience"><i></i></div>'+personFor(em);
+    var pms=G.patienceMs; // 统一延长为 15 秒，不再因口碑变短（高口碑改为增加排队位）
+    var deadline=Date.now()+pms;
+    var c={el:d,slot:slot,deadline:deadline,pms:pms,serving:false,timer:null};
+    d.onclick=function(){if(d._served||c.serving)return;d._served=true;c.serving=true;SFX.play('click');
+      openNightService(d,c,regular)};
+    $("stage").appendChild(d);SFX.play('customer');
+    c.timer=setInterval(function(){
+      if(c.serving||G.clockPaused)return; // 接待/火候期间连其他排队客人的耐心一起冻结
+      var pct=Math.max(0,(deadline-Date.now())/pms*100);
+      var bar=d.querySelector('.patience i');if(bar){bar.style.width=pct+"%";bar.style.background=pct>50?"var(--green)":pct>25?"var(--gold)":"var(--red)"}
+      d.classList.toggle('impatient',pct<=25&&pct>0);
+      if(pct<=0&&d.parentNode){custLeave(c)}
+    },100);
+    G.customers.push(c);
+  }
+  function custLeave(c){
+    clearInterval(c.timer);
+    var d=c.el;
+    if(d.parentNode){
+      d.style.setProperty('--to',(c.slot<42?-70:70)+'px');
+      d.classList.add('leaving');
+      (function(el){setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el)},520)})(d);
+    }
+    removeCust(c);G.lost++;SFX.play('fail');
+    var f=document.createElement("div");f.className="float";f.textContent="😤 等不及走了";
+    f.style.color="var(--red)";f.style.left=c.slot+"%";f.style.top="34%";
+    $("stage").appendChild(f);(function(el){setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el)},1000)})(f);
+  }
+  function removeCust(c){var i=G.customers.indexOf(c);if(i>=0)G.customers.splice(i,1)}
+
+  /* ---------- 夜市接待策略：快节奏三选一，影响收入/口碑/火候难度 ---------- */
+  var NIGHT_SERVICE_OPTS=[
+    {t:"正常出锅",d:"原价 · 标准火候",mul:1,zone:0,fame:0},
+    {t:"吆喝揽客 +20%",d:"收入更高，但有点吵（口碑-0.3）",mul:1.2,zone:0,fame:-0.3},
+    {t:"先给试吃 -30%",d:"少赚一点，好评+1，容易成常客",mul:0.7,zone:0,fame:1},
+    {t:"加急大火 +35%",d:"收入高，但火候区更窄更难",mul:1.35,zone:-8,fame:0}
+  ];
+  function openNightService(custEl,custObj,regular){
+    clockPause(G); // 接待决策期间冻结营业钟与所有顾客耐心
+    var who=regular?regular.name:"路人食客";
+    $("nDecEm").textContent=regular?regular.em:"🧍";
+    $("nDecName").textContent=who+" · 想来点什么？";
+    $("nDecText").textContent=regular?"熟客来了，选个接待方式再卡火候出锅":"选个接待方式，再卡火候出锅（手快能多接几位）";
+    var box=$("nDecOptions");box.innerHTML="";
+    NIGHT_SERVICE_OPTS.forEach(function(o){
+      var b=document.createElement("button");b.className="btn sm";
+      b.style.cssText="width:100%;margin-top:8px;text-align:left";
+      b.innerHTML="<b>"+o.t+"</b><br><span class='sub'>"+o.d+"</span>";
+      b.onclick=function(){
+        $("nDecision").classList.remove("on");SFX.play('click');
+        G.priceMul=o.mul;G.zoneMod=o.zone;G.fameDelta=o.fame;
+        if(regular){addBond(regular.id);var lines=regular.lines;toast(regular.name+"："+lines[Math.floor(Math.random()*lines.length)])}
+        openCook(custEl,custObj);
+      };
+      box.appendChild(b);
+    });
+    $("nDecision").classList.add("on");
+  }
+
+  /* ---------- 火候小游戏 ---------- */
+  var cookTimer=null,cookPos=0,cookDir=1,cookTarget=null,cookCust=null,cookCustObj=null;
+  function openCook(custEl,custObj){
+    clockPause(G); // 火候小游戏继续冻结（幂等，不重复计时）
+    cookCust=custEl;cookCustObj=custObj||null;
+    $("cookFood").textContent=G.food.em;
+    // 难度随口碑提升：绿色区变窄；接待策略「加急大火」会进一步收窄
+    var zoneW=Math.max(8,34-S.rep*3+(G.zoneMod||0));
+    var center=50+(Math.random()*30-15);
+    var firstBite=!PLAT.scenes.yeshi.firstBiteDone;
+    if(firstBite){center=50;zoneW=100} // 首单隐藏保底：整条轨道都是完美区
+    $("zone").style.left=(center-zoneW/2)+"%";$("zone").style.width=zoneW+"%";
+    $("perfect").style.left=firstBite?"0%":(center-5)+"%";$("perfect").style.width=firstBite?"100%":"10%";
+    cookTarget=center;cookPos=0;cookDir=1;
+    $("cookModal").classList.add("on");
+    clearInterval(cookTimer);
+    cookTimer=setInterval(function(){cookPos+=cookDir*2.6;if(cookPos>=100){cookPos=100;cookDir=-1}if(cookPos<=0){cookPos=0;cookDir=1}$("marker").style.left=cookPos+"%"},16);
+  }
+  $("cookBtn").onclick=function(){
+    clockResume(G); // 服务完成，营业钟与耐心恢复流动
+    clearInterval(cookTimer);$("cookModal").classList.remove("on");
+    var diff=Math.abs(cookPos-cookTarget);
+    var quality,mult,good=false,perfectHit=false;
+    if(diff<=5){quality="完美出锅！";mult=1.5;good=true;perfectHit=true;G.perfect++;S.perfect++}
+    else if(diff<=17){quality="不错！";mult=1.1;good=true}
+    else{quality="有点糊了…";mult=0.6;good=false}
+    // 连击系统：连续完美累加，增益收入
+    if(perfectHit){G.combo=(G.combo||0)+1;if(G.combo>S.comboMax)S.comboMax=G.combo}
+    else{G.combo=0}
+    var comboBonus=G.combo>=2?Math.min(0.5,(G.combo-1)*0.1):0;
+    var firstBite=!PLAT.scenes.yeshi.firstBiteDone;
+    var priceMul=G.priceMul||1;
+    var income=Math.round(G.food.price*(mult+comboBonus)*(firstBite?2:1)*priceMul);
+    if(firstBite){PLAT.scenes.yeshi.firstBiteDone=true;SFX.play('levelup');toast("🎊 开门大吉！第一单双倍收入")}
+    G.revenue+=income;G.sold++;G.served++;
+    // 流水透明：本单 = 售价收入 - 从库存 FIFO 核销的食材成本（接待策略可加成本）
+    var used=consumeYStock(G.foodKey,1);
+    var unitCost=(used>0?G.food.cost:0)+(priceMul<1?Math.round(G.food.cost*0.3):0); // 试吃额外成本
+    G.ingredientCost=(G.ingredientCost||0)+unitCost;
+    G.serviceFame=(G.serviceFame||0)+(G.fameDelta||0); // 接待策略口碑累计到结算
+    var net=income-unitCost;
+    var lf=$("lastFlow"),ft=$("flowTotal");
+    if(lf)lf.innerHTML="收 "+income+" − 食材 "+unitCost+" = <b style='color:"+(net>=0?"var(--green)":"var(--red)")+"'>"+(net>=0?"+":"")+net+"</b>"+(priceMul!==1?"（接待×"+priceMul+"）":"");
+    if(ft)ft.textContent="+"+(G.revenue-(G.ingredientCost||0));
+    if(good)G.good++;
+    G.priceMul=1;G.zoneMod=0;G.fameDelta=0; // 复位，避免影响下一位顾客
+    // 音效 + 特效
+    SFX.play(perfectHit?'perfect':good?'good':'fail');
+    if(perfectHit){flashPerfect();coinBurst()}
+    showCombo(G.combo||0);
+    // 飘字
+    var f=document.createElement("div");f.className="float";
+    f.textContent="+"+income+"元 "+quality+(comboBonus?" ×连击":"");
+    f.style.color=good?"var(--gold)":"var(--red)";
+    f.style.left=(30+Math.random()*40)+"%";f.style.top="45%";
+    $("stage").appendChild(f);setTimeout(function(){if(f.parentNode)f.parentNode.removeChild(f)},1000);
+    $("earnLive").textContent="+"+G.revenue+" 元";
+    // 每日任务进度
+    updateTask("sold",G.sold);
+    updateTask("perfect",G.perfect);
+    if(cookCustObj){
+      clearInterval(cookCustObj.timer);
+      removeCust(cookCustObj);
+      cookCustObj=null;
+    }
+    if(cookCust&&cookCust.parentNode)cookCust.parentNode.removeChild(cookCust);
+    cookCust=null;
+    save();
+  };
+
+  /* ---------- 复盘与明日预告（把本场因果变成"再来一局"的钩子） ---------- */
+  function reviewLine(g,isCity){
+    var p=[];
+    p.push("接待 "+g.sold+" 位"+(isCity?"":" · 完美出锅 "+g.perfect+" 次"));
+    if(!isCity&&g.combo>=3)p.push("最高 "+g.combo+" 连击");
+    if(g.lost>0)p.push("走了 "+g.lost+" 位客人，下次手快些");
+    if(g.shifts&&g.shifts.length)p.push("街况变了 "+g.shifts.length+" 次（"+g.shifts.map(function(s){return s.text}).join("、")+"）");
+    if(!isCity&&g.viral)p.push("网红探店让摊位火了一把");
+    if(g.errands&&g.errands.length)p.push("帮"+(isCity?"街坊":"邻摊")+" "+g.errands.join("、")+" 赚了 "+(g.errandCoin||0)+" 元");
+    return p.join("；")+"。";
+  }
+  function tomorrowLine(isCity){
+    var day=isCity?PLAT.scenes.city.day:PLAT.scenes.yeshi.day;
+    var night=[
+      "🍢 隔壁烤串摊放话明晚买一送一，可能分走一波人流……",
+      "🎪 广场舞台明晚继续演出，散场后说不定又涌来一群客人。",
+      "🌧️ 天气预报说明晚有雨，热乎小吃可能更抢手。",
+      "💌 熟客说明晚带朋友一起来，记得多留个排队位。",
+      "🔦 夜市管理处说明晚检查卫生，规范出摊更安心。"
+    ];
+    var city=[
+      "🎒 明晚附近学校有活动，接送高峰可能提前。",
+      "📢 社区公告栏贴了促销通知，路过的人或许更多。",
+      "🧋 隔壁奶茶店明晚第二杯半价，年轻客可能被分走。",
+      "🤝 老街坊说要带新邻居来认识你。",
+      "🧹 明晚门前道路维护，客流可能绕行。"
+    ];
+    var pool=isCity?city:night;
+    return "传闻： "+pool[(day-1)%pool.length];
+  }
+
+  /* ---------- 结算 ---------- */
+  function endDay(){
+    clockResume(G);
+    if($("errandCard"))$("errandCard").style.display="none";clearErrandMark("night");
+    clearInterval(cookTimer);
+    $("cookModal").classList.remove("on");
+    cookCust=null;cookCustObj=null;
+    var layer=$("stage");var cs=layer.querySelectorAll('.customer,.float');
+    for(var i=cs.length-1;i>=0;i--)cs[i].remove();
+    G.customers.forEach(function(c){clearInterval(c.timer)});G.customers=[];
+    var ingredientCost=G.ingredientCost||0;
+    var errandCoin=G.errandCoin||0;
+    var cost=G.stall.rent+ingredientCost;
+    var profit=G.revenue-cost+G.bonusCoin+errandCoin;
+    S.coins+=Math.max(0,G.revenue+G.bonusCoin+errandCoin);
+    // 借款自动扣还：借 60 还 68，利息已在借款时明确告知
+    var repaid=0;
+    if((S.debt||0)>0){repaid=Math.min(S.debt,S.coins);S.coins-=repaid;S.debt=Math.max(0,S.debt-repaid)}
+    // 合伙人利润分成（只对净利、有封顶，绝不伤本钱）
+    var partSettle=settlePartners(profit);
+    // 盈利收摊留下线索（每天最多一次，避免刷取）
+    if(profit>0&&S.clueDay!==today()){S.clueDay=today();addClue("踏踏实实赚了一晚",1)}
+    var lifeGot=claimLife(); // 结算自动结算人生清单奖励
+    // 每日任务：单晚净赚进度 + 达标领奖
+    updateTask("profit",Math.max(0,profit));
+    var taskReward=claimTasksIfDone();
+    if(taskReward>0){S.coins+=taskReward;SFX.play('levelup')}
+    S.totalRevenue+=G.revenue;
+    S.totalCustomers+=G.sold;
+    if(profit>S.best)S.best=profit;
+    // 口碑：好评拉动 - 走人惩罚（流失≥3才生效，每多2人扣0.1，封顶0.5，有明确归因）
+    var goodDelta=G.sold?(G.good/G.sold-0.5)*0.8:0;
+    var lostPenalty=G.lost>=3?Math.min(0.5,Math.floor((G.lost-3)/2+1)*0.1):0;
+    var serviceDelta=(G.serviceFame||0)*0.1; // 接待策略（吆喝/试吃）带来的口碑
+    var delta=goodDelta-lostPenalty+serviceDelta;
+    S.rep=Math.max(1,Math.min(5,Math.round((S.rep+delta)*10)/10));
+    // 连续天数
+    S.lastDay=today();
+    // 解锁摊位
+    var unlocked=[];
+    STALLS.forEach(function(st){if(S.totalRevenue>=st.unlock&&S.unlockedStalls.indexOf(st.id)<0){S.unlockedStalls.push(st.id);unlocked.push(st.name)}});
+    // 解锁成就
+    var newAchv=[];
+    function ach(id){if(S.achv.indexOf(id)<0){S.achv.push(id);var a=ACHV.filter(function(x){return x.id===id})[0];if(a)newAchv.push(a.em+" "+a.name)}}
+    ach("first");
+    if(S.perfect>=10)ach("perfect10");
+    if(S.totalRevenue>=500)ach("earn500");
+    if(S.streak>=7)ach("day7");
+    if(G.viral)ach("viral");
+    if(S.rep>=5)ach("rep5");
+    if(S.unlockedFoods.length>=12)ach("allfood");
+    if(S.vip)ach("vip");
+    S.day++;save();
+
+    show("result");
+    $("resEm").textContent=profit>=0?"🎉":"😢";
+    $("resTitle").textContent=profit>=0?"今晚收摊，辛苦啦！":"今晚没赚回来，明天再战！";
+    $("resProfit").textContent=(profit>=0?"+":"")+profit+" 元";
+    $("resProfit").style.color=profit>=0?"var(--green)":"var(--red)";
+    $("resStars").textContent=stars(S.rep)+"  "+S.rep.toFixed(1);
+    $("resSold").textContent=G.sold+" 份";
+    $("resRevenue").textContent=G.revenue+" 元";
+    $("resCost").textContent="-"+cost+" 元（租金"+G.stall.rent+"+食材"+ingredientCost+"）";
+    $("resGood").textContent=G.good+" 位";
+    $("resLost").textContent=G.lost+" 位";
+    $("resRep").textContent=(delta>=0?"+":"")+delta.toFixed(2)+(lostPenalty>0?"（含走人 -"+lostPenalty.toFixed(1)+"）":"")+(serviceDelta?"（接待策略 "+(serviceDelta>0?"+":"")+serviceDelta.toFixed(2)+"）":"");
+    $("ledRevenue").textContent=G.revenue+" 元";
+    $("ledRent").textContent="-"+G.stall.rent+" 元";
+    $("ledIngredient").textContent="-"+ingredientCost+" 元";
+    $("ledTips").textContent="+"+(G.bonusCoin||0)+" 元";
+    $("ledErrand").textContent="+"+errandCoin+" 元";
+    $("ledNet").textContent=(profit>=0?"+":"")+profit+" 元";
+    $("ledNet").style.color=profit>=0?"var(--green)":"var(--red)";
+    $("ledNote").innerHTML="净利 = 营业收入 "+G.revenue+" − 摊位租金 "+G.stall.rent+" − 食材核销 "+ingredientCost+" + 打赏 "+(G.bonusCoin||0)+" + 邻摊委托 "+errandCoin+"。食材按实际卖出 "+G.sold+" 份从库存 FIFO 核销。"+
+      (G.expired?" 临期折价回收 +"+G.salvage+" 元已到账。":"")+(taskReward?" 今日任务奖励 +"+taskReward+" 元另计。":"")+
+      (repaid>0?" 借款扣还 -"+repaid+" 元（借60还68，利息已提前说明）。":"")+
+      (partSettle.paid>0?" 合伙人分成 -"+partSettle.paid+" 元（"+partSettle.note.join("；")+"）。":"")+
+      (partSettle.retired.length?" "+partSettle.retired.join("、")+"已赚够退股。"+(partSettle.stories?partSettle.stories.join(" "):""):"")+
+      (partnerLogForResult()?" 老友会："+partnerLogForResult():"")+
+      (lifeGot?" 人生清单奖励 +"+lifeGot+" 元已到账。":"")+
+      ((G.shifts&&G.shifts.length)?" 街况流转："+G.shifts.map(function(s){return s.text+"("+(s.delta>=0?"+":"")+s.delta+")"}).join("、")+"。":"");
+    $("resStreak").textContent=S.streak;
+    if(lostPenalty>0)toast("😤 "+G.lost+" 位客人没等到，口碑 -"+lostPenalty.toFixed(1)+"，下次手快些！");
+    else if(G.lost>=2)toast("😤 有 "+G.lost+" 位客人没等到，下次手快些！");
+    if(taskReward>0){toast("🎯 今日任务全完成！奖励 "+taskReward+" 元")}
+    if(G.combo>=3){SFX.play('levelup')}
+    // 稀有客人故事
+    if(G.rare){$("resEventCard").style.display="block";$("resEvent").textContent=G.rare.em+" "+G.rare.text+"（这是你第 "+PLAT.shared.rareMet.length+" 位神秘客人）"}
+    else if(G.eventFired){$("resEventCard").style.display="block";$("resEvent").textContent=
+      (G.viral?"📸 网红探店让摊位声名远扬！":"今晚发生了一件特别的事，影响了你的生意。")}
+    else $("resEventCard").style.display="none";
+
+    // 章节进度（短钩子：下一章就在眼前）
+    var day=PLAT.scenes.yeshi.day-1,ch=chapterOf(day),nx=nextChapter(day);
+    $("chapTitle").textContent=ch.title;
+    $("chapTip").textContent=ch.tip;
+    var progPct=nx?Math.min(100,Math.round((day-ch.goal+1)/(nx.goal-ch.goal)*100)):100;
+    $("chapBar").style.width=progPct+"%";
+    if(nx){var left=nx.goal-day;$("chapNext").textContent="还有 "+left+" 天进入「"+nx.title+"」→ 每天都有新故事"}
+    else{$("chapNext").textContent="你已走完所有章节，继续书写自己的传奇！"}
+
+    // 差一点钩子：下一局可兑现
+    var near=null;
+    var nextFood=FOOD_ORDER.filter(function(k){return PLAT.scenes.yeshi.unlockedFoods.indexOf(k)<0})[0];
+    var nextStall=STALLS.filter(function(st){return PLAT.scenes.yeshi.unlockedStalls.indexOf(st.id)<0})[0];
+    if(nextStall&&PLAT.shared.totalRevenue>=nextStall.unlock-150&&PLAT.shared.totalRevenue<nextStall.unlock){
+      near="再赚 <b>"+(nextStall.unlock-PLAT.shared.totalRevenue)+" 元</b>就能解锁「"+nextStall.name+"」！";
+    }else if(nextFood&&PLAT.shared.coins>=12&&PLAT.shared.coins<18){
+      near="再去小店就能解锁新小吃「"+FOODS[nextFood].name+"」了！";
+    }else if(PLAT.shared.streak>=2){
+      near="连续摆摊 <b>"+PLAT.shared.streak+" 天</b>了！明天继续，别断签～";
+    }
+    if(near){$("nearMissCard").style.display="block";$("nearMissText").innerHTML=near}
+    else $("nearMissCard").style.display="none";
+    $("reviewText").textContent=reviewLine(G,false);
+    $("tomorrowText").textContent=tomorrowLine(false);
+    if(unlocked.length||newAchv.length){$("unlockCard").style.display="block";$("unlockText").innerHTML=
+      (unlocked.length?"🏪 新摊位：<b>"+unlocked.join("、")+"</b><br>":"")+(newAchv.length?"🏆 新成就：<b>"+newAchv.join("、")+"</b>":"")}
+    else $("unlockCard").style.display="none";
+
+    // 第3天首次出现"自然付费"引导（体验爽点之后）
+    if(S.day===4&&!S.vip){
+      setTimeout(function(){
+        modal("👑","要不要更轻松一点？","你已经连续摆了 3 天摊，生意渐渐有了起色。<br><br>小店里有 <b>霓虹灯摊</b>、<b>网红小吃</b> 和 <b>会员特权</b>，能让你的夜市人生更精彩。",
+          "演示版：以下付费仅用游戏金币模拟，<b>不产生真实扣款</b>。全部自愿，不买也完全不影响核心玩法。");
+      },600);
+    }
+  }
+  $("nextDayBtn").onclick=function(){show("home");renderHome()};
+
+  /* ---------- 图鉴 ---------- */
+  function renderStats(){
+    $("lifePctTag").textContent=lifePct()+"% · "+lifeDone().length+"/"+LIFE_LIST.length;
+    renderLifeList($("lifeListBox"));
+    renderPartnerList($("partnerListBox"));
+    $("totalRevenue").textContent=S.totalRevenue;
+    $("statDays").textContent=S.day-1+" 天";
+    $("statBest").textContent=S.best+" 元";
+    $("statCustomers").textContent=S.totalCustomers+" 位";
+    $("statPerfect").textContent=S.perfect+" 次";
+    $("foodProgress").textContent=S.unlockedFoods.length+"/12";
+    var cb=$("statPerfect").parentNode;
+    if(cb&&!$("comboStat")){
+      var row=document.createElement("div");row.className="line";row.id="comboStat";
+      row.innerHTML='<span>🔥 最高连击</span><b>'+(S.comboMax||0)+' 连</b>';
+      cb.parentNode.insertBefore(row,cb.nextSibling);
+    }else if($("comboStat")){
+      $("comboStat").querySelector('b').textContent=(S.comboMax||0)+' 连';
+    }
+    var al=$("achvList");al.innerHTML="";
+    ACHV.forEach(function(a){var d=document.createElement("div");d.className="achv"+(S.achv.indexOf(a.id)>=0?" got":"");
+      d.innerHTML='<div class="em">'+a.em+'</div><div><div class="nm">'+a.name+'</div><div class="ds">'+a.desc+'</div></div>';al.appendChild(d)});
+    var fa=$("foodAtlas");fa.innerHTML="";
+    FOOD_ORDER.forEach(function(k){var f=FOODS[k],got=S.unlockedFoods.indexOf(k)>=0;
+      var d=document.createElement("div");d.className="achv"+(got?" got":"");
+      d.innerHTML='<div class="em">'+f.em+'</div><div><div class="nm">'+(got?f.name:"???")+'</div><div class="ds">'+(got?"售价"+f.price+"元":"未解锁")+'</div></div>';fa.appendChild(d)});
+    // 街坊羁绊
+    var bonds=PLAT.shared.bonds||{},metCount=Object.keys(bonds).filter(function(k){return bonds[k]>0}).length;
+    $("bondProgress").textContent=metCount+"/"+REGULARS.length;
+    var bl=$("bondList");bl.innerHTML="";
+    REGULARS.forEach(function(r){
+      var n=bonds[r.id]||0,stage=n>=3?"熟悉":n>=1?"面熟":"陌生人";
+      var d=document.createElement("div");d.className="achv"+(n>0?" got":"");
+      d.innerHTML='<div class="em">'+r.em+'</div><div style="flex:1"><div class="nm">'+r.name+' <span class="sub">· '+stage+'</span></div>'+
+        '<div class="ds">'+(n>0?("见过 "+n+" 次"+(n>=3?" · "+r.reward:"")):"还没见过这位街坊")+'</div></div>';
+      bl.appendChild(d);
+    });
+  }
+  $("claimLifeBtn").onclick=function(){SFX.play('click');claimLife();renderStats();renderLifeList($("lifeListBox"))};
+
+  /* ---------- 商店 ---------- */
+  var shopTab="skin";
+  function renderShop(){
+    $("shopCoins").textContent=S.coins;
+    var c=$("shopContent");c.innerHTML="";
+    if(shopTab==="skin"){
+      SKINS.forEach(function(sk){var owned=S.skins.indexOf(sk.id)>=0,active=S.skin===sk.id;
+        var d=document.createElement("div");d.className="shop-item";
+        d.innerHTML='<div class="em">'+sk.em+'</div><div class="info"><div class="nm">'+sk.name+(active?' <span style="color:var(--green);font-size:11px">使用中</span>':'')+
+          '</div><div class="ds">'+sk.desc+'</div></div><div>'+
+          (active?'<button class="btn ghost sm" disabled>使用中</button>':owned?'<button class="btn blue sm" data-use="'+sk.id+'">使用</button>':
+          '<button class="btn sm" data-buy="'+sk.id+'">'+sk.price+'元</button>')+'</div>';
+        c.appendChild(d)});
+    }else if(shopTab==="food"){
+      FOOD_ORDER.forEach(function(k){var f=FOODS[k],owned=S.unlockedFoods.indexOf(k)>=0;
+        var d=document.createElement("div");d.className="shop-item";
+        d.innerHTML='<div class="em">'+f.em+'</div><div class="info"><div class="nm">'+f.name+'</div><div class="ds">售价'+f.price+'元 · 毛利'+(f.price-f.cost)+'元</div></div><div>'+
+          (owned?'<span class="sub">已解锁</span>':'<button class="btn sm" data-food="'+k+'">18元</button>')+'</div>';
+        c.appendChild(d)});
+    }else{
+      var d=document.createElement("div");d.className="shop-item";
+      d.innerHTML='<div class="em">👑</div><div class="info"><div class="nm">夜市会员</div><div class="ds">'+VIP.desc+'</div></div><div>'+
+        (S.vip?'<span style="color:var(--green)">已开通</span>':'<button class="btn sm" data-vip="1">'+VIP.price+'元</button>')+'</div>';
+      c.appendChild(d);
+      var d2=document.createElement("div");d2.className="disclaimer";
+      d2.innerHTML="开通会员后：每晚客流 +2、完美火候区域更宽、专属金色招牌。<br><b>不影响</b>非会员的核心玩法与公平性。";
+      c.appendChild(d2);
+    }
+    // 绑定
+    Array.prototype.forEach.call(c.querySelectorAll('[data-buy]'),function(b){b.onclick=function(){
+      var sk=SKINS.filter(function(x){return x.id===b.getAttribute("data-buy")})[0];
+      if(S.coins<sk.price){modal("💸","金币不足","需要 <b>"+sk.price+"元</b>，你目前有 "+S.coins+" 元。");return}
+      S.coins-=sk.price;S.skins.push(sk.id);S.skin=sk.id;save();renderShop();
+      toast("已换上「"+sk.name+"」！");
+    }});
+    Array.prototype.forEach.call(c.querySelectorAll('[data-use]'),function(b){b.onclick=function(){
+      S.skin=b.getAttribute("data-use");save();renderShop();toast("已切换装扮");
+    }});
+    Array.prototype.forEach.call(c.querySelectorAll('[data-food]'),function(b){b.onclick=function(){
+      if(S.coins<18){modal("💸","金币不足","解锁小吃需要 18 元。");return}
+      S.coins-=18;S.unlockedFoods.push(b.getAttribute("data-food"));save();renderShop();
+      achv("allfood");toast("新小吃已解锁！");
+    }});
+    Array.prototype.forEach.call(c.querySelectorAll('[data-vip]'),function(b){b.onclick=function(){
+      if(S.coins<VIP.price){modal("💸","金币不足","开通会员需要 "+VIP.price+" 元。");return}
+      S.coins-=VIP.price;S.vip=true;save();renderShop();
+      SFX.play('vip');
+      achv("vip");modal("👑","欢迎成为会员！","你已开通夜市会员，专属权益已生效。","演示版：仅用游戏金币模拟，<b>无真实扣款</b>。正式版将明码标价、自愿购买、限制未成年人消费。");
+    }});
+  }
+  function achv(id){if(S.achv.indexOf(id)<0){S.achv.push(id);save()}}
+  Array.prototype.forEach.call(document.querySelectorAll('.shop-tab'),function(t){t.onclick=function(){
+    Array.prototype.forEach.call(document.querySelectorAll('.shop-tab'),function(x){x.classList.remove("on")});
+    t.classList.add("on");shopTab=t.getAttribute("data-tab");renderShop();
+  }});
+
+  /* ---------- 导航 ---------- */
+  Array.prototype.forEach.call(document.querySelectorAll('.nav'),function(n){n.onclick=function(){
+    var go=n.getAttribute("data-go");
+    var parent=n.parentNode;
+    Array.prototype.forEach.call(parent.querySelectorAll('.nav'),function(x){x.classList.remove("on")});
+    n.classList.add("on");
+    if(go==="home"){show("home");renderHome()}
+    else if(go==="stats"){show("stats");renderStats()}
+    else if(go==="shop"){show("shop");renderShop()}
+  }});
+
+  // 首次进入若已玩过，跳过开场
+  if(S.firstPlay){/* 保留开场，用户可点开始继续 */}
+
+  /* ============================================================
+     场景二：小城创业记
+     ============================================================ */
+  var C_SHOPS=[
+    {id:"snack",name:"零食小铺",em:"🍭",cost:4,price:9,unlock:0,shelf:5,desc:"街坊日常，薄利多销 · 保质期5天"},
+    {id:"tea",name:"奶茶小店",em:"🧋",cost:6,price:15,unlock:80,shelf:3,desc:"年轻人爱，回头客多 · 保质期3天"},
+    {id:"noodle",name:"面馆",em:"🍜",cost:8,price:18,unlock:200,shelf:2,desc:"刚需生意，客流稳定 · 保质期2天"},
+    {id:"fruit",name:"水果摊",em:"🍎",cost:7,price:14,unlock:400,shelf:2,desc:"看天吃饭，节假日爆单 · 保质期2天"}
+  ];
+  var C_VISITORS=[
+    {type:"normal",em:"🧑",name:"普通街坊",w:"买点东西，正常结账"},
+    {type:"regular",em:"👵",name:"老熟人",w:"唠两句家常，想抹个零"},
+    {type:"credit",em:"👨",name:"邻居大哥",w:"手头紧，想赊个账"},
+    {type:"kid",em:"👦",name:"放学的孩子",w:"盯着零食走不动路"},
+    {type:"inspector",em:"👮",name:"检查的",w:"来看看店里的规矩"},
+    {type:"gossip",em:"👩",name:"爱聊天的阿姨",w:"打听街坊的闲事"}
+  ];
+  var C_EVENTS=[
+    {em:"🎊",name:"集市大集",text:"今天是赶集日，街上人山人海，生意格外红火！",apply:function(g){g.bonus+=5}},
+    {em:"🌧️",name:"连阴雨",text:"雨下了整天，街上冷冷清清，客人少了许多。",apply:function(g){g.bonus-=4}},
+    {em:"🎓",name:"开学季",text:"孩子们返校，文具零食卖得飞快。",apply:function(g){g.bonus+=4}},
+    {em:"🏮",name:"邻店开业",text:"隔壁开了家新店，抢走了不少客流。",apply:function(g){g.bonus-=3}},
+    {em:"📱",name:"短视频带火",text:"有人拍了你的小店发到网上，突然来了好多打卡的！",apply:function(g){g.bonus+=6;g.viral=true}},
+    {em:"🤝",name:"街坊送温暖",text:"老顾客送来自家种的菜，人情味满满。",apply:function(g){g.bRenqing+=6}}
+  ];
+
+  function cShop(){return C_SHOPS.filter(function(s){return s.id===PLAT.scenes.city.shopType})[0]||C_SHOPS[0]}
+  var cSelShop="snack",cStock=12;
+  /* ---------- 持久库存 + 分场景时效 ---------- */
+  // 批次 {shop,qty,buyDay}；保质期按店铺 shelf 天；FIFO 先卖最早批次
+  function stockFresh(b,shopId,day){
+    var sh=C_SHOPS.filter(function(s){return s.id===b.shop})[0];
+    var shelf=sh?sh.shelf:3;
+    return (shopId?b.shop===shopId:true)&&b.qty>0&&(day-b.buyDay)<shelf;
+  }
+  function stockOf(shopId,day){
+    var c=PLAT.scenes.city,dd=day===undefined?c.day:day,total=0;
+    (c.stockBatches||[]).forEach(function(b){if(stockFresh(b,shopId,dd))total+=b.qty});
+    return total;
+  }
+  function addStock(shopId,qty){
+    var c=PLAT.scenes.city;
+    if(!c.stockBatches)c.stockBatches=[];
+    c.stockBatches.push({shop:shopId,qty:qty,buyDay:c.day});
+    c.stock=stockOf(null,c.day);save();
+  }
+  // 消耗库存：优先最早批次（FIFO），返回实际消耗量
+  function consumeStock(shopId,qty){
+    var c=PLAT.scenes.city;
+    var left=qty;
+    var list=(c.stockBatches||[]).filter(function(b){return b.shop===shopId&&stockFresh(b,shopId,c.day)}).sort(function(a,b){return a.buyDay-b.buyDay});
+    for(var i=0;i<list.length&&left>0;i++){var take=Math.min(left,list[i].qty);list[i].qty-=take;left-=take}
+    c.stockBatches=(c.stockBatches||[]).filter(function(b){return b.qty>0});
+    c.stock=stockOf(null,c.day);save();
+    return qty-left;
+  }
+  // 跨天处理过期：返回 {expired:数量, salvage:折价回收金额}
+  function expireStock(){
+    var c=PLAT.scenes.city,expired=0,salvage=0;
+    var fresh=[];
+    (c.stockBatches||[]).forEach(function(b){
+      if(b.qty>0&&!stockFresh(b,null,c.day)){
+        var sh=C_SHOPS.filter(function(s){return s.id===b.shop})[0];
+        expired+=b.qty;salvage+=Math.round(b.qty*(sh?sh.cost:4)*0.3); // 临期折价回收30%
+      }else fresh.push(b);
+    });
+    c.stockBatches=fresh;c.stock=stockOf(null,c.day);save();
+    return {expired:expired,salvage:salvage};
+  }
+
+  function renderCityHome(){
+    var c=PLAT.scenes.city;
+    if(S.lastDay&&S.lastDay!==today()){
+      var y=new Date();y.setDate(y.getDate()-1);var ys=y.getFullYear()+"-"+(y.getMonth()+1)+"-"+y.getDate();
+      S.streak=(S.lastDay===ys)?S.streak+1:1;
+    }
+    $("cDay").textContent=c.day;
+    $("cCoins").textContent=PLAT.shared.coins;
+    $("cRep").textContent=PLAT.shared.rep.toFixed(1);
+    $("cRenqing").textContent=c.renqing;$("cRenqingBar").style.width=c.renqing+"%";
+    $("cFame").textContent=c.fame;$("cFameBar").style.width=c.fame+"%";
+    if(!c.shopType)c.shopType=cSelShop;
+    cSelShop=c.shopType;
+    var sg=$("cShopGrid");sg.innerHTML="";
+    C_SHOPS.forEach(function(s){
+      var unlocked=c.unlockedBusiness.indexOf(s.id)>=0||PLAT.shared.totalRevenue>=s.unlock;
+      if(unlocked&&c.unlockedBusiness.indexOf(s.id)<0){c.unlockedBusiness.push(s.id)}
+      var d=document.createElement("div");
+      d.className="stall"+(cSelShop===s.id?" sel":"")+(unlocked?"":" lock");
+      d.innerHTML=(unlocked?"":'<span class="lock-badge">🔒 '+s.unlock+'累计</span>')+
+        '<div class="em">'+s.em+'</div><div class="nm">'+s.name+'</div><div class="ds">'+s.desc+'<br>成本'+s.cost+'→售价'+s.price+'</div>';
+      d.onclick=function(){
+        if(!unlocked){modal("🔒","店铺未解锁","累计营收达到 <b>"+s.unlock+"元</b> 即可开启「"+s.name+"」。","所有场景的营收会累加到同一档案。");return}
+        c.shopType=s.id;cSelShop=s.id;save();renderCityHome();
+      };
+      sg.appendChild(d);
+    });
+    cStock=Math.max(2,Math.min(40,cStock));
+    var shop=cShop();
+    $("cStockNum").textContent=cStock;
+    $("cStockCost").textContent=shop.cost+" 元 / 保质期"+shop.shelf+"天";
+    $("cStockTotal").textContent="-"+(shop.cost*cStock)+" 元";
+    // 库存明细
+    var onHand=stockOf(shop.id,c.day),near=0;
+    (c.stockBatches||[]).forEach(function(b){
+      if(b.shop===shop.id&&stockFresh(b,shop.id,c.day)&&(c.day-b.buyDay)===shop.shelf-1)near+=b.qty;
+    });
+    $("cStockOnHand").textContent=onHand+" 份";
+    $("cStockNearExp").textContent=near+" 份";
+    var bl=$("stockBatchList");
+    if(bl){
+      var batches=(c.stockBatches||[]).filter(function(b){return b.shop===shop.id&&stockFresh(b,shop.id,c.day)});
+      bl.innerHTML=batches.length?batches.map(function(b){
+        var age=c.day-b.buyDay,left=shop.shelf-age;
+        return "· "+b.qty+"份 · 购入第"+b.buyDay+"天 · "+(left<=1?"<b style='color:var(--red)'>明天到期</b>":"剩"+left+"天");
+      }).join("<br>"):"📭 暂无库存，先补货再开门";
+    }
+    renderCityLifeline();
+    save();
+  }
+  $("cStockMinus").onclick=function(){cStock=Math.max(2,cStock-2);renderCityHome()};
+  $("cStockPlus").onclick=function(){cStock=Math.min(40,cStock+2);renderCityHome()};
+  $("cStockBuyBtn").onclick=function(){
+    var c=PLAT.scenes.city,shop=cShop(),cost=shop.cost*cStock;
+    if(PLAT.shared.coins<cost){toast("金币不够补货，可去夜市摆摊或打零工");return}
+    PLAT.shared.coins-=cost;addStock(shop.id,cStock);SFX.play('coin');
+    toast("🛒 补货 "+cStock+" 份入库（保质期"+shop.shelf+"天）");
+    renderCityHome();
+  };
+
+  var CG=null;
+  $("cOpenBtn").onclick=function(){
+    var c=PLAT.scenes.city,shop=cShop();
+    // 开新一天先处理过期库存
+    var exp=expireStock();
+    if(exp.expired>0){PLAT.shared.coins+=exp.salvage;
+      toast("🗑️ "+exp.expired+"份过期清仓，折价回收 +"+exp.salvage+" 元");}
+    var onHand=stockOf(shop.id,c.day);
+    if(onHand<=0){modal("📦","货架空了","当前「"+shop.name+"」没有可售库存。<br>先在「库存管理」里补货，再开门营业。","补货会计入库存、可卖多天；不同店铺保质期不同。");return}
+    var street=rollStreet("city");
+    CG={shop:shop,stock:onHand,start:Date.now(),duration:60,revenue:0,sold:0,bonus:0,trafficBonus:street.bonus,street:street,bRenqing:0,bFame:0,
+        viral:false,customers:[],nextCustomer:0,served:0,eventFired:false,lost:0,expired:exp.expired,salvage:exp.salvage,
+        pauseAccum:0,pauseStart:0,clockPaused:false,errandCoin:0,errands:[],errandFired:false,errand:null};
+    SFX.play('click');
+    show("cityPlay");
+    renderStreet("city",street);
+    var bossMap={snack:"🧑‍🍳",tea:"👩‍💼",noodle:"👨‍🍳",fruit:"🧑‍🌾"};
+    var canopyMap={snack:"repeating-linear-gradient(90deg,#ff5f7e 0 22px,#ffd35c 22px 44px)",
+      tea:"repeating-linear-gradient(90deg,#7e57c2 0 22px,#f0c8ff 22px 44px)",
+      noodle:"repeating-linear-gradient(90deg,#e0524d 0 22px,#fff 22px 44px)",
+      fruit:"repeating-linear-gradient(90deg,#5bbf6a 0 22px,#ffe08a 22px 44px)"};
+    $("cShopBoss").textContent=bossMap[shop.id]||"🧑‍💼";
+    $("cCanopy").style.background=canopyMap[shop.id]||canopyMap.snack;
+    $("cShopSign").textContent=shop.name;
+    $("cEarnLive").textContent="+0 元";
+    $("cEventLayer").innerHTML="";
+    $("cDecision").classList.remove("on");
+    var cq=$("cQueueCaption");if(cq)cq.textContent="🧍 店里 0 位客人 · 点击接待";
+    var clf=$("cLastFlow"),cft=$("cFlowTotal");if(clf)clf.textContent="—";if(cft)cft.textContent="+0";
+    var cfs=$("cFlowStrip");if(cfs){
+      var cOld=cfs.querySelector('.partner-tip');if(cOld)cOld.remove();
+      var cap=activePartners(),crp=retiredPartners();
+      var ctip=document.createElement("span");ctip.className="partner-tip";ctip.style.cssText="color:var(--gold);font-size:10px";
+      if(cap.length){var crate=cap.reduce(function(s,p){return s+p.share},0);ctip.textContent="🤝 净利分成 "+Math.round(crate*100)+"% · "+cap.length+"位合伙人"}
+      else if(crp.length){ctip.textContent="📞 "+crp.length+"位老朋友仍惦记你 · 首页可回访"}
+      if(cap.length||crp.length)cfs.appendChild(ctip)
+    }
+    var st=$("cStage"),cs=st.querySelectorAll('.ccust,.float');
+    for(var i=cs.length-1;i>=0;i--)cs[i].remove();
+    cPlayLoop();
+  };
+  $("cQuitBtn").onclick=function(){cEndDay()};
+
+  function cPlayLoop(){
+    var tick=setInterval(function(){
+      if(!$("cityPlay").classList.contains("on")){clearInterval(tick);return}
+      var elapsed=elapsedOf(CG),left=Math.max(0,Math.ceil(CG.duration-elapsed));
+      $("cTimer").textContent=left+"s";
+      if(!CG.eventFired&&elapsed>8&&elapsed<12){
+        CG.eventFired=true;
+        var ev=C_EVENTS[Math.floor(Math.random()*C_EVENTS.length)];ev.apply(CG);
+        if(CG.viral)PLAT.scenes.city.viral=true;
+        var t=document.createElement("div");t.className="event-toast";
+        t.innerHTML=ev.em+" <b>"+ev.name+"</b><br>"+ev.text;
+        $("cEventLayer").appendChild(t);
+        setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t)},4000);
+      }
+      // 营业中段街况流转：真实改变本店客流
+      if(!CG.shift1&&elapsed>16&&elapsed<20){CG.shift1=true;applyStreetShift("city",CG)}
+      if(!CG.shift2&&elapsed>36&&elapsed<40){CG.shift2=true;applyStreetShift("city",CG)}
+      // 街坊临时委托
+      if(!CG.errandFired&&elapsed>8&&elapsed<12){CG.errandFired=true;spawnErrand("city",CG)}
+      tickErrand("city",CG);
+      var total=Math.max(4,6+CG.bonus+(CG.trafficBonus||0));
+      var maxC=Math.min(14,Math.max(4,Math.round(total/1.6)));
+      var wantQ=Math.min(3,2+Math.floor(PLAT.shared.rep/3));
+      if(elapsed<CG.duration-4&&CG.customers.length<wantQ&&CG.served+CG.lost<maxC&&CG.stock>0&&Date.now()>CG.nextCustomer){
+        cSpawn();CG.nextCustomer=Date.now()+Math.max(700,1800-PLAT.shared.rep*150);
+      }
+      var qc=$("cQueueCaption");
+      if(qc)qc.textContent="🧍 店里 "+CG.customers.length+" 位客人 · 点击接待"+(CG.lost?" · 走了 "+CG.lost+" 位":"");
+      if(left<=0){clearInterval(tick);cEndDay()}
+    },200);
+  }
+  var C_QUEUE_SLOTS=[16,42,68];
+  function cSpawn(){
+    var v=C_VISITORS[Math.floor(Math.random()*C_VISITORS.length)];
+    var used=CG.customers.map(function(c){return c.slot});
+    var free=C_QUEUE_SLOTS.filter(function(s){return used.indexOf(s)<0});
+    var slot=free.length?free[Math.floor(Math.random()*free.length)]:C_QUEUE_SLOTS[CG.customers.length%C_QUEUE_SLOTS.length];
+    var d=document.createElement("div");d.className="customer ccust";
+    d.style.left=slot+"%";
+    d.style.setProperty('--from',(slot<40?-70:70)+'px');
+    var vIdx=C_VISITORS.indexOf(v);
+    d.innerHTML='<div class="order-tag">'+v.em+'</div><div class="patience"><i></i></div>'+personSVG(PERSON_STYLES[(vIdx+2)%PERSON_STYLES.length]);
+    var pms=16000; // 耐心延长到 16 秒，不因口碑变短
+    var deadline=Date.now()+pms;
+    var c={el:d,visitor:v,slot:slot,deadline:deadline,pms:pms,deciding:false,timer:null};
+    d.onclick=function(){if(d._done||c.deciding)return;d._done=true;c.deciding=true;SFX.play('click');cDecision(v,d,c)};
+    $("cStage").appendChild(d);SFX.play('customer');
+    c.timer=setInterval(function(){
+      if(c.deciding||CG.clockPaused)return; // 接待决策期间连其他客人耐心一起冻结
+      var pct=Math.max(0,(deadline-Date.now())/pms*100);
+      var bar=d.querySelector('.patience i');if(bar){bar.style.width=pct+"%";bar.style.background=pct>50?"var(--green)":pct>25?"var(--gold)":"var(--red)"}
+      d.classList.toggle('impatient',pct<=25&&pct>0);
+      if(pct<=0&&d.parentNode)cLeave(c);
+    },100);
+    CG.customers.push(c);
+  }
+  function cLeave(c){
+    clearInterval(c.timer);
+    var d=c.el;
+    if(d.parentNode){d.style.setProperty('--to',(c.slot<40?-70:70)+'px');d.classList.add('leaving');
+      (function(el){setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el)},520)})(d)}
+    removeCC(c);CG.lost++;CG.bRenqing=Math.max(-20,CG.bRenqing-1);SFX.play('fail');
+    var f=document.createElement("div");f.className="float";f.textContent="😤 客人等不及走了";
+    f.style.color="var(--red)";f.style.left=c.slot+"%";f.style.top="34%";
+    $("cStage").appendChild(f);(function(el){setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el)},1000)})(f);
+  }
+  function removeCC(c){var i=CG.customers.indexOf(c);if(i>=0)CG.customers.splice(i,1)}
+
+  function cDecision(v,el,custObj){
+    clockPause(CG); // 决策期间冻结营业钟与其他客人耐心
+    var shop=CG.shop,price=shop.price;
+    var opts=[];
+    if(v.type==="normal"){
+      opts=[{t:"正常收款 +"+price+"元",run:function(){cSell(price,0,0)}},
+            {t:"热情招呼（人缘+2，口碑+1）",run:function(){cSell(price,2,1)}},
+            {t:"推荐搭配（多赚3元，口碑+1）",run:function(){cSell(price+3,0,1)}},
+            {t:"先尝后买（少赚2元，人缘+1）",run:function(){cSell(price-2,1,0)}}];
+    }else if(v.type==="regular"){
+      opts=[{t:"抹个零（人缘+4，少赚2元）",run:function(){cSell(price-2,4,2)}},
+            {t:"照常收款（人缘-1）",run:function(){cSell(price,-1,0)}},
+            {t:"送小样（少赚3元，人缘+5，口碑+1）",run:function(){cSell(price-3,5,1)}},
+            {t:"记下老规矩（人缘+2）",run:function(){cSell(price,2,0)}}];
+    }else if(v.type==="credit"){
+      opts=[{t:"赊账（人缘+6，暂不收钱）",run:function(){cSell(0,6,1)}},
+            {t:"先付一半（人缘+3）",run:function(){cSell(Math.ceil(price/2),3,0)}},
+            {t:"婉拒（人缘-3，收全款）",run:function(){cSell(price,-3,0)}}];
+    }else if(v.type==="kid"){
+      opts=[{t:"送一颗糖（人缘+3，成本1元）",run:function(){cSell(-1,3,2)}},
+            {t:"正常卖给他（口碑+1）",run:function(){cSell(price,0,1)}},
+            {t:"提醒先问家长（人缘+1，口碑+2）",run:function(){cSell(0,1,2)}},
+            {t:"不卖（口碑-1）",run:function(){cSell(0,0,-1)}}];
+    }else if(v.type==="inspector"){
+      opts=[{t:"规范经营，配合检查（口碑+5）",run:function(){cSell(0,0,5)}},
+            {t:"出示台账并请教（人缘+1，口碑+4）",run:function(){cSell(0,1,4)}},
+            {t:"慌乱应付（人缘-2，口碑-3）",run:function(){cSell(0,-2,-3)}}];
+    }else{
+      opts=[{t:"耐心陪聊（人缘+3，口碑+2）",run:function(){cSell(0,3,2)}},
+            {t:"递杯水换消息（人缘+4，口碑+1）",run:function(){cSell(-1,4,1)}},
+            {t:"顺便推销今日特价（收入+2，人缘-1）",run:function(){cSell(2,-1,0)}},
+            {t:"忙着做生意（人缘-2）",run:function(){cSell(0,-2,0)}}];
+    }
+    $("dEm").textContent=v.em;$("dName").textContent=v.name;$("dText").textContent="“"+v.w+"”，你怎么回应？";
+    var box=$("dOptions");box.innerHTML="";
+    opts.forEach(function(o){
+      var b=document.createElement("button");b.className="btn sm";b.style.cssText="width:100%;margin-top:8px";b.textContent=o.t;
+      b.onclick=function(){$("cDecision").classList.remove("on");clockResume(CG);SFX.play('click');o.run();
+        if(custObj){clearInterval(custObj.timer);removeCC(custObj)}
+        if(el.parentNode)el.parentNode.removeChild(el);
+      };
+      box.appendChild(b);
+    });
+    $("cDecision").classList.add("on");
+  }
+  function cSell(income,dRen,dFame){
+    CG.revenue+=income;CG.sold++;CG.served++;CG.stock=Math.max(0,CG.stock-1);
+    var used=consumeStock(CG.shop.id,1); // 同步消耗持久库存
+    var unitCost=used>0?CG.shop.cost:0;
+    var net=income-unitCost;
+    var clf=$("cLastFlow"),cft=$("cFlowTotal");
+    if(clf)clf.innerHTML="收 "+income+" − 货 "+unitCost+" = <b style='color:"+(net>=0?"var(--green)":"var(--red)")+"'>"+(net>=0?"+":"")+net+"</b>";
+    if(cft)cft.textContent="+"+(CG.revenue-CG.sold*CG.shop.cost);
+    CG.bRenqing+=dRen;CG.bFame+=dFame;
+    PLAT.shared.coins+=income;
+    var f=document.createElement("div");f.className="float";
+    f.textContent=(income>=0?"+":"")+income+"元"+(dRen?" 人缘"+(dRen>0?"+":"")+dRen:"");
+    f.style.color=income>0?"var(--green)":dRen>0?"var(--blue)":"var(--red)";
+    f.style.left=(30+Math.random()*40)+"%";f.style.top="45%";
+    $("cStage").appendChild(f);setTimeout(function(){if(f.parentNode)f.parentNode.removeChild(f)},1000);
+    $("cEarnLive").textContent=(CG.revenue>=0?"+":"")+CG.revenue+" 元";
+    if(income>0&&income>=CG.shop.price){coinBurst();SFX.play('coin')}
+    save();
+  }
+
+  function cEndDay(){
+    clockResume(CG);
+    if($("cErrandCard"))$("cErrandCard").style.display="none";clearErrandMark("city");
+    $("cDecision").classList.remove("on");
+    var st=$("cStage"),cs=st.querySelectorAll('.ccust,.float');
+    for(var i=cs.length-1;i>=0;i--)cs[i].remove();
+    CG.customers.forEach(function(c){clearInterval(c.timer)});CG.customers=[];
+    var c=PLAT.scenes.city;
+    var cost=CG.shop.cost*CG.sold; // 按实际卖出份数计成本（钱已在补货时扣）
+    var errandCoin=CG.errandCoin||0;
+    var profit=CG.revenue-cost+(CG.salvage||0)+errandCoin;
+    var cRepaid=0;
+    if((S.debt||0)>0){cRepaid=Math.min(S.debt,S.coins);S.coins-=cRepaid;S.debt=Math.max(0,S.debt-cRepaid)}
+    var cPartSettle=settlePartners(profit);
+    if(profit>0&&S.clueDay!==today()){S.clueDay=today();addClue("小城生意稳稳当当",1)}
+    var cLifeGot=claimLife();
+    PLAT.shared.totalRevenue+=CG.revenue; // 计入累计营收（解锁口径）
+    PLAT.shared.rep=Math.max(1,Math.min(5,Math.round((PLAT.shared.rep+CG.bFame/50)*10)/10));
+    c.renqing=Math.max(0,Math.min(100,c.renqing+CG.bRenqing));
+    c.fame=Math.max(0,Math.min(100,c.fame+CG.bFame));
+    if(profit>c.best)c.best=profit;
+    PLAT.shared.totalCustomers+=CG.sold;
+    S.lastDay=today();
+    // 解锁店铺
+    var un=[];
+    C_SHOPS.forEach(function(s){if(PLAT.shared.totalRevenue>=s.unlock&&c.unlockedBusiness.indexOf(s.id)<0){c.unlockedBusiness.push(s.id);un.push(s.name)}});
+    var newAchv=[];
+    function ca(id){if(PLAT.shared.achv.indexOf(id)<0){PLAT.shared.achv.push(id);var a=ACHV.filter(function(x){return x.id===id})[0];if(a)newAchv.push(a.em+" "+a.name)}}
+    if(PLAT.shared.achv.indexOf("first")<0)ca("first");
+    if(c.renqing>=80)ca("vip");
+    c.day++;save();
+
+    show("cityResult");
+    $("cResEm").textContent=profit>=0?"🎉":"😢";
+    $("cResTitle").textContent=profit>=0?"小店生意不错！":"今天没赚回来，明天再努力！";
+    $("cResProfit").textContent=(profit>=0?"+":"")+profit+" 元";
+    $("cResProfit").style.color=profit>=0?"var(--green)":"var(--red)";
+    $("cResStars").textContent=stars(PLAT.shared.rep)+"  "+PLAT.shared.rep.toFixed(1);
+    $("cResSold").textContent=CG.sold+" 份";
+    $("cResRevenue").textContent=CG.revenue+" 元";
+    $("cResCost").textContent="-"+cost+" 元";
+    $("cResLost").textContent=CG.lost+" 位";
+    $("cResRenqing").textContent=(CG.bRenqing>=0?"+":"")+CG.bRenqing;
+    $("cResFame").textContent=(CG.bFame>=0?"+":"")+CG.bFame;
+    $("cLedRevenue").textContent=CG.revenue+" 元";
+    $("cLedCost").textContent="-"+cost+" 元";
+    $("cLedSalvage").textContent="+"+(CG.salvage||0)+" 元";
+    $("cLedErrand").textContent="+"+errandCoin+" 元";
+    $("cLedLost").textContent=CG.lost+" 位 · 人缘 -"+CG.lost;
+    $("cLedNet").textContent=(profit>=0?"+":"")+profit+" 元";
+    $("cLedNet").style.color=profit>=0?"var(--green)":"var(--red)";
+    $("cLedNote").innerHTML="净利 = 营业收入 "+CG.revenue+" − 已售商品成本 "+cost+" + 临期折价回收 "+(CG.salvage||0)+" + 街坊委托 "+errandCoin+"。进货钱在补货时已支付，剩余库存会留到明天。"+
+      (cRepaid>0?" 借款扣还 -"+cRepaid+" 元。":"")+
+      (cPartSettle.paid>0?" 合伙人分成 -"+cPartSettle.paid+" 元（"+cPartSettle.note.join("；")+"）。":"")+
+      (cPartSettle.retired.length?" "+cPartSettle.retired.join("、")+"已赚够退股。"+(cPartSettle.stories?cPartSettle.stories.join(" "):""):"")+
+      (partnerLogForResult()?" 老友会："+partnerLogForResult():"")+
+      (cLifeGot?" 人生清单奖励 +"+cLifeGot+" 元已到账。":"")+
+      (CG.expired?" 今日清掉 "+CG.expired+" 份过期库存。":"")+(CG.street?" 街况「"+CG.street.text+"」客流 "+(CG.street.bonus>=0?"+":"")+CG.street.bonus+"。":"")+
+      ((CG.shifts&&CG.shifts.length)?" 街况流转："+CG.shifts.map(function(s){return s.text+"("+(s.delta>=0?"+":"")+s.delta+")"}).join("、")+"。":"");
+    if(CG.lost>=2)toast("😤 "+CG.lost+" 位客人没等到，街坊人缘 -"+CG.lost+"（口碑不受影响）");
+    if(CG.eventFired){$("cResEventCard").style.display="block";$("cResEvent").textContent=
+      CG.viral?"📱 短视频带火了小店，人缘和客流都涨了！":"今天街上发生了些特别的事，影响了你的生意。"}
+    else $("cResEventCard").style.display="none";
+    $("cReviewText").textContent=reviewLine(CG,true);
+    $("cTomorrowText").textContent=tomorrowLine(true);
+    if(un.length||newAchv.length){$("cUnlockCard2").style.display="block";$("cUnlockText2").innerHTML=
+      (un.length?"🏪 新店铺：<b>"+un.join("、")+"</b><br>":"")+(newAchv.length?"🏆 新成就：<b>"+newAchv.join("、")+"</b>":"")}
+    else $("cUnlockCard2").style.display="none";
+    SFX.play('levelup');
+  }
+  $("cNextDayBtn").onclick=function(){show("cityHome");renderCityHome()};
+
+  function renderCityBook(){
+    $("cLifePctTag").textContent=lifePct()+"% · "+lifeDone().length+"/"+LIFE_LIST.length;
+    renderLifeList($("cLifeListBox"));
+    renderPartnerList($("cPartnerListBox"));
+    $("cTotalRevenue").textContent=PLAT.shared.totalRevenue;
+    $("cStatDays").textContent=PLAT.scenes.city.day-1+" 天";
+    $("cStatBest").textContent=PLAT.scenes.city.best+" 元";
+    $("cStatCustomers").textContent=PLAT.shared.totalCustomers+" 位";
+    $("cStatRF").textContent=PLAT.scenes.city.renqing+" / "+PLAT.scenes.city.fame;
+    var al=$("cAchvList");al.innerHTML="";
+    ACHV.forEach(function(a){var d=document.createElement("div");d.className="achv"+(PLAT.shared.achv.indexOf(a.id)>=0?" got":"");
+      d.innerHTML='<div class="em">'+a.em+'</div><div><div class="nm">'+a.name+'</div><div class="ds">'+a.desc+'</div></div>';al.appendChild(d)});
+  }
+  $("cClaimLifeBtn").onclick=function(){SFX.play('click');claimLife();renderCityBook()};
+  $("toShopBtn").onclick=function(){show("shop");renderShop()};
+  Array.prototype.forEach.call(document.querySelectorAll('[data-cgo]'),function(n){n.onclick=function(){
+    var go=n.getAttribute("data-cgo");
+    Array.prototype.forEach.call(n.parentNode.querySelectorAll('.nav'),function(x){x.classList.remove("on")});
+    n.classList.add("on");
+    if(go==="cityHome"){show("cityHome");renderCityHome()}else{show("cityBook");renderCityBook()}
+  }});
+
+})();
+</script>
+</body>
+</html>
