@@ -51,7 +51,16 @@
   .qr .t{font-size:14px;font-weight:800;margin-bottom:4px}
   .qr .d{font-size:11px;color:#aab2dc;line-height:1.6}
   .note{font-size:10px;color:#7f88b5;line-height:1.7;margin-top:16px;text-align:center}
-  #toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:#000e;color:#fff;padding:10px 18px;border-radius:20px;font-size:12px;opacity:0;transition:.25s;pointer-events:none;z-index:9;white-space:nowrap}
+  .social.three button{font-size:12px}
+  .poster-mask{position:fixed;inset:0;background:#000c;z-index:20;display:none;align-items:center;justify-content:center;padding:16px;overflow:auto}
+  .poster-mask.show{display:flex}
+  .poster-box{width:min(360px,100%);background:#12162b;border:1px solid #4a4378;border-radius:18px;padding:14px;text-align:center}
+  .poster-box canvas{width:100%;height:auto;border-radius:12px;display:block;background:#1b2140}
+  .poster-box .tip{font-size:11px;color:#aab2dc;line-height:1.6;margin:10px 0}
+  .poster-box .row{display:flex;gap:8px}
+  .poster-box .row button{flex:1;min-height:42px;border-radius:10px;border:1px solid #4a4378;background:#222847;color:#eef1ff;font-size:13px;font-weight:700}
+  .poster-box .row button.gold{border-color:#8a6a2a;background:linear-gradient(135deg,#ffd66b,#ff9d4d);color:#201500}
+  #toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:#000e;color:#fff;padding:10px 18px;border-radius:20px;font-size:12px;opacity:0;transition:.25s;pointer-events:none;z-index:30;white-space:nowrap}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
@@ -62,9 +71,10 @@
       <h1>今晚，<em>能不能不亏钱？</em></h1>
       <p class="hook">摆摊、接客、掌握火候、收摊复盘。我已经摆到<b>第 7 天</b>、攒出一桌熟客了——<b>你敢来试一天吗？</b></p>
       <a class="cta" id="mainCta" href="index.html">开始我的夜市人生<small>进度自动保存 · 明天回来领惊喜补给</small></a>
-      <div class="social">
-        <button id="copyCard" class="gold">📋 复制战绩卡</button>
-        <button id="followBtn">➕ 关注公众号</button>
+      <div class="social three">
+        <button id="makePoster" class="gold">🖼️ 生成游戏卡</button>
+        <button id="copyCard">📋 复制战绩文案</button>
+        <button id="followBtn">➕ 加好友/群</button>
       </div>
     </section>
 
@@ -100,6 +110,18 @@
 
     <p class="note">免费试玩 · 进度保存在本机浏览器 · 游戏内金币与奖励均为虚拟数据，不产生真实扣款、无内购无自动续费。</p>
   </main>
+
+  <div class="poster-mask" id="posterMask">
+    <div class="poster-box">
+      <canvas id="posterCanvas" width="640" height="960"></canvas>
+      <div class="tip">长按图片保存到相册，发到微信群或朋友圈。<br>朋友扫码点开，带上你的推荐码双方都有回访补给。</div>
+      <div class="row">
+        <button id="posterSave">💾 保存图片</button>
+        <button id="posterCopy" class="gold">📋 复制分享文案</button>
+        <button id="posterClose">关闭</button>
+      </div>
+    </div>
+  </div>
   <div id="toast"></div>
 <script>
   function toast(t){var el=document.getElementById('toast');el.textContent=t;el.className='show';clearTimeout(toast._t);toast._t=setTimeout(function(){el.className=''},2200)}
@@ -117,7 +139,85 @@
     copy(text).then(function(){toast('战绩卡已复制，发群里或朋友圈')});
   };
   document.getElementById('followBtn').onclick=function(){
-    toast('请在公众号搜索「城角夜市苑」关注，或在群里扫下方二维码');
+    toast('已为你打开加群二维码：长按下方图片识别，或搜索公众号「城角夜市苑」');
+    var qr=document.querySelector('.qr');if(qr)qr.scrollIntoView({behavior:'smooth',block:'center'});
+  };
+
+  // ---- 游戏卡海报生成（爆款游戏的战绩卡裂变打法）----
+  function baseUrl(){return location.origin+location.pathname.replace(/wechat_entry\.html$/,'')}
+  function myCode(){return localStorage.getItem('yeshi_projects_channel_v1_code')||''}
+  var posterReady=false;
+  function drawPoster(cb){
+    var cv=document.getElementById('posterCanvas'),c=cv.getContext('2d');
+    var W=cv.width,H=cv.height;
+    // 背景
+    var g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,'#2a2350');g.addColorStop(.55,'#151a34');g.addColorStop(1,'#0f1220');
+    c.fillStyle=g;c.fillRect(0,0,W,H);
+    var glow=c.createRadialGradient(W/2,120,20,W/2,120,320);glow.addColorStop(0,'rgba(255,190,80,.28)');glow.addColorStop(1,'rgba(255,190,80,0)');c.fillStyle=glow;c.fillRect(0,0,W,420);
+    c.textAlign='center';c.textBaseline='middle';
+    // 徽章
+    c.fillStyle='rgba(255,207,92,.15)';roundRect(c,W/2-118,52,236,40,20);c.fill();
+    c.strokeStyle='rgba(255,207,92,.5)';c.lineWidth=1.5;c.stroke();
+    c.fillStyle='#ffcf5c';c.font='bold 18px sans-serif';c.fillText('🎮 微信点开即玩 · 不用下载',W/2,73);
+    // 主标题
+    c.fillStyle='#fff';c.font='bold 46px sans-serif';c.fillText('今晚，',W/2,150);
+    c.fillStyle='#ffcf5c';c.font='bold 46px sans-serif';c.fillText('能不能不亏钱？',W/2,204);
+    // 副标
+    c.fillStyle='#c9cff2';c.font='20px sans-serif';c.fillText('摆摊 · 接客 · 火候 · 收摊复盘',W/2,252);
+    c.fillStyle='#fff';c.font='bold 21px sans-serif';c.fillText('我已经摆到第 7 天，你敢来试一天吗？',W/2,290);
+    // 四个游戏块
+    var games=[['🌃','夜市摆摊','#3a2a44'],['⚽','村超经理','#23304d'],['🎓','留学生活','#2d2448'],['🌏','城市人生','#1e2c44']];
+    var gw=136,gap=14,x0=(W-(gw*2+gap))/2;
+    games.forEach(function(item,i){
+      var col=i%2,row=Math.floor(i/2),x=x0+col*(gw+gap),y=336+row*104;
+      c.fillStyle=item[2];roundRect(c,x,y,gw,90,14);c.fill();
+      c.strokeStyle='#4a4378';c.lineWidth=1;c.stroke();
+      c.fillStyle='#fff';c.font='30px sans-serif';c.fillText(item[0],x+gw/2,y+34);
+      c.fillStyle='#eef1ff';c.font='bold 19px sans-serif';c.fillText(item[1],x+gw/2,y+70);
+    });
+    // 二维码框（异步加载）
+    var qrY=560;
+    c.fillStyle='#fff';roundRect(c,W/2-100,qrY,200,200,14);c.fill();
+    var img=new Image();
+    img.onload=function(){
+      try{c.drawImage(img,W/2-90,qrY+10,180,180)}catch(e){}
+      finishQrText();
+    };
+    img.onerror=function(){
+      c.fillStyle='#333';c.font='16px sans-serif';c.fillText('（二维码）',W/2,qrY+100);
+      finishQrText();
+    };
+    img.src=(document.querySelector('.qr img')?document.querySelector('.qr img').src:'qr_hub.png');
+    function finishQrText(){
+      c.fillStyle='#ffcf5c';c.font='bold 22px sans-serif';c.fillText('长按扫码 · 点开即玩',W/2,qrY+232);
+      c.fillStyle='#c9cff2';c.font='17px sans-serif';c.fillText('扫码加好友/进玩家群 · 一起摆摊',W/2,qrY+264);
+      var code=myCode();
+      c.fillStyle='#fff';c.font='17px sans-serif';c.fillText('我的推荐码：'+(code||'点开游戏自动生成'),W/2,qrY+298);
+      c.fillStyle='#7f88b5';c.font='14px sans-serif';c.fillText('朋友带码加入，双方回访都有结伴补给',W/2,qrY+326);
+      c.fillStyle='#ffcf5c';c.font='bold 18px sans-serif';c.fillText(baseUrl().replace(/^https?:\/\//,'').replace(/\/$/,'')+'  👈 点开试玩',W/2,H-34);
+      posterReady=true;if(cb)cb();
+    }
+  }
+  function roundRect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
+  document.getElementById('makePoster').onclick=function(){
+    posterReady=false;
+    document.getElementById('posterMask').classList.add('show');
+    drawPoster(function(){toast('游戏卡已生成，长按图片保存')});
+  };
+  document.getElementById('posterClose').onclick=function(){document.getElementById('posterMask').classList.remove('show')};
+  document.getElementById('posterMask').onclick=function(e){if(e.target===this)this.classList.remove('show')};
+  document.getElementById('posterCopy').onclick=function(){
+    var code=myCode();
+    var text='【城角夜市苑 · 一起摆摊】\n微信点开就能玩，不用下载：\n'+baseUrl()+'wechat_entry.html?ch=friend'+(code?('&inviter='+code):'')+'\n我摆到第7天了，你敢来试一天吗？明天回来领惊喜补给！';
+    copy(text).then(function(){toast('分享文案已复制，配游戏卡图发群')});
+  };
+  document.getElementById('posterSave').onclick=function(){
+    if(!posterReady){toast('图片生成中，稍等一下');return}
+    try{
+      var data=document.getElementById('posterCanvas').toDataURL('image/png');
+      var a=document.createElement('a');a.href=data;a.download='城角夜市苑-游戏卡.png';document.body.appendChild(a);a.click();document.body.removeChild(a);
+      toast('图片已保存，发到微信群或朋友圈');
+    }catch(e){toast('请长按上方图片保存到相册')}
   };
 </script>
 </body>
