@@ -55,8 +55,9 @@
   .poster-mask{position:fixed;inset:0;background:#000c;z-index:20;display:none;align-items:center;justify-content:center;padding:16px;overflow:auto}
   .poster-mask.show{display:flex}
   .poster-box{width:min(360px,100%);background:#12162b;border:1px solid #4a4378;border-radius:18px;padding:14px;text-align:center}
-  .poster-box canvas{width:100%;height:auto;border-radius:12px;display:block;background:#1b2140}
-  .poster-box .tip{font-size:11px;color:#aab2dc;line-height:1.6;margin:10px 0}
+  .poster-box canvas{display:none}
+  .poster-box .poster-img{width:100%;height:auto;border-radius:12px;display:block;background:#1b2140;-webkit-touch-callout:default;user-select:none}
+  .poster-box .tip{font-size:12px;color:#ffcf5c;line-height:1.6;margin:10px 0;font-weight:700}
   .poster-box .row{display:flex;gap:8px}
   .poster-box .row button{flex:1;min-height:42px;border-radius:10px;border:1px solid #4a4378;background:#222847;color:#eef1ff;font-size:13px;font-weight:700}
   .poster-box .row button.gold{border-color:#8a6a2a;background:linear-gradient(135deg,#ffd66b,#ff9d4d);color:#201500}
@@ -114,7 +115,8 @@
   <div class="poster-mask" id="posterMask">
     <div class="poster-box">
       <canvas id="posterCanvas" width="640" height="960"></canvas>
-      <div class="tip">长按图片保存到相册，发到微信群或朋友圈。<br>朋友扫码点开，带上你的推荐码双方都有回访补给。</div>
+      <img id="posterImg" class="poster-img" alt="长按保存游戏卡">
+      <div class="tip">👇 长按上方图片 → 保存到相册 → 发群/朋友圈<br>朋友扫码点开，带你的推荐码双方都有回访补给</div>
       <div class="row">
         <button id="posterSave">💾 保存图片</button>
         <button id="posterCopy" class="gold">📋 复制分享文案</button>
@@ -187,6 +189,7 @@
       c.fillStyle='#333';c.font='16px sans-serif';c.fillText('（二维码）',W/2,qrY+100);
       finishQrText();
     };
+    img.crossOrigin='anonymous';
     img.src=(document.querySelector('.qr img')?document.querySelector('.qr img').src:'qr_hub.png');
     function finishQrText(){
       c.fillStyle='#ffcf5c';c.font='bold 22px sans-serif';c.fillText('长按扫码 · 点开即玩',W/2,qrY+232);
@@ -195,6 +198,14 @@
       c.fillStyle='#fff';c.font='17px sans-serif';c.fillText('我的推荐码：'+(code||'点开游戏自动生成'),W/2,qrY+298);
       c.fillStyle='#7f88b5';c.font='14px sans-serif';c.fillText('朋友带码加入，双方回访都有结伴补给',W/2,qrY+326);
       c.fillStyle='#ffcf5c';c.font='bold 18px sans-serif';c.fillText(baseUrl().replace(/^https?:\/\//,'').replace(/\/$/,'')+'  👈 点开试玩',W/2,H-34);
+      // 转成 img 供微信内长按保存（微信禁用 a.download）
+      try{
+        var data=cv.toDataURL('image/png');
+        document.getElementById('posterImg').src=data;
+        window.__posterData=data;
+      }catch(e){
+        document.getElementById('posterImg').style.display='none';
+      }
       posterReady=true;if(cb)cb();
     }
   }
@@ -213,8 +224,16 @@
   };
   document.getElementById('posterSave').onclick=function(){
     if(!posterReady){toast('图片生成中，稍等一下');return}
+    var inWeixin=/MicroMessenger/i.test(navigator.userAgent);
+    if(inWeixin){
+      // 微信禁用程序化下载，唯一可靠路径是长按图片保存
+      toast('请长按上方游戏卡图片 → 保存到相册');
+      var im=document.getElementById('posterImg');
+      try{im.style.boxShadow='0 0 0 3px #ffcf5c';setTimeout(function(){im.style.boxShadow=''},1600)}catch(e){}
+      return;
+    }
     try{
-      var data=document.getElementById('posterCanvas').toDataURL('image/png');
+      var data=window.__posterData||document.getElementById('posterCanvas').toDataURL('image/png');
       var a=document.createElement('a');a.href=data;a.download='城角夜市苑-游戏卡.png';document.body.appendChild(a);a.click();document.body.removeChild(a);
       toast('图片已保存，发到微信群或朋友圈');
     }catch(e){toast('请长按上方图片保存到相册')}
