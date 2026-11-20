@@ -516,34 +516,34 @@
         <div class="arrow">›</div>
       </div>
 
-      <div class="scene-card coming">
-        <span class="coming-tag">敬请期待</span>
+      <div class="scene-card" data-href="liuxue.html">
+        <span class="coming-tag" style="background:#2f6b4f">点击即玩</span>
         <div class="sicon" style="background:linear-gradient(135deg,#3a4a6e,#4a5a8e)">🎓</div>
         <div class="sinfo">
           <div class="sname">留学生活</div>
           <div class="sdesc">签证选课 · 海外打工 · 毕业求职</div>
         </div>
-        <div class="arrow">🔒</div>
+        <div class="arrow">›</div>
       </div>
 
-      <div class="scene-card coming">
-        <span class="coming-tag">敬请期待</span>
+      <div class="scene-card" data-href="cunchao.html">
+        <span class="coming-tag" style="background:#2f6b4f">点击即玩</span>
         <div class="sicon" style="background:linear-gradient(135deg,#6e4a3a,#8e5a4a)">⚽</div>
         <div class="sinfo">
           <div class="sname">村超经理</div>
           <div class="sdesc">草根球队 · 赞助赛事 · 乡村热血</div>
         </div>
-        <div class="arrow">🔒</div>
+        <div class="arrow">›</div>
       </div>
 
-      <div class="scene-card coming">
-        <span class="coming-tag">敬请期待</span>
+      <div class="scene-card" data-href="chengshi.html">
+        <span class="coming-tag" style="background:#2f6b4f">点击即玩</span>
         <div class="sicon" style="background:linear-gradient(135deg,#5a3a6e,#7a4a8e)">🌏</div>
         <div class="sinfo">
           <div class="sname">城市人生</div>
           <div class="sdesc">北上广深 · 租房通勤 · 漂泊记忆</div>
         </div>
-        <div class="arrow">🔒</div>
+        <div class="arrow">›</div>
       </div>
 
       <div class="hub-tip">💡 所有场景共享金币、口碑、等级、装扮与成就<br>在任一场景赚的钱，都能在别的场景里花</div>
@@ -2029,6 +2029,9 @@
   Array.prototype.forEach.call(document.querySelectorAll('.scene-card[data-scene]'),function(c){c.onclick=function(){
     SFX.play('click');var s=c.getAttribute("data-scene");switchScene(s);
     if(s==="yeshi"){show("home");renderHome()}else{show("cityHome");renderCityHome()}
+  }});
+  Array.prototype.forEach.call(document.querySelectorAll('.scene-card[data-href]'),function(c){c.onclick=function(){
+    SFX.play('click');location.href=c.getAttribute("data-href")+"?ch=hub";
   }});
 
   /* ---------- 开场 ---------- */

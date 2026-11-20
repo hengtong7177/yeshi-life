@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<title>真实人生模拟器 · 点击即玩</title>
+<link rel="stylesheet" href="projects.css">
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <button class="iconbtn" id="topBack" type="button">‹ 项目广场</button>
+    <div class="titlebox">
+      <div class="gametitle" id="gameTitle">真实人生模拟器</div>
+      <div class="badge" id="channelBadge">渠道：直接打开</div>
+    </div>
+    <button class="iconbtn primary" id="shareBtn" type="button">分享</button>
+  </header>
+
+  <section id="hubPanel" class="hero" hidden>
+    <h1>真实人生模拟器</h1>
+    <p>三个点击即玩的轻经营项目：村超经理、留学生活、城市人生。进度自动保存在本机，微信群、朋友圈、公众号链接均可直接进入。</p>
+  </section>
+
+  <section id="heroPanel" class="hero" hidden>
+    <h1 id="heroTitle">村超经理</h1>
+    <p id="heroDesc">草根球队 · 赞助赛事 · 乡村热血</p>
+  </section>
+
+  <section class="scoreboard" id="scoreboard"></section>
+  <section class="panel" id="actionPanel"></section>
+  <section class="panel" id="eventPanel"></section>
+  <section class="panel" id="strategyPanel"></section>
+  <section class="panel" id="hubCardsPanel" hidden></section>
+</div>
+
+<nav class="dnav">
+  <div class="dnav-inner">
+    <button type="button" data-nav="hub">广场</button>
+    <button type="button" data-nav="cunchao">村超</button>
+    <button type="button" data-nav="liuxue">留学</button>
+    <button type="button" data-nav="chengshi">城市</button>
+  </div>
+</nav>
+<div class="toast" id="toast"></div>
+<script src="projects.js"></script>
+</body>
+</html>

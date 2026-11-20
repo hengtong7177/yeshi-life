@@ -1,0 +1,59 @@
+:root{--bg:#0d0f1d;--panel:#171a30;--panel2:#202442;--gold:#ffc94d;--green:#4fd18b;--red:#ff6b6b;--text:#f4f1ea;--sub:#a9a6c8;--line:#34385e}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;min-height:100%;background:radial-gradient(circle at 30% 0,#252a52 0,#0d0f1d 55%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+button,input,select{font:inherit}
+button{border:0;cursor:pointer}
+.app{width:100%;max-width:430px;margin:0 auto;min-height:100vh;padding:14px 14px 92px;position:relative;overflow:hidden}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.iconbtn{min-width:44px;height:36px;padding:0 10px;border-radius:12px;background:#222647;color:var(--text);font-size:13px;border:1px solid var(--line)}
+.iconbtn.primary{background:var(--gold);color:#1a1200;font-weight:800;border:0}
+.titlebox{text-align:center;flex:1;min-width:0}
+.gametitle{font-size:18px;font-weight:900;letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{display:inline-block;margin-top:2px;padding:2px 8px;border-radius:999px;background:#2b3060;color:var(--sub);font-size:10px}
+.hero{padding:18px;border-radius:20px;background:linear-gradient(135deg,#23284f,#15182e);border:1px solid var(--line);margin-bottom:12px;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-28px;top:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,201,77,.09)}
+.hero h1{margin:0 0 6px;font-size:24px;letter-spacing:2px}
+.hero p{margin:0;color:var(--sub);font-size:12px;line-height:1.6}
+.scoreboard{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 8px;text-align:center;min-height:58px}
+.stat .k{font-size:10px;color:var(--sub);margin-bottom:4px}
+.stat .v{font-size:17px;font-weight:900;color:var(--gold)}
+.stat .v.green{color:var(--green)}
+.stat .v.red{color:var(--red)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px}
+.panel h2{margin:0 0 10px;font-size:15px;display:flex;align-items:center;justify-content:space-between}
+.panel h2 small{font-size:10px;color:var(--sub);font-weight:400}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.action{min-height:72px;padding:10px;border-radius:14px;background:var(--panel2);border:1px solid transparent;text-align:left;color:var(--text);transition:.12s}
+.action:active{transform:scale(.98)}
+.action b{display:block;font-size:14px;margin-bottom:4px}
+.action span{display:block;font-size:10px;color:var(--sub);line-height:1.35}
+.action.gold{background:linear-gradient(135deg,#5a4720,#3a321d);border-color:#7a6228}
+.action.green{background:linear-gradient(135deg,#1d4a35,#1b3529);border-color:#2d6a4b}
+.action:disabled{opacity:.45;cursor:not-allowed}
+.log{display:flex;flex-direction:column;gap:7px;max-height:210px;overflow:auto}
+.logitem{font-size:12px;color:var(--sub);background:#12152a;border-radius:10px;padding:8px 10px;line-height:1.5}
+.logitem b{color:var(--text)}
+.strategy{font-size:12px;color:var(--sub);line-height:1.7}
+.strategy .stage{display:inline-block;padding:3px 8px;border-radius:999px;background:#332b18;color:var(--gold);font-size:10px;margin-bottom:8px}
+.strategy .task{margin-top:8px;padding:9px 10px;border-radius:10px;background:#12152a;color:var(--text)}
+.minirow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.badges .badge{margin-top:0}
+.iconbtn[disabled]{opacity:.5;cursor:default}
+.dnav{position:fixed;left:0;right:0;bottom:0;z-index:10;background:rgba(13,15,29,.94);border-top:1px solid var(--line);backdrop-filter:blur(8px)}
+.dnav-inner{max-width:430px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+.dnav button{background:transparent;color:var(--sub);padding:10px 2px;font-size:11px}
+.dnav button.active{color:var(--gold);font-weight:800}
+.hubcards{display:flex;flex-direction:column;gap:10px}
+.hubcard{display:flex;align-items:center;gap:12px;padding:14px;border-radius:16px;background:var(--panel);border:1px solid var(--line);color:var(--text);text-align:left}
+.hubcard .icon{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex:none}
+.hubcard .body{flex:1;min-width:0}
+.hubcard .name{font-size:15px;font-weight:900;margin-bottom:3px}
+.hubcard .desc{font-size:11px;color:var(--sub);line-height:1.4}
+.hubcard .arrow{color:var(--gold);font-size:20px}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:99;max-width:360px;width:max-content;padding:10px 14px;border-radius:12px;background:#000c;color:#fff;font-size:12px;opacity:0;pointer-events:none;transition:.2s}
+.toast.show{opacity:1}
+.cities{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.muted{color:var(--sub);font-size:11px;line-height:1.6}
+@media (max-width:360px){.grid{grid-template-columns:1fr}.scoreboard{grid-template-columns:repeat(2,1fr)}}
