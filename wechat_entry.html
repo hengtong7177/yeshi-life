@@ -4,48 +4,121 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0f1220">
-<title>夜市人生 · 微信体验入口</title>
+<title>城角夜市苑 · 点开就能玩的夜市人生</title>
+<meta property="og:title" content="城角夜市苑 · 今晚能不能不亏钱？">
+<meta property="og:description" content="摆摊、接客、掌握火候、收摊复盘——4 款点击即玩的人生模拟。我摆到第7天了，你敢来试试吗？">
+<meta property="og:image" content="https://hengtong7177.github.io/yeshi-life/qr_hub.png">
+<meta name="description" content="城角夜市苑：夜市摆摊、村超经理、留学生活、城市人生，微信点开就能玩，不用下载。">
 <link rel="icon" href="data:,">
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  html,body{height:100%;overscroll-behavior:none}
+  html,body{overscroll-behavior:none}
   body{
     font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:#eef1ff;
-    background:radial-gradient(900px 520px at 50% -10%,#34345f 0%,#0f1220 68%);
-    display:flex;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh;
-    padding:calc(20px + env(safe-area-inset-top,0px)) 18px calc(20px + env(safe-area-inset-bottom,0px));
+    background:radial-gradient(900px 520px at 50% -10%,#3a3566 0%,#0f1220 68%);
+    min-height:100vh;min-height:100dvh;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(28px + env(safe-area-inset-bottom,0px));
   }
-  .wrap{width:min(430px,100%);background:linear-gradient(180deg,#1b2140,#12162b);border:1px solid #3a4270;border-radius:22px;padding:24px 20px;box-shadow:0 18px 50px rgba(0,0,0,.45)}
-  .logo{font-size:46px;text-align:center;margin-bottom:8px}
-  h1{font-size:24px;text-align:center;letter-spacing:1px;margin-bottom:6px}
-  .tag{text-align:center;color:#ffcf5c;font-size:12px;letter-spacing:3px;margin-bottom:20px}
-  .steps{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px;margin:14px 0 18px}
-  .step{display:flex;gap:10px;align-items:flex-start;margin:10px 0;font-size:13px;line-height:1.6;color:#c9cff2}
-  .num{flex:none;width:24px;height:24px;border-radius:50%;background:#2b325a;color:#ffcf5c;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px}
-  .btn{
-    display:block;width:100%;min-height:50px;line-height:50px;text-align:center;text-decoration:none;
-    border:none;border-radius:14px;font-size:17px;font-weight:800;color:#17152a;
-    background:linear-gradient(135deg,#ffcf5c,#ff9d4d);box-shadow:0 8px 22px rgba(255,160,70,.25);
-    touch-action:manipulation;
+  .wrap{width:min(440px,100%);margin:0 auto}
+  .hero{background:linear-gradient(160deg,#2a2350,#151a34 60%);border:1px solid #4a4378;border-radius:22px;padding:22px 20px 18px;box-shadow:0 18px 50px rgba(0,0,0,.45);position:relative;overflow:hidden}
+  .hero:before{content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(255,190,80,.28),transparent 70%)}
+  .badge{display:inline-block;font-size:10px;letter-spacing:1px;color:#ffcf5c;background:rgba(255,207,92,.12);border:1px solid rgba(255,207,92,.4);border-radius:20px;padding:4px 10px;margin-bottom:10px}
+  h1{font-size:27px;line-height:1.25;letter-spacing:.5px;margin-bottom:8px;position:relative}
+  h1 em{font-style:normal;color:#ffcf5c}
+  .hook{font-size:13px;color:#c9cff2;line-height:1.7;margin-bottom:16px;position:relative}
+  .hook b{color:#fff}
+  .cta{
+    display:block;width:100%;min-height:54px;line-height:54px;text-align:center;text-decoration:none;
+    border:none;border-radius:14px;font-size:17px;font-weight:800;color:#201500;position:relative;
+    background:linear-gradient(135deg,#ffd66b,#ff9d4d);box-shadow:0 10px 26px rgba(255,160,70,.3);touch-action:manipulation;
   }
-  .note{font-size:11px;color:#98a1cf;line-height:1.7;margin-top:14px}
-  .mini{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:16px}
-  .mini span{font-size:11px;color:#a8b0d8;background:#202643;border:1px solid #3a4270;border-radius:16px;padding:6px 10px}
+  .cta small{display:block;font-size:10px;font-weight:600;opacity:.75;line-height:12px;margin-top:-6px}
+  .social{display:flex;gap:10px;margin-top:12px}
+  .social button{flex:1;min-height:44px;border-radius:12px;border:1px solid #4a4378;background:#1c2140;color:#dfe3ff;font-size:13px;font-weight:700;touch-action:manipulation}
+  .social button.gold{border-color:#8a6a2a;color:#ffcf5c}
+  .section-t{font-size:12px;color:#98a1cf;letter-spacing:2px;margin:22px 4px 10px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .card{background:linear-gradient(160deg,#1e2444,#161b33);border:1px solid #394069;border-radius:16px;padding:14px;min-height:118px;display:flex;flex-direction:column;text-decoration:none;color:inherit;position:relative;overflow:hidden;touch-action:manipulation}
+  .card:active{transform:scale(.98)}
+  .card .em{font-size:26px;margin-bottom:6px}
+  .card .nm{font-size:15px;font-weight:800;margin-bottom:4px}
+  .card .ds{font-size:11px;color:#aab2dc;line-height:1.5;flex:1}
+  .card .go{font-size:11px;color:#ffcf5c;margin-top:8px;font-weight:700}
+  .card.c1{background:linear-gradient(160deg,#3a2a44,#1a1730)}
+  .card.c2{background:linear-gradient(160deg,#23304d,#141b30)}
+  .card.c3{background:linear-gradient(160deg,#2d2448,#16142e)}
+  .qr{background:#151a34;border:1px solid #394069;border-radius:16px;padding:16px;margin-top:18px;text-align:center}
+  .qr img{width:132px;height:132px;border-radius:10px;background:#fff;padding:6px;display:block;margin:0 auto 10px}
+  .qr .t{font-size:14px;font-weight:800;margin-bottom:4px}
+  .qr .d{font-size:11px;color:#aab2dc;line-height:1.6}
+  .note{font-size:10px;color:#7f88b5;line-height:1.7;margin-top:16px;text-align:center}
+  #toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:#000e;color:#fff;padding:10px 18px;border-radius:20px;font-size:12px;opacity:0;transition:.25s;pointer-events:none;z-index:9;white-space:nowrap}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
   <main class="wrap">
-    <div class="logo">🌃</div>
-    <h1>夜市人生</h1>
-    <div class="tag">摆 摊 模 拟 器</div>
-    <div class="steps">
-      <div class="step"><span class="num">1</span><span>建议竖屏体验，单手即可完成进货、接客、结算和经营决策。</span></div>
-      <div class="step"><span class="num">2</span><span>游戏进度自动保存在当前手机浏览器，下次打开可继续经营。</span></div>
-      <div class="step"><span class="num">3</span><span>先从小摊起步，亏损时可通过打零工、借款、预售、翻找和歇业继续。</span></div>
-    </div>
-    <a class="btn" href="index.html">开始我的夜市人生</a>
-    <div class="mini"><span>零门槛上手</span><span>真实经营感</span><span>人生清单</span><span>神秘匣子</span></div>
-    <div class="note">当前公众号体验版为免费 H5 版本，游戏内金币、分成、奖励均为虚拟数据，不产生真实扣款，也不包含自动续费或隐藏费用。后续如发布微信小游戏版本，将以微信平台审核与用户明示选择为准。</div>
+    <section class="hero">
+      <span class="badge">🎮 微信点开即玩 · 不用下载</span>
+      <h1>今晚，<em>能不能不亏钱？</em></h1>
+      <p class="hook">摆摊、接客、掌握火候、收摊复盘。我已经摆到<b>第 7 天</b>、攒出一桌熟客了——<b>你敢来试一天吗？</b></p>
+      <a class="cta" id="mainCta" href="index.html">开始我的夜市人生<small>进度自动保存 · 明天回来领惊喜补给</small></a>
+      <div class="social">
+        <button id="copyCard" class="gold">📋 复制战绩卡</button>
+        <button id="followBtn">➕ 关注公众号</button>
+      </div>
+    </section>
+
+    <div class="section-t">🎲 还有其他 3 种人生</div>
+    <section class="grid">
+      <a class="card c1" href="cunchao.html?ch=entry_card">
+        <div class="em">⚽</div><div class="nm">村超经理</div>
+        <div class="ds">草根球队、拉赞助、打村超，把村子踢出名气。</div>
+        <div class="go">点开执教 →</div>
+      </a>
+      <a class="card c2" href="liuxue.html?ch=entry_card">
+        <div class="em">🎓</div><div class="nm">留学生活</div>
+        <div class="ds">选课、打工、图书馆、实习，过一遍真实留学生活。</div>
+        <div class="go">点开体验 →</div>
+      </a>
+      <a class="card c3" href="chengshi.html?ch=entry_card">
+        <div class="em">🌏</div><div class="nm">城市人生</div>
+        <div class="ds">北上广深选一座城，租房通勤接私单，慢慢扎根。</div>
+        <div class="go">点开打拼 →</div>
+      </a>
+      <a class="card" href="projects_hub.html?ch=entry_card">
+        <div class="em">🎁</div><div class="nm">全部游戏</div>
+        <div class="ds">四款人生模拟一次看全，挑今天想玩的那个。</div>
+        <div class="go">进入游戏墙 →</div>
+      </a>
+    </section>
+
+    <section class="qr">
+      <img src="qr_hub.png" alt="游戏总入口二维码" onerror="this.onerror=null;this.src='qr_codes/qr_hub.png'">
+      <div class="t">扫码收藏，明天接着玩</div>
+      <div class="d">长按识别保存到相册，或转发给朋友。<br>每天回来领惊喜补给，连续越多越丰厚。</div>
+    </section>
+
+    <p class="note">免费试玩 · 进度保存在本机浏览器 · 游戏内金币与奖励均为虚拟数据，不产生真实扣款、无内购无自动续费。</p>
   </main>
+  <div id="toast"></div>
+<script>
+  function toast(t){var el=document.getElementById('toast');el.textContent=t;el.className='show';clearTimeout(toast._t);toast._t=setTimeout(function(){el.className=''},2200)}
+  function copy(text){
+    var fallback=function(){
+      try{var ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta)}catch(e){}
+      return Promise.resolve();
+    };
+    try{if(navigator.clipboard&&navigator.clipboard.writeText)return navigator.clipboard.writeText(text).catch(fallback)}catch(e){}
+    return fallback();
+  }
+  document.getElementById('copyCard').onclick=function(){
+    var code=localStorage.getItem('yeshi_projects_channel_v1_code')||'';
+    var text='【我的夜市战绩卡】\n我在城角夜市苑摆摊，点开就能玩：\n'+location.origin+location.pathname.replace(/wechat_entry\.html$/,'')+'index.html?ch=friend'+(code?('&inviter='+code):'')+'\n明天回来领惊喜补给，带上我的码双方都有结伴补给。';
+    copy(text).then(function(){toast('战绩卡已复制，发群里或朋友圈')});
+  };
+  document.getElementById('followBtn').onclick=function(){
+    toast('请在公众号搜索「城角夜市苑」关注，或在群里扫下方二维码');
+  };
+</script>
 </body>
 </html>
