@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0f1220">
-<title>城角夜市苑 · 人间纪实版夜市人生</title>
-<meta property="og:title" content="城角夜市苑 · 真实市井创业，今晚能不能不亏钱？">
-<meta property="og:description" content="摆摊、接客、掌握火候、收摊复盘——4 款点击即玩的人生模拟。我摆到第7天了，你敢来试试吗？">
+<title>城角夜市苑 · 夜市人生｜深度人性化真实案例版</title>
+<meta property="og:title" content="城角夜市苑 · 夜市人生｜摆摊不是娱乐，是人生考场">
+<meta property="og:description" content="盈亏是生活，冷暖是人间，坚持是信仰。10 个真实案例、善恶平衡、隐性成长，微信点开即玩。">
 <meta property="og:image" content="https://hengtong7177.github.io/yeshi-life/qr_hub.png">
-<meta name="description" content="城角夜市苑：夜市摆摊、村超经理、留学生活、城市人生，微信点开就能玩，不用下载。">
+<meta name="description" content="城角夜市苑：夜市人生深度人性化真实案例版，7分真实生活、2分人间温暖、1分自我革新，点击即玩。">
 <link rel="icon" href="data:,">
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -24,8 +24,9 @@
   .badge{display:inline-block;font-size:10px;letter-spacing:1px;color:#ffcf5c;background:rgba(255,207,92,.12);border:1px solid rgba(255,207,92,.4);border-radius:20px;padding:4px 10px;margin-bottom:10px}
   h1{font-size:27px;line-height:1.25;letter-spacing:.5px;margin-bottom:8px;position:relative}
   h1 em{font-style:normal;color:#ffcf5c}
-  .hook{font-size:13px;color:#c9cff2;line-height:1.7;margin-bottom:16px;position:relative}
+  .hook{font-size:13px;color:#c9cff2;line-height:1.7;margin-bottom:10px;position:relative}
   .hook b{color:#fff}
+  .slogan{font-size:11px;color:#ffcf5c;line-height:1.7;margin-bottom:14px;padding:8px 10px;background:rgba(255,207,92,.08);border-left:2px solid #ffcf5c;border-radius:6px;position:relative}
   .cta{
     display:block;width:100%;min-height:54px;line-height:54px;text-align:center;text-decoration:none;
     border:none;border-radius:14px;font-size:17px;font-weight:800;color:#201500;position:relative;
@@ -68,10 +69,11 @@
 <body>
   <main class="wrap">
     <section class="hero">
-      <span class="badge">🎮 微信点开即玩 · 人间纪实版</span>
-      <h1>今晚，<em>能不能不亏钱？</em></h1>
-      <p class="hook">真实市井、真实冷暖、真实创业。努力未必立刻盈利，但每一次复盘都在悄悄变强——<b>你敢来试一天吗？</b></p>
-      <a class="cta" id="mainCta" href="index.html">开始我的夜市人生<small>四种创业节奏 · 隐性成长永不清零 · 免费试玩</small></a>
+      <span class="badge">🎮 微信点开即玩 · 深度人性化 · 真实案例版</span>
+      <h1>摆摊不是娱乐，<em>是人生考场</em></h1>
+      <p class="hook">盈亏是生活，冷暖是人间，坚持是信仰。<b>七分真实生活、两分人间温暖、一分自我革新。</b></p>
+      <div class="slogan">10 个真实案例会发生：无端挑剔、同行压价、突发风雨、试吃不买，也会有顾客多给钱、熟客解围、路人鼓励、同行互助与学生包容。</div>
+      <a class="cta" id="mainCta" href="index.html">开始我在人间的一夜<small>10个真实案例 · 隐性成长永不清零 · 免费试玩</small></a>
       <div class="social three">
         <button id="makePoster" class="gold">🖼️ 生成游戏卡</button>
         <button id="copyCard">📋 复制战绩文案</button>
@@ -137,7 +139,7 @@
   }
   document.getElementById('copyCard').onclick=function(){
     var code=localStorage.getItem('yeshi_projects_channel_v1_code')||'';
-    var text='【我的夜市战绩卡】\n我在城角夜市苑摆摊，点开就能玩：\n'+location.origin+location.pathname.replace(/wechat_entry\.html$/,'')+'index.html?ch=friend'+(code?('&inviter='+code):'')+'\n明天回来领惊喜补给，带上我的码双方都有结伴补给。';
+    var text='【我的夜市人生·真实案例卡】\n摆摊不是娱乐，是人生考场；盈亏是生活，冷暖是人间，坚持是信仰。\n微信点开即玩：'+location.origin+location.pathname.replace(/wechat_entry\.html$/,'')+'index.html?ch=friend'+(code?('&inviter='+code):'')+'\n明天回来领惊喜补给，带上我的码双方都有结伴补给。';
     copy(text).then(function(){toast('战绩卡已复制，发群里或朋友圈')});
   };
   document.getElementById('followBtn').onclick=function(){
@@ -160,15 +162,15 @@
     // 徽章
     c.fillStyle='rgba(255,207,92,.15)';roundRect(c,W/2-118,52,236,40,20);c.fill();
     c.strokeStyle='rgba(255,207,92,.5)';c.lineWidth=1.5;c.stroke();
-    c.fillStyle='#ffcf5c';c.font='bold 18px sans-serif';c.fillText('🎮 微信点开即玩 · 不用下载',W/2,73);
+    c.fillStyle='#ffcf5c';c.font='bold 18px sans-serif';c.fillText('🎮 微信点开即玩 · 深度人性化真实案例版',W/2,73);
     // 主标题
-    c.fillStyle='#fff';c.font='bold 46px sans-serif';c.fillText('今晚，',W/2,150);
-    c.fillStyle='#ffcf5c';c.font='bold 46px sans-serif';c.fillText('能不能不亏钱？',W/2,204);
+    c.fillStyle='#fff';c.font='bold 44px sans-serif';c.fillText('摆摊不是娱乐',W/2,150);
+    c.fillStyle='#ffcf5c';c.font='bold 44px sans-serif';c.fillText('是人生考场',W/2,202);
     // 副标
-    c.fillStyle='#c9cff2';c.font='20px sans-serif';c.fillText('摆摊 · 接客 · 火候 · 收摊复盘',W/2,252);
-    c.fillStyle='#fff';c.font='bold 21px sans-serif';c.fillText('我已经摆到第 7 天，你敢来试一天吗？',W/2,290);
+    c.fillStyle='#c9cff2';c.font='19px sans-serif';c.fillText('盈亏是生活 · 冷暖是人间 · 坚持是信仰',W/2,250);
+    c.fillStyle='#fff';c.font='bold 18px sans-serif';c.fillText('10个真实案例 · 善恶平衡 · 隐性成长',W/2,288);
     // 四个游戏块
-    var games=[['🌃','夜市摆摊','#3a2a44'],['⚽','村超经理','#23304d'],['🎓','留学生活','#2d2448'],['🌏','城市人生','#1e2c44']];
+    var games=[['🌃','夜市人生','#3a2a44'],['⚽','村超经理','#23304d'],['🎓','留学生活','#2d2448'],['🌏','城市人生','#1e2c44']];
     var gw=136,gap=14,x0=(W-(gw*2+gap))/2;
     games.forEach(function(item,i){
       var col=i%2,row=Math.floor(i/2),x=x0+col*(gw+gap),y=336+row*104;
@@ -219,7 +221,7 @@
   document.getElementById('posterMask').onclick=function(e){if(e.target===this)this.classList.remove('show')};
   document.getElementById('posterCopy').onclick=function(){
     var code=myCode();
-    var text='【城角夜市苑 · 一起摆摊】\n微信点开就能玩，不用下载：\n'+baseUrl()+'wechat_entry.html?ch=friend'+(code?('&inviter='+code):'')+'\n我摆到第7天了，你敢来试一天吗？明天回来领惊喜补给！';
+    var text='【城角夜市苑 · 夜市人生｜真实案例版】\n摆摊不是娱乐，是人生考场；盈亏是生活，冷暖是人间，坚持是信仰。\n微信点开就能玩：'+baseUrl()+'wechat_entry.html?ch=friend'+(code?('&inviter='+code):'')+'\n10个真实案例，敢来试一天吗？明天回来领惊喜补给！';
     copy(text).then(function(){toast('分享文案已复制，配游戏卡图发群')});
   };
   document.getElementById('posterSave').onclick=function(){

@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0f1220">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<title>夜市人生 · 人间纪实版</title>
+<title>夜市人生 · 深度人性化真实案例版</title>
 <link rel="icon" href="data:,">
 <style>
   :root{
@@ -471,12 +471,12 @@
   <div id="intro" class="screen on">
     <div class="logo">🌃</div>
     <h1>夜市人生</h1>
-    <div class="tag">人 间 纪 实 版</div>
-    <div class="sub">真实市井 · 真实冷暖 · 真实创业。<br>努力未必立刻盈利，但每一次复盘都在悄悄变强。</div>
+    <div class="tag">深 度 人 性 化 · 真 实 案 例 版</div>
+    <div class="sub">摆摊不是娱乐，是万千普通人真实的人生考场。<br>盈亏是生活，冷暖是人间，坚持是信仰。</div>
     <div class="intro-feat">
-      <span>🌙 真实不确定性</span><span>🤝 善恶平衡</span><span>📈 隐性成长</span><span>📖 收摊复盘</span>
+      <span>🌙 10个真实案例</span><span>🤝 善恶平衡</span><span>📈 隐性成长</span><span>📖 收摊复盘</span>
     </div>
-    <button class="btn" id="startBtn" style="width:80%;font-size:17px;padding:16px">开始我的夜市人生</button>
+    <button class="btn" id="startBtn" style="width:80%;font-size:17px;padding:16px">开始我在人间的一夜</button>
     <div class="sub" style="margin-top:16px;font-size:11px">进度自动保存在本机 · 无需登录 · 完全免费试玩</div>
   </div>
 
@@ -497,7 +497,7 @@
       <div class="hub-teaser" id="hubTeaser"></div>
 
       <div class="card" style="margin-bottom:12px">
-        <h2>🎚️ 创业节奏 · 四种真实活法</h2>
+        <h2>🎚️ 创业节奏 · 四种真实活法 · 10个案例会发生</h2>
         <div id="modeGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
           <button class="btn mode-btn" data-mode="novice" style="font-size:12px;padding:10px 4px">🌱 新手试炼<br><small>创业起步</small></button>
           <button class="btn mode-btn" data-mode="formal" style="font-size:12px;padding:10px 4px">🔥 正式经营<br><small>深耕实干</small></button>
@@ -512,7 +512,7 @@
         <div class="sicon" style="background:linear-gradient(135deg,#4a2f5e,#7a3b6a)">🌃</div>
         <div class="sinfo">
           <div class="sname">夜市人生</div>
-          <div class="sdesc">摆摊经营 · 卡火候出锅 · 烟火气人生</div>
+          <div class="sdesc">真实摆摊 · 冷暖人间 · 隐性成长永不归零</div>
           <div class="sprog" id="progYeshi">第 1 天 · 小吃 2/12</div>
         </div>
         <div class="arrow">›</div>
@@ -727,6 +727,8 @@
         <h2 id="reviewTitle">📖 收摊复盘</h2>
         <div class="sub" id="reviewSummary" style="line-height:1.75"></div>
         <div class="sub" id="reviewGrowth" style="margin-top:8px;color:var(--gold);line-height:1.6"></div>
+        <div class="sub" id="reviewLife" style="margin-top:8px;line-height:1.7"></div>
+        <div class="sub" id="reviewBalance" style="margin-top:8px;line-height:1.7"></div>
         <div class="sub" id="reviewEvents" style="margin-top:8px;line-height:1.7"></div>
         <div class="sub" id="reviewShort" style="margin-top:8px;line-height:1.6"></div>
       </div>
@@ -1023,7 +1025,7 @@
 </div>
 <div id="rotateTip">
   <div class="rt-icon">📱</div>
-  <div class="rt-title">请竖屏体验夜市人生</div>
+  <div class="rt-title">请竖屏体验夜市人生 · 真实案例版</div>
   <div class="sub">竖屏更适合单手经营、接客和查看账本</div>
 </div>
 
@@ -1857,10 +1859,10 @@
   var CUSTOMERS=["🧑","👩","👨","👧","🧓","👦","👩‍🎓","🧑‍💼","👨‍👩‍👧","🕺","💃","👴"];
 
   /* ---------- 平台化存档：全局档案 + 场景独立进度 ---------- */
-  var SHARED_KEYS=["coins","rep","streak","lastDay","vip","skins","skin","achv","comboMax","totalRevenue","totalCustomers","perfect","bonds","rareMet","lastVisit","chapter","oddJobDay","reliefDay","loanDay","debt","depositDay","clues","mysteryStage","clueDay","errandClueDay","partners","junkDay","junkCnt","partnerDay","partnerVisitDay","friendReferral","partnerLog","listClaimed","cityOpenDay","emotion","growth","mode","fatigueDays","lossDays","reviewDays","buffs","dayEvents","lastReview","storyMet","fixedCostPaid"];
+  var SHARED_KEYS=["coins","rep","streak","lastDay","vip","skins","skin","achv","comboMax","totalRevenue","totalCustomers","perfect","bonds","rareMet","lastVisit","chapter","oddJobDay","reliefDay","loanDay","debt","depositDay","clues","mysteryStage","clueDay","errandClueDay","partners","junkDay","junkCnt","partnerDay","partnerVisitDay","friendReferral","partnerLog","listClaimed","cityOpenDay","emotion","growth","mode","fatigueDays","lossDays","reviewDays","buffs","dayEvents","lastReview","storyMet","fixedCostPaid","perspective","lifeView","kindBalance"];
   var DEF_SHARED={coins:180,rep:3.0,streak:1,lastDay:"",vip:false,skins:["default"],skin:"default",achv:[],comboMax:0,totalRevenue:0,totalCustomers:0,perfect:0,
     bonds:{},rareMet:[],lastVisit:"",chapter:1,oddJobDay:"",reliefDay:"",loanDay:"",debt:0,depositDay:"",clues:0,mysteryStage:0,clueDay:"",errandClueDay:"",partners:[],junkDay:"",junkCnt:0,partnerDay:"",partnerVisitDay:"",friendReferral:false,partnerLog:[],listClaimed:[],cityOpenDay:"",
-    emotion:60,growth:{experience:0,craft:0,empathy:0,resilience:0},mode:"formal",fatigueDays:0,lossDays:0,reviewDays:0,buffs:[],dayEvents:[],lastReview:null,storyMet:[],fixedCostPaid:0};
+    emotion:60,growth:{experience:0,craft:0,empathy:0,resilience:0,perspective:0},mode:"formal",fatigueDays:0,lossDays:0,reviewDays:0,buffs:[],dayEvents:[],lastReview:null,storyMet:[],fixedCostPaid:0,perspective:0,lifeView:{days:0,events:0,good:0,bad:0,gov:0,stories:0},kindBalance:{good:0,bad:0,gov:0}};
   var DEF_YESHI={day:1,best:0,unlockedFoods:["jianbing","kaolengmian"],unlockedStalls:["corner"],viral:false,firstPlay:"",taskDay:"",taskProgress:{},taskClaimed:false,firstBiteDone:false,restDays:0,stockBatches:[]};
   var DEF_CITY={day:1,best:0,shopType:"",shopLevel:1,renqing:50,fame:50,unlockedBusiness:["snack"],firstPlay:"",taskDay:"",taskProgress:{},taskClaimed:false,stock:0,soldToday:0,stockBatches:[]};
   var PLAT=null,SCENE_KEYS=[];
@@ -1886,12 +1888,16 @@
     if(typeof sh.emotion!=="number"||!isFinite(sh.emotion))sh.emotion=60;
     sh.emotion=Math.max(0,Math.min(100,sh.emotion));
     if(!sh.growth||typeof sh.growth!=="object")sh.growth={};
-    ["experience","craft","empathy","resilience"].forEach(function(k){sh.growth[k]=Math.max(0,Number(sh.growth[k])||0)});
+    ["experience","craft","empathy","resilience","perspective"].forEach(function(k){sh.growth[k]=Math.max(0,Number(sh.growth[k])||0)});
     if(!sh.mode)sh.mode="formal";
-    ["fatigueDays","lossDays","reviewDays","fixedCostPaid"].forEach(function(k){sh[k]=Number(sh[k])||0});
+    ["fatigueDays","lossDays","reviewDays","fixedCostPaid","perspective"].forEach(function(k){sh[k]=Number(sh[k])||0});
     if(!Array.isArray(sh.buffs))sh.buffs=[];
     if(!Array.isArray(sh.dayEvents))sh.dayEvents=[];
     if(!Array.isArray(sh.storyMet))sh.storyMet=[];
+    if(!sh.lifeView||typeof sh.lifeView!=="object")sh.lifeView={days:0,events:0,good:0,bad:0,gov:0,stories:0};
+    ["days","events","good","bad","gov","stories"].forEach(function(k){sh.lifeView[k]=Math.max(0,Number(sh.lifeView[k])||0)});
+    if(!sh.kindBalance||typeof sh.kindBalance!=="object")sh.kindBalance={good:0,bad:0,gov:0};
+    ["good","bad","gov"].forEach(function(k){sh.kindBalance[k]=Math.max(0,Number(sh.kindBalance[k])||0)});
     if(!PLAT.scenes)PLAT.scenes={};
     if(!PLAT.scenes.yeshi)PLAT.scenes.yeshi=Object.assign({},DEF_YESHI);
     if(!PLAT.scenes.city)PLAT.scenes.city=Object.assign({},DEF_CITY);
@@ -2088,8 +2094,9 @@
     if(box){
       if(S.mode==="archive"){
         box.style.display="block";
-        var g=hGrowth(),emo=hEmotion();
-        var html="<div class='sub' style='line-height:1.8'>隐性成长（永不清零）：经验 "+g.experience+" · 手艺 "+g.craft+" · 共情 "+g.empathy+" · 抗压 "+g.resilience+" · 合计 <b style='color:var(--gold)'>"+g.total+"</b><br>当前心境："+emo.em+" "+emo.name+" · 累计复盘 "+(S.reviewDays||0)+" 天<br>今日状态："+((S.buffs||[]).join("、")||"无")+"</div>";
+        var g=hGrowth(),emo=hEmotion(),lv=S.lifeView||{},kb=S.kindBalance||{};
+        var html="<div class='sub' style='line-height:1.8'>隐性成长（永不清零）：经验 "+g.experience+" · 手艺 "+g.craft+" · 共情 "+g.empathy+" · 抗压 "+g.resilience+" · 格局 "+g.perspective+" · 合计 <b style='color:var(--gold)'>"+g.total+"</b><br>当前心境："+emo.em+" "+emo.name+" · 累计复盘 "+(S.reviewDays||0)+" 天<br>今日状态："+((S.buffs||[]).join("、")||"无")+"</div>";
+        html+="<div class='sub' style='margin-top:8px;line-height:1.8'><b>人间阅历系统</b><br>真实经营 "+(lv.days||0)+" 天 · 经历人间事件 "+(lv.events||0)+" 件（善意 "+(lv.good||0)+" / 委屈 "+(lv.bad||0)+" / 环境 "+(lv.gov||0)+"）· 熟客故事 "+(lv.stories||0)+" 段<br>善恶平衡生态：善意 "+(kb.good||0)+" · 现实 "+(kb.bad||0)+" · 治理 "+(kb.gov||0)+"</div>";
         html+="<div class='sub' style='margin-top:8px;line-height:1.8'><b>熟客故事 · 创业图鉴</b><br>";
         REGULAR_STORIES.forEach(function(s,i){html+=(i+1)+". "+s.em+" "+s.name+"："+s.story+"（"+s.buff+"）<br>"});
         html+="</div>";
@@ -2503,16 +2510,16 @@
 
   /* ---------- 人间纪实版 v7：真实不确定性 + 隐性成长 + 复盘 ---------- */
   var HUMAN_EVENTS=[
-    {id:"a_change",kind:"good",em:"🌙",title:"深夜主动免找零",story:"深夜见你辛苦，顾客留下一句『不用找了』。",review:"总有人看见你的熬夜与坚守，平凡善意，温暖人间烟火。",coin:6,emotion:15,empathy:6,rep:0.02},
-    {id:"a_defend",kind:"good",em:"🤝",title:"熟客仗义解围",story:"遇到无理挑剔，老熟客替你说了几句公道话。",review:"真诚待人终得人心，善意互换是小微经营最稳的长期格局。",emotion:12,empathy:5,rep:0.03},
-    {id:"a_cheer",kind:"good",em:"💬",title:"路人的一句加油",story:"冷清的摊位前，有人停下说『加油，慢慢来』。",review:"普通人照亮普通人，是城市最温柔的力量。",emotion:12,resilience:5},
-    {id:"a_neighbor",kind:"good",em:"🍢",title:"同行互助",story:"隔壁摊主提醒你天气，还借来一把备用伞。",review:"摒弃内卷内耗，抱团共生、良性竞争是新时代经营创新。",emotion:8,empathy:4},
-    {id:"a_student",kind:"good",em:"🎒",title:"学生客群的包容",story:"轻微瑕疵被温柔包容，还耐心等你出锅。",review:"青春纯粹、人间温柔，是奋斗路上最好的馈赠。",emotion:8,rep:0.02},
-    {id:"b_picky",kind:"bad",em:"😤",title:"无理由挑剔",story:"菜品没问题，却有人刻意找茬压价。",review:"经营无法取悦所有人，接纳参差、修炼格局，是创业者必修课。",emotion:-8,coin:-4,empathy:2,resilience:5,rep:-0.02},
-    {id:"b_pricewar",kind:"bad",em:"🏷️",title:"同行低价分流",story:"隔壁恶意压价抢客，人流被分走一批。",review:"低端竞争拼价格，高阶经营拼品质、拼创新、拼口碑。",emotion:-6,flow:-0.12,resilience:6},
-    {id:"b_weather",kind:"bad",em:"🌧️",title:"突发风雨滞销",story:"一场急雨，备好的食材没能卖完。",review:"市场无常、风险永存，精细化预判、柔性备货是经营核心能力。",emotion:-12,coin:-12,resilience:8},
-    {id:"b_taster",kind:"bad",em:"🍡",title:"试吃不下单",story:"有人尝了几串，笑着摆手走开。",review:"小有得失、方成格局，不计微利之失，方得长久之路。",emotion:-4,coin:-3,empathy:2},
-    {id:"b_fatigue",kind:"bad",em:"😵",title:"熬夜操作失误",story:"太累了，火候差了那么一点。",review:"奋斗不是硬扛，张弛有度、自我调节是长期创业智慧。",emotion:-6,coin:-5,resilience:5},
+    {id:"a_change",kind:"good",em:"💰",title:"顾客多给钱",story:"深夜收摊前，顾客看你疲惫，笑着多留了钱：『不用找了，早点休息。』",review:"总有人看见你的熬夜与坚守；平凡善意，是人间烟火里最暖的光。",coin:6,emotion:15,empathy:6,rep:0.02},
+    {id:"a_defend",kind:"good",em:"🤝",title:"熟客解围",story:"遇到无端挑剔，老熟客替你说了几句公道话。",review:"真诚待人终得人心，善意互换是小微经营最稳的长期格局。",emotion:12,empathy:5,rep:0.03},
+    {id:"a_cheer",kind:"good",em:"💬",title:"路人鼓励",story:"冷清的摊位前，有人停下说『加油，慢慢来，谁都有难的时候。』",review:"普通人照亮普通人，是城市最温柔的力量；一句鼓励，足以撑过一个夜晚。",emotion:12,resilience:5},
+    {id:"a_neighbor",kind:"good",em:"🍢",title:"同行互助",story:"隔壁摊主提醒你天气，还借来一把备用伞。",review:"摒弃内卷内耗，抱团共生、良性竞争，才是基层创业者真正的成熟。",emotion:8,empathy:4},
+    {id:"a_student",kind:"good",em:"🎒",title:"学生包容",story:"轻微瑕疵被学生温柔包容，还耐心等你出锅。",review:"青春纯粹、人间温柔；被理解的那一刻，疲惫也会变轻。",emotion:8,rep:0.02},
+    {id:"b_picky",kind:"bad",em:"😤",title:"无端挑剔",story:"菜品没问题，却有人刻意找茬压价，把你忙到手忙脚乱。",review:"经营无法取悦所有人；接纳参差、守住品质，是创业者修炼格局的必修课。",emotion:-8,coin:-4,empathy:2,resilience:5,rep:-0.02},
+    {id:"b_pricewar",kind:"bad",em:"🏷️",title:"同行恶意竞争",story:"隔壁恶意压价抢客，还传出几句难听的话，人流被分走一批。",review:"低端竞争拼价格，高阶经营拼品质、拼创新、拼口碑；委屈之后仍要走正路。",emotion:-6,flow:-0.12,resilience:6},
+    {id:"b_weather",kind:"bad",em:"🌧️",title:"突发天气亏损",story:"一场急雨说来就来，备好的食材没能卖完。",review:"市场无常、风险永存；精细化预判、柔性备货，是普通人抗风险的真本事。",emotion:-12,coin:-12,resilience:8},
+    {id:"b_taster",kind:"bad",em:"🍡",title:"路人白嫖",story:"有人尝了几串，笑着摆手走开，只留下空空的签子。",review:"小有得失，方成格局；不计微利之失，才看得见长久之路。",emotion:-4,coin:-3,empathy:2},
+    {id:"b_fatigue",kind:"bad",em:"😵",title:"深夜疲惫失误",story:"太累了，火候差了那么一点，一份出品重做。",review:"奋斗不是硬扛；张弛有度、自我调节，才是长期创业的真智慧。",emotion:-6,coin:-5,resilience:5},
     {id:"c_check",kind:"gov",em:"📋",title:"文明合规巡查",story:"摊位整洁、证照齐全，巡查给了肯定。",review:"合规是底线，也是小微经营最稳的底气。",emotion:4,rep:0.03},
     {id:"c_limit",kind:"gov",em:"🚧",title:"路段临时限流",story:"路段临时管控，今晚客流少了一些。",review:"顺势而为、灵活调整，是基层业态的生存智慧。",emotion:-3,flow:-0.1,resilience:4},
     {id:"c_opt",kind:"gov",em:"✨",title:"夜市秩序优化",story:"摊位规划更合理，长期客流更稳了。",review:"环境变好，踏实经营的人终会被看见。",emotion:5,flow:0.06}
@@ -2530,13 +2537,13 @@
     {id:"novice",em:"🌱",name:"新手试炼",sub:"创业起步",sec:75,note:"时间更宽裕，先学会摆摊"},
     {id:"formal",em:"🔥",name:"正式经营",sub:"深耕实干",sec:60,note:"标准节奏，拼复盘与品质"},
     {id:"extreme",em:"⚡",name:"极限挑战",sub:"破局创新",sec:45,note:"时间更紧，波动更真实"},
-    {id:"archive",em:"📖",name:"成长档案",sub:"创业图鉴",sec:0,note:"查看隐性成长与熟客故事"}
+    {id:"archive",em:"📖",name:"成长档案",sub:"创业图鉴",sec:0,note:"查看隐性成长、经营格局与熟客故事"}
   ];
   function hMode(){return GAME_MODES.filter(function(m){return m.id===S.mode})[0]||GAME_MODES[1]}
-  function hEmotion(){var e=S.emotion||0;if(e<30)return{em:"😔",name:"低落迷茫"};if(e>70)return{em:"😌",name:"坚韧通透"};return{em:"😐",name:"平稳常态"}}
+  function hEmotion(){var e=S.emotion||0;if(e<20)return{em:"😢",name:"无力低落"};if(e<40)return{em:"😔",name:"疲惫迷茫"};if(e>=85)return{em:"🌟",name:"成熟破局"};if(e>70)return{em:"😌",name:"坚韧通透"};return{em:"😐",name:"平稳常态"}}
   function hEmotionAdd(d){S.emotion=Math.max(0,Math.min(100,(S.emotion||0)+d))}
-  function hGrowth(){var g=S.growth||{};return{experience:Math.round(g.experience||0),craft:Math.round(g.craft||0),empathy:Math.round(g.empathy||0),resilience:Math.round(g.resilience||0),total:Math.round((g.experience||0)+(g.craft||0)+(g.empathy||0)+(g.resilience||0))}}
-  function hAddGrowth(k,v){if(!S.growth)S.growth={experience:0,craft:0,empathy:0,resilience:0};S.growth[k]=Math.max(0,(S.growth[k]||0)+v)}
+  function hGrowth(){var g=S.growth||{};return{experience:Math.round(g.experience||0),craft:Math.round(g.craft||0),empathy:Math.round(g.empathy||0),resilience:Math.round(g.resilience||0),perspective:Math.round(g.perspective||S.perspective||0),total:Math.round((g.experience||0)+(g.craft||0)+(g.empathy||0)+(g.resilience||0)+(g.perspective||S.perspective||0))}}
+  function hAddGrowth(k,v){if(!S.growth)S.growth={experience:0,craft:0,empathy:0,resilience:0,perspective:0};S.growth[k]=Math.max(0,(S.growth[k]||0)+v)}
   function hRollEvents(){
     var good=HUMAN_EVENTS.filter(function(e){return e.kind==="good"}),bad=HUMAN_EVENTS.filter(function(e){return e.kind==="bad"}),gov=HUMAN_EVENTS.filter(function(e){return e.kind==="gov"});
     function pick(a){return a[Math.floor(Math.random()*a.length)]}
@@ -2544,7 +2551,16 @@
     if(Math.random()<0.45)list.push(pick(gov));
     if(Math.random()<0.3)list.push(pick(Math.random()<0.5?good:bad));
     list=list.filter(function(e,i){return list.indexOf(e)===i});
-    S.dayEvents=list.map(function(e){return e.id});return list;
+    S.dayEvents=list.map(function(e){return e.id});
+    if(!S.lifeView)S.lifeView={days:0,events:0,good:0,bad:0,gov:0,stories:0};
+    if(!S.kindBalance)S.kindBalance={good:0,bad:0,gov:0};
+    list.forEach(function(e){
+      S.lifeView.events++;S.lifeView[e.kind]=(S.lifeView[e.kind]||0)+1;
+      S.kindBalance[e.kind]=(S.kindBalance[e.kind]||0)+1;
+      if(S.storyMet.indexOf(e.id)<0)S.storyMet.push(e.id);
+    });
+    S.lifeView.stories=S.storyMet.length;
+    return list;
   }
   function hApplyEvents(list){
     var coinDelta=0,empathy=0,resilience=0;
@@ -2563,6 +2579,8 @@
     hAddGrowth("experience",events.length*2+Math.abs(profit||0)/100);
     hAddGrowth("empathy",Math.max(0,(events.filter(function(e){return e.kind==="good"}).length)*5-(events.filter(function(e){return e.kind==="bad"}).length)*2));
     hAddGrowth("resilience",(bad||0)*6+(profit<0?6:0));
+    hAddGrowth("perspective",Math.max(0,(bad||0)*0.5+(profit<0?1:0)+((S.reviewDays||0)>=3?0.5:0)));
+    S.perspective=hGrowth().perspective;
     return hGrowth();
   }
   function hBuffs(profit){
@@ -2574,6 +2592,8 @@
     if((S.reviewDays||0)>=3)b.push("💎 坚韧通透：口碑小幅加成");
     if((S.growth&&S.growth.craft||0)>=12)b.push("🪡 匠心：出品更稳");
     if((S.growth&&S.growth.resilience||0)>=12)b.push("🛡️ 抗压：逆境成长加倍");
+    if(hGrowth().perspective>=8)b.push("🧭 经营格局：降低冲动损失");
+    if(hEmotion().name==="成熟破局")b.push("🌟 成熟破局：稳定经营，口碑与客流小幅受益");
     S.buffs=b;return b;
   }
   function hReview(profit,revenue,cost,events,buffs){
@@ -2588,6 +2608,8 @@
     if(profit<0)short.push("定价偏差：创新经营思维、贴合客群需求");
     if(!short.length)short.push("无明显短板：保持节奏，持续复盘迭代");
     return{title:title,summary:summary,short:short,growth:g,emo:emo,
+      lifeView:S.lifeView||{days:0,events:0,good:0,bad:0,gov:0,stories:0},
+      kindBalance:S.kindBalance||{good:0,bad:0,gov:0},
       events:events.map(function(e){return e.em+" "+e.title+" · "+e.review}),buffs:buffs};
   }
 
@@ -2653,6 +2675,8 @@
     if(S.vip)ach("vip");
     // 人间纪实：坚持复盘 +8 心境，隐性成长永久累计（永不清零）
     S.reviewDays=(S.reviewDays||0)+1;
+    if(!S.lifeView)S.lifeView={days:0,events:0,good:0,bad:0,gov:0,stories:0};
+    S.lifeView.days=(S.lifeView.days||0)+1;
     hEmotionAdd(8);
     var growthAfter=hSettleGrowth(profit,G.good||0,G.bad||0,humanEvents);
     var buffs=hBuffs(profit);
@@ -2693,7 +2717,10 @@
     $("reviewCard").style.display="block";
     $("reviewTitle").textContent="📖 "+rv.title;
     $("reviewSummary").textContent=rv.summary;
-    $("reviewGrowth").textContent="📈 隐性成长 "+rv.growth.total+"（经验"+rv.growth.experience+"·手艺"+rv.growth.craft+"·共情"+rv.growth.empathy+"·抗压"+rv.growth.resilience+"） · "+rv.emo.em+" "+rv.emo.name;
+    $("reviewGrowth").textContent="📈 隐性成长 "+rv.growth.total+"（经验"+rv.growth.experience+"·手艺"+rv.growth.craft+"·共情"+rv.growth.empathy+"·抗压"+rv.growth.resilience+"·格局"+rv.growth.perspective+"） · "+rv.emo.em+" "+rv.emo.name;
+    var lv=rv.lifeView||{},kb=rv.kindBalance||{};
+    $("reviewLife").textContent="🧭 人间阅历系统：真实经营 "+(lv.days||0)+" 天 · 经历 "+(lv.events||0)+" 件人间事 · 熟客故事 "+(lv.stories||0)+" 段。委屈与善意都算数，都会沉淀成格局。";
+    $("reviewBalance").textContent="⚖️ 善恶平衡生态：善意 "+(kb.good||0)+" 次 · 现实 "+(kb.bad||0)+" 次 · 环境 "+(kb.gov||0)+" 次。七分真实、两分温暖、一分革新，才是普通人的生活。";
     $("reviewEvents").innerHTML="🌙 今夜人间（正负对冲）："+rv.events.map(function(t){return "<br>· "+t}).join("");
     $("reviewShort").innerHTML="🔍 今日短板："+rv.short.join("；");
     $("resStreak").textContent=S.streak;
