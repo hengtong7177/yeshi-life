@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0f1220">
-<title>城角夜市苑 · 夜市人生｜深度人性化真实案例版</title>
-<meta property="og:title" content="城角夜市苑 · 夜市人生｜摆摊不是娱乐，是人生考场">
+<title>城角夜市苑 · 深度人性化真实案例版</title>
+<meta property="og:title" content="城角夜市苑 · 摆摊不是娱乐，是人生考场">
 <meta property="og:description" content="盈亏是生活，冷暖是人间，坚持是信仰。10 个真实案例、善恶平衡、隐性成长，微信点开即玩。">
 <meta property="og:image" content="https://hengtong7177.github.io/yeshi-life/qr_hub.png">
-<meta name="description" content="城角夜市苑：夜市人生深度人性化真实案例版，7分真实生活、2分人间温暖、1分自我革新，点击即玩。">
+<meta name="description" content="城角夜市苑：深度人性化真实案例版，7分真实生活、2分人间温暖、1分自我革新，点击即玩。">
 <link rel="icon" href="data:,">
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -139,7 +139,7 @@
   }
   document.getElementById('copyCard').onclick=function(){
     var code=localStorage.getItem('yeshi_projects_channel_v1_code')||'';
-    var text='【我的夜市人生·真实案例卡】\n摆摊不是娱乐，是人生考场；盈亏是生活，冷暖是人间，坚持是信仰。\n微信点开即玩：'+location.origin+location.pathname.replace(/wechat_entry\.html$/,'')+'index.html?ch=friend'+(code?('&inviter='+code):'')+'\n明天回来领惊喜补给，带上我的码双方都有结伴补给。';
+    var text='【我的城角夜市苑·真实案例卡】\n摆摊不是娱乐，是人生考场；盈亏是生活，冷暖是人间，坚持是信仰。\n微信点开即玩：'+location.origin+location.pathname.replace(/wechat_entry\.html$/,'')+'index.html?ch=friend'+(code?('&inviter='+code):'')+'\n明天回来领惊喜补给，带上我的码双方都有结伴补给。';
     copy(text).then(function(){toast('战绩卡已复制，发群里或朋友圈')});
   };
   document.getElementById('followBtn').onclick=function(){
@@ -170,7 +170,7 @@
     c.fillStyle='#c9cff2';c.font='19px sans-serif';c.fillText('盈亏是生活 · 冷暖是人间 · 坚持是信仰',W/2,250);
     c.fillStyle='#fff';c.font='bold 18px sans-serif';c.fillText('10个真实案例 · 善恶平衡 · 隐性成长',W/2,288);
     // 四个游戏块
-    var games=[['🌃','夜市人生','#3a2a44'],['⚽','村超经理','#23304d'],['🎓','留学生活','#2d2448'],['🌏','城市人生','#1e2c44']];
+    var games=[['🌃','城角夜市苑','#3a2a44'],['⚽','村超经理','#23304d'],['🎓','留学生活','#2d2448'],['🌏','城市人生','#1e2c44']];
     var gw=136,gap=14,x0=(W-(gw*2+gap))/2;
     games.forEach(function(item,i){
       var col=i%2,row=Math.floor(i/2),x=x0+col*(gw+gap),y=336+row*104;
@@ -221,7 +221,7 @@
   document.getElementById('posterMask').onclick=function(e){if(e.target===this)this.classList.remove('show')};
   document.getElementById('posterCopy').onclick=function(){
     var code=myCode();
-    var text='【城角夜市苑 · 夜市人生｜真实案例版】\n摆摊不是娱乐，是人生考场；盈亏是生活，冷暖是人间，坚持是信仰。\n微信点开就能玩：'+baseUrl()+'wechat_entry.html?ch=friend'+(code?('&inviter='+code):'')+'\n10个真实案例，敢来试一天吗？明天回来领惊喜补给！';
+    var text='【城角夜市苑 · 真实案例版】\n摆摊不是娱乐，是人生考场；盈亏是生活，冷暖是人间，坚持是信仰。\n微信点开就能玩：'+baseUrl()+'wechat_entry.html?ch=friend'+(code?('&inviter='+code):'')+'\n10个真实案例，敢来试一天吗？明天回来领惊喜补给！';
     copy(text).then(function(){toast('分享文案已复制，配游戏卡图发群')});
   };
   document.getElementById('posterSave').onclick=function(){

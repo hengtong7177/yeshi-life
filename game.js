@@ -509,8 +509,8 @@ function render() {
 }
 
 function renderHome(pad, top) {
-  ui.text('城 角 夜 市 苑', W / 2, top + 20, 24, ui.colors.text, 'center', true);
-  ui.text('夜市人生 · 深度人性化真实案例版', W / 2, top + 44, 12, ui.colors.gold, 'center');
+  ui.text('城角夜市苑', W / 2, top + 20, 24, ui.colors.text, 'center', true);
+  ui.text('城角夜市苑 · 深度人性化真实案例版', W / 2, top + 44, 12, ui.colors.gold, 'center');
   // 当前称号条：一眼看到"我是谁"
   var tier = core.rewardTier(save);
   ui.rect(W / 2 - 124, top + 56, 248, 28, 15, ui.colors.panel2);
