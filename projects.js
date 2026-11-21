@@ -473,7 +473,17 @@
     toast(box.em + ' ' + box.name + '：' + box.text + ' +' + box.coin + '（连续第' + st.chestStreak + '天）');
     renderGame();
   }
+  // 独立 H5（村超/留学）直接跳转对应单文件，避免与旧通用引擎形成两套玩法。
+  // 城市人生仍使用本通用引擎（scene=chengshi）。
+  var STANDALONE = { cunchao: 'cunchao.html', liuxue: 'liuxue.html' };
   function navTo(target) {
+    if (target && STANDALONE[target]) {
+      var sUrl = baseLink() + STANDALONE[target] + '?ch=' + encodeURIComponent(ch);
+      var sCode = safeGet(CH_KEY + '_code');
+      if (sCode) sUrl += '&inviter=' + encodeURIComponent(sCode);
+      location.href = sUrl;
+      return;
+    }
     var url = baseLink() + 'projects_hub.html?ch=' + encodeURIComponent(ch);
     if (target && GAMES[target]) url += '&scene=' + target;
     location.href = url;
