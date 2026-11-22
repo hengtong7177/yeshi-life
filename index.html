@@ -3799,6 +3799,423 @@
     cyEnsureRegularBook();
     cyEnsureWeather();
     save();
+
+  /* ---------- 深度改革创新层 CY2：视觉锁眼 / 探奇 / 每日任务 / 画像适配 ---------- */
+  (function(){
+    var C2V="2.0.0";
+    var c2App=$("app")||document.body;
+    function c2El(tag,id,cls,html,parent){
+      var e=document.createElement(tag);
+      if(id)e.id=id;
+      if(cls)e.className=cls;
+      if(html!==undefined&&html!==null)e.innerHTML=html;
+      (parent||c2App).appendChild(e);
+      return e;
+    }
+    function c2State(){
+      if(!PLAT.shared.cy2||typeof PLAT.shared.cy2!=="object")PLAT.shared.cy2={};
+      var s=PLAT.shared.cy2;
+      if(!s.telemetry)s.telemetry={introStart:Date.now(),introMs:0,entry:"",days:0,missed:0,shareClicks:0,autoOpens:0,challengeOpens:0};
+      if(!s.profile)s.profile={explore:0,relax:0,realistic:0,strategy:0,label:"观察中"};
+      if(!s.daily)s.daily={date:"",tasks:[],progress:{},rewarded:0,note:""};
+      if(!Array.isArray(s.badges))s.badges=[];
+      if(!Array.isArray(s.lastTaskIds))s.lastTaskIds=[];
+      if(typeof s.lite!=="boolean")s.lite=false;
+      if(typeof s.ambient!=="boolean")s.ambient=false;
+      if(typeof s.eggDay!=="string")s.eggDay="";
+      if(typeof s.lossStreak!=="number")s.lossStreak=0;
+      return s;
+    }
+    c2State();save();
+
+    var c2Css=document.createElement("style");
+    c2Css.textContent=[
+      "#app{--c2Warm:rgba(255,190,92,.22)}",
+      "@keyframes c2Veil{0%{opacity:0}28%{opacity:.55}100%{opacity:0}}",
+      "@keyframes c2Lamp{0%,100%{opacity:.65;transform:translateX(-50%) scale(.96)}50%{opacity:1;transform:translateX(-50%) scale(1.04)}}",
+      "@keyframes c2Spark{0%{opacity:0;transform:translate3d(0,14px,0)}30%{opacity:.8}100%{opacity:0;transform:translate3d(18px,-60px,0)}}",
+      "@keyframes c2Marquee{0%{transform:translateX(0)}100%{transform:translateX(-55%)}}",
+      "@keyframes c2GlowText{0%{opacity:0;text-shadow:0 0 0 rgba(255,207,92,0)}60%{opacity:1;text-shadow:0 0 18px rgba(255,207,92,.85)}100%{opacity:1;text-shadow:0 0 8px rgba(255,207,92,.35)}}",
+      "@keyframes c2Breath{0%,100%{box-shadow:0 0 0 0 rgba(255,207,92,.08),0 6px 18px rgba(255,160,70,.20)}50%{box-shadow:0 0 0 5px rgba(255,207,92,.14),0 8px 26px rgba(255,160,70,.36)}}",
+      ".c2-veil{position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(420px 260px at 50% 42%,rgba(255,190,92,.26),rgba(255,140,60,.05) 45%,transparent 72%);animation:c2Veil 2.6s ease forwards}",
+      ".c2-lamp{position:absolute;left:50%;top:15%;width:92px;height:92px;margin-left:-46px;border-radius:50%;z-index:4;cursor:pointer;background:radial-gradient(circle,rgba(255,220,130,.95),rgba(255,168,70,.30) 45%,transparent 72%);animation:c2Lamp 3.2s ease-in-out infinite;filter:drop-shadow(0 0 16px rgba(255,180,80,.55))}",
+      ".c2-spark{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--gold);z-index:2;pointer-events:none;animation:c2Spark linear infinite}",
+      ".c2-tagline{color:var(--gold);font-size:12px;line-height:1.8;margin:8px 0 4px;animation:c2GlowText 1.6s .5s both}",
+      ".c2-marquee{position:absolute;left:0;right:0;bottom:42px;z-index:4;overflow:hidden;white-space:nowrap;color:var(--sub);font-size:10px;opacity:.9;pointer-events:none}",
+      ".c2-marquee span{display:inline-block;padding-left:100%;animation:c2Marquee 20s linear infinite}",
+      ".mode-btn.c2-hot{animation:c2Breath 2.8s ease-in-out infinite;border-color:rgba(255,207,92,.35)}",
+      ".mode-btn.c2-cold{border-color:rgba(180,160,255,.30);box-shadow:0 6px 18px rgba(140,120,255,.18)}",
+      ".mode-btn.c2-silver{border-color:rgba(200,210,240,.28);box-shadow:0 6px 18px rgba(180,200,255,.12)}",
+      ".c2-profile-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(255,207,92,.10);border:1px solid rgba(255,207,92,.30);color:var(--gold);border-radius:20px;padding:5px 10px;font-size:11px;margin-top:7px}",
+      ".c2-taskcard{background:linear-gradient(135deg,#263552,#2b2448);border-color:rgba(94,230,168,.28)}",
+      ".c2-progress{height:8px;background:#10142a;border-radius:7px;overflow:hidden;margin:7px 0 9px;border:1px solid var(--line)}",
+      ".c2-progress i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--gold));transition:width .35s ease}",
+      ".c2-taskrow{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--sub);padding:5px 0;border-top:1px dashed rgba(58,66,112,.7)}",
+      ".c2-taskrow.done{color:var(--green)}",
+      ".c2-taskrow b{margin-left:auto;color:var(--txt)}",
+      ".c2-medal{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:5px 8px;font-size:11px;margin:4px 5px 0 0;color:var(--gold)}",
+      ".c2-planchip{width:100%;margin-top:6px;text-align:left}",
+      ".c2-analysis{background:linear-gradient(135deg,#2a3a3a,#24304a)}",
+      "#app.cy2-era-2 .stage:after,#app.cy2-era-3 .stage:after,#app.cy2-era-4 .stage:after{position:absolute;left:10px;bottom:112px;z-index:9;font-size:10px;color:var(--gold);background:rgba(10,14,30,.72);border:1px solid rgba(255,207,92,.25);border-radius:9px;padding:4px 8px;pointer-events:none}",
+      "#app.cy2-era-2 .stage:after{content:'✨ 小灯牌已点亮 · 街坊开始认得你'}",
+      "#app.cy2-era-3 .stage:after{content:'🏮 夜市中段 · 人流与故事都更丰富'}",
+      "#app.cy2-era-4 .stage:after{content:'🌟 黄金摊位 · 有人专程来打卡'}",
+      "#app.cy2-lite .c2-veil,#app.cy2-lite .c2-spark,#app.cy2-lite .c2-lamp,#app.cy2-lite .mode-btn{animation:none!important}",
+      "#app.cy2-lite .c2-marquee span{animation-duration:45s}"
+    ].join("\n");
+    document.head.appendChild(c2Css);
+
+    var c2Veil=c2El("div","c2Veil","c2-veil","",$("intro"));
+    var c2Lamp=c2El("div","c2Lamp","c2-lamp","",$("intro"));
+    c2Lamp.title="夜市主灯牌";
+    for(var c2i=0;c2i<14;c2i++){
+      var sp=c2El("div","","c2-spark","",$("intro"));
+      sp.style.left=(8+Math.random()*84)+"%";
+      sp.style.top=(20+Math.random()*55)+"%";
+      sp.style.animationDuration=(4+Math.random()*4)+"s";
+      sp.style.animationDelay=(-Math.random()*5)+"s";
+    }
+    c2El("div","c2Tagline","c2-tagline","烟火夜市 · 凡人人生<br><span style='font-size:11px;color:var(--sub)'>不是暴富童话，是一场日复一日的谋生与成长</span>",$("intro"));
+    var c2Lines=[
+      "有人一晚盈利，有人熬到亏本，你的选择决定今晚结局",
+      "熟客记得你的味道，生活记得你的坚持",
+      "生意拼火候，人生拼分寸",
+      "低谷不是终点，复盘才是翻盘的开始",
+      "90%的人第一晚都会亏钱，你能撑过第几天？"
+    ];
+    c2El("div","c2Marquee","c2-marquee","<span>"+c2Lines.join("　·　")+"　·　"+c2Lines.join("　·　")+"</span>",$("intro"));
+    var c2Eggs=["好好出摊，自有星光","慢慢来，稳就是快","今晚的风，会记得你的灯","亏损是账，成长是命","认真生活的人，终会被生活看见"];
+    c2Lamp.onclick=function(){
+      var st=c2State();
+      if(st.eggDay===today()){toast("灯牌今天已经跟你说过一句话了，明晚再来");return}
+      st.eggDay=today();save();
+      var s=c2Eggs[Math.floor(Math.random()*c2Eggs.length)];
+      toast("🏮 "+s);
+      if(navigator.vibrate)navigator.vibrate(12);
+      SFX.play("good");
+    };
+    var c2IntroAt=Date.now();
+    var c2OldStart=$("startBtn").onclick;
+    $("startBtn").onclick=function(){
+      var st=c2State();
+      st.telemetry.introMs=Date.now()-c2IntroAt;
+      if(!st.telemetry.entry)st.telemetry.entry="intro";
+      save();
+      if(c2OldStart)c2OldStart.call(this);
+    };
+
+    var c2ModeMap={
+      novice:"星火启途<br><small>初次深耕 · 隐藏福利</small>",
+      formal:"烟火逐梦<br><small>正式创业 · 完整写实</small>",
+      extreme:"破局逆境<br><small>极限试炼 · 强者专属</small>",
+      archive:"岁月存档<br><small>成长图鉴 · 人生履历</small>"
+    };
+    Array.prototype.forEach.call(document.querySelectorAll(".mode-btn"),function(b){
+      var m=b.getAttribute("data-mode");
+      if(c2ModeMap[m])b.innerHTML=c2ModeMap[m];
+      var c2Cls=m==="formal"?"c2-hot":m==="extreme"?"c2-cold":m==="archive"?"c2-silver":"";
+      if(c2Cls)b.classList.add(c2Cls);
+      if(m==="novice"&&(PLAT.scenes.yeshi.day||1)>1)b.style.display="none";
+      var old=b.onclick;
+      b.onclick=function(){
+        var st=c2State();
+        st.telemetry.entry=m;
+        if(m==="extreme")st.telemetry.challengeOpens++;
+        if(m==="novice")c2ProfileAdd("explore",1);
+        if(m==="extreme")c2ProfileAdd("strategy",1);
+        save();
+        if(navigator.vibrate)navigator.vibrate(12);
+        if(old)old.call(this);
+        c2RenderProfile();
+      };
+    });
+
+    function c2ProfileAdd(k,n){
+      var st=c2State();st.profile[k]=(st.profile[k]||0)+(n||1);
+      save();
+    }
+    function c2ProfileLabel(){
+      var st=c2State(),p=st.profile,day=PLAT.scenes.yeshi.day||1;
+      if(day<3)return "观察中";
+      var arr=[["探索型",p.explore||0],["解压型",p.relax||0],["写实型",p.realistic||0],["策略型",p.strategy||0]];
+      arr.sort(function(a,b){return b[1]-a[1]});
+      st.profile.label=arr[0][1]>0?arr[0][0]:"写实型";save();
+      return st.profile.label;
+    }
+    var c2ProfileTag=c2El("div","c2ProfileTag","c2-profile-tag","🌃 当前画像：观察中 · 画像仅存本机",null);
+    var c2HubProfile=$("hubProfile");
+    if(c2HubProfile&&c2HubProfile.parentNode)c2HubProfile.parentNode.insertBefore(c2ProfileTag,c2HubProfile.nextSibling);
+    function c2RenderProfile(){
+      if(c2ProfileTag)c2ProfileTag.textContent="🌃 当前画像："+c2ProfileLabel()+" · 画像仅存本机";
+    }
+
+    var C2_TASKS=[
+      {id:"perfect",label:"匠心出品：完美出锅 3 次",goal:3,stat:"perfect",attr:"craft"},
+      {id:"meet",label:"人间相逢：接待 1 位熟客",goal:1,stat:"meet",attr:"empathy"},
+      {id:"safe",label:"风险把控：今晚净亏不超过 30 元",goal:1,stat:"safe",attr:"resilience"},
+      {id:"stock",label:"经营精进：收摊余货不超过 2 份",goal:1,stat:"stock",attr:"experience"},
+      {id:"kind",label:"善意之举：倾听、让步或照顾困境客人",goal:1,stat:"kind",attr:"empathy"}
+    ];
+    var C2_MAIN={id:"deep",label:"今日深耕：完整完成一次夜市营业",goal:1,stat:"main",attr:"experience"};
+    function c2PickTasks(){
+      var d=c2State().daily,dayKey=today();
+      if(d.date===dayKey&&d.tasks&&d.tasks.length)return d.tasks;
+      d.note="";
+      if(d.date&&!d.rewarded)c2State().telemetry.missed=(c2State().telemetry.missed||0)+1;
+      if(d.date&&!d.rewarded)d.note="昨日成长未圆满，部分奖励流失（不扣钱，今天补上就好）";
+      var pool=C2_TASKS.slice();
+      for(var i=pool.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=pool[i];pool[i]=pool[j];pool[j]=t}
+      var prefer=c2ProfileLabel();
+      if(prefer==="写实型"&&pool.indexOf(C2_TASKS[2])>=0){var s=pool.splice(pool.indexOf(C2_TASKS[2]),1)[0];pool.unshift(s)}
+      if(prefer==="探索型"&&pool.indexOf(C2_TASKS[1])>=0){var m=pool.splice(pool.indexOf(C2_TASKS[1]),1)[0];pool.unshift(m)}
+      d.date=dayKey;d.tasks=[C2_MAIN.id,pool[0].id,pool[1].id];d.progress={};d.rewarded=0;
+      save();return d.tasks;
+    }
+    function c2TaskById(id){return id===C2_MAIN.id?C2_MAIN:C2_TASKS.filter(function(t){return t.id===id})[0]}
+    function c2TaskAdd(stat,n){
+      var d=c2State().daily;c2PickTasks();
+      d.tasks.forEach(function(id){
+        var t=c2TaskById(id);
+        if(t&&t.stat===stat)d.progress[id]=Math.min(t.goal,(d.progress[id]||0)+(n||1));
+      });
+      save();c2RenderDaily();c2CheckDailyDone();
+    }
+    function c2DailyPct(){
+      var d=c2State().daily,ids=c2PickTasks(),done=0,total=0;
+      ids.forEach(function(id){var t=c2TaskById(id);if(!t)return;total+=t.goal;done+=Math.min(t.goal,d.progress[id]||0)});
+      return total?Math.round(done/total*100):0;
+    }
+    function c2CheckDailyDone(){
+      var d=c2State().daily,ids=c2PickTasks(),all=true;
+      ids.forEach(function(id){var t=c2TaskById(id);if(t&&(d.progress[id]||0)<t.goal)all=false});
+      if(!all||d.rewarded)return;
+      d.rewarded=1;save();
+      hAddGrowth("perspective",3);hAddGrowth("experience",2);S.coins+=15;save();
+      c2Badge("daily","今日圆满","当日三大闭环任务全部完成");
+      SFX.play("levelup");toast("🏅 今日成长圆满：格局+3、阅历+2、金币+15");
+      c2RenderDaily();
+    }
+    var c2TaskCard=c2El("div","c2TaskCard","card c2-taskcard","",null);
+    (function(){
+      var first=$("home")&&$("home").querySelector(".scroll");
+      if(first)first.insertBefore(c2TaskCard,first.firstChild);
+    })();
+    function c2RenderDaily(){
+      if(!c2TaskCard)return;
+      var st=c2State(),d=st.daily,ids=c2PickTasks(),pct=c2DailyPct();
+      var html="<h2>🎯 今日深耕任务 <span class='daily-badge'>每日刷新</span></h2>"+
+        "<div class='c2-progress'><i style='width:"+pct+"%'></i></div>"+
+        "<div class='sub' style='font-size:11px;margin-bottom:5px'>今日进度 "+pct+"%"+(d.rewarded?" · 已圆满":" · 未完成会留一点遗憾，但不扣钱")+"</div>";
+      ids.forEach(function(id){
+        var t=c2TaskById(id);if(!t)return;
+        var cur=Math.min(t.goal,d.progress[id]||0),ok=cur>=t.goal;
+        html+="<div class='c2-taskrow"+(ok?" done":"")+"'><span>"+(ok?"✅":"⬜")+" "+t.label+"</span><b>"+cur+"/"+t.goal+"</b></div>";
+      });
+      if(d.note)html+="<div class='sub' style='font-size:10px;color:var(--gold);margin-top:7px'>"+d.note+"</div>";
+      c2TaskCard.innerHTML=html;
+    }
+
+    function c2Badge(id,name,desc){
+      var st=c2State();
+      for(var i=0;i<st.badges.length;i++)if(st.badges[i].id===id)return false;
+      st.badges.push({id:id,name:name,desc:desc,date:today()});save();
+      toast("🏅 新勋章："+name+" · "+desc);
+      return true;
+    }
+    var c2BadgeCard=c2El("div","c2BadgeCard","card","",null);
+    (function(){
+      var first=$("stats")&&$("stats").querySelector(".scroll");
+      if(first)first.insertBefore(c2BadgeCard,first.firstChild);
+    })();
+    function c2RenderBadges(){
+      if(!c2BadgeCard)return;
+      var st=c2State(),html="<h2>🏅 勋章墙 · 人生履历</h2><div class='sub' style='font-size:11px'>本地画像："+c2ProfileLabel()+" · 已见证奇遇 "+((PLAT.shared.storyMet||[]).length)+" 段 · 所有数据只存本机</div><div style='margin-top:8px'>";
+      if(!st.badges.length)html+="<span class='sub' style='font-size:11px'>还没有勋章。第 1 天收摊就能拿到「入行纪念」。</span>";
+      st.badges.forEach(function(b){html+="<span class='c2-medal' title='"+b.desc+"'>"+b.name+"</span>"});
+      html+="</div>";c2BadgeCard.innerHTML=html;
+    }
+
+    var c2PlanCard=c2El("div","c2PlanCard","card","",null);
+    var c2AnalysisCard=c2El("div","c2AnalysisCard","card c2-analysis","",null);
+    (function(){
+      var nb=$("nextDayBtn");
+      if(nb&&nb.parentNode){nb.parentNode.insertBefore(c2AnalysisCard,nb);nb.parentNode.insertBefore(c2PlanCard,nb)}
+    })();
+    var C2_PLANS=["少囤货，先看清天气","把控火候，稳住前 3 单","善待熟客，记住老规矩","收摊后先复盘，再做决定"];
+    function c2RenderPlan(){
+      var r=PLAT.shared.lastReport||{},html="<h2>🧭 明日打算（选一句，格局值 +2）</h2><div class='sub' style='font-size:11px'>可以跳过；跳过则拿不到这部分格局奖励。</div>";
+      C2_PLANS.forEach(function(p,i){
+        html+="<button class='btn ghost sm c2-planchip' data-c2-plan='"+i+"' "+(r.plan?"disabled":"")+">"+(r.plan===p?"✅ ":"")+p+"</button>";
+      });
+      c2PlanCard.innerHTML=html;
+      Array.prototype.forEach.call(c2PlanCard.querySelectorAll("[data-c2-plan]"),function(b){
+        b.onclick=function(){
+          if(PLAT.shared.lastReport.plan)return;
+          var p=C2_PLANS[parseInt(b.getAttribute("data-c2-plan"),10)];
+          PLAT.shared.lastReport.plan=p;hAddGrowth("perspective",2);save();
+          SFX.play("good");toast("🧭 明日打算已记下：格局值 +2");c2RenderPlan();c2RenderBadges();
+        };
+      });
+      var show=c2ProfileLabel()==="策略型";
+      c2AnalysisCard.style.display=show?"block":"none";
+      if(show){
+        var revenue=G&&G.revenue||0,cost=G&&G.ingredientCost||0,rent=G&&G.stall&&G.stall.rent||0;
+        var sold=G&&G.sold||0,left=0;
+        try{left=yStockOf(G.foodKey,PLAT.scenes.yeshi.day)}catch(e){}
+        var rate=revenue?Math.round((revenue-cost)/revenue*100):0;
+        var convert=sold?Math.round(sold/Math.max(1,(G.stall&&G.stall.traffic||8))*100):0;
+        c2AnalysisCard.innerHTML="<h2>📊 经营分析附表 · 策略型专属</h2>"+
+          "<div class='line'><span>毛利率</span><b>"+rate+"%</b></div>"+
+          "<div class='line'><span>库存周转</span><b>"+sold+" 份卖出 / "+left+" 份余货</b></div>"+
+          "<div class='line'><span>客流转化率</span><b>"+convert+"%</b></div>"+
+          "<div class='line'><span>租金占比</span><b>"+(revenue?Math.round(rent/revenue*100):0)+"%</b></div>"+
+          "<div class='sub' style='font-size:10px;margin-top:6px'>本地策略画像解锁；用于复盘，不改变体检/存档结构。</div>";
+      }
+    }
+
+    var c2LiteBtn=c2El("button","c2LiteBtn","cy-chip","🌙 省流",$("cyQuick"));
+    var c2AudioBtn=c2El("button","c2AudioBtn","cy-chip","🎧 氛围音：关",$("cyQuick"));
+    function c2ApplyLite(){var st=c2State();c2App.classList.toggle("cy2-lite",!!st.lite);c2LiteBtn.textContent=st.lite?"🌙 省流：开":"🌙 省流";c2LiteBtn.classList.toggle("on",!!st.lite)}
+    c2LiteBtn.onclick=function(){var st=c2State();st.lite=!st.lite;save();c2ApplyLite();toast(st.lite?"🌙 省流简约模式已开启，动画降频":"✨ 动态夜市已恢复")};
+    var c2Actx=null,c2Gain=null;
+    function c2Ambient(){
+      var st=c2State();
+      if(!c2Actx){
+        try{
+          var AC=window.AudioContext||window.webkitAudioContext;if(!AC){toast("当前环境不支持氛围音");return}
+          c2Actx=new AC();
+          var buf=c2Actx.createBuffer(1,c2Actx.sampleRate*2,c2Actx.sampleRate),data=buf.getChannelData(0);
+          for(var i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*0.16;
+          var src=c2Actx.createBufferSource();src.buffer=buf;src.loop=true;
+          var flt=c2Actx.createBiquadFilter();flt.type="lowpass";flt.frequency.value=430;
+          c2Gain=c2Actx.createGain();c2Gain.gain.value=0;
+          src.connect(flt);flt.connect(c2Gain);c2Gain.connect(c2Actx.destination);src.start();
+        }catch(e){toast("氛围音开启失败，不影响游戏");return}
+      }
+      st.ambient=!st.ambient;save();
+      if(c2Actx.state==="suspended")c2Actx.resume();
+      if(c2Gain)c2Gain.gain.setTargetAtTime(st.ambient?0.018:0,c2Actx.currentTime,0.2);
+      c2AudioBtn.textContent=st.ambient?"🎧 氛围音：开":"🎧 氛围音：关";
+      c2AudioBtn.classList.toggle("on",!!st.ambient);
+      toast(st.ambient?"🎧 远处人声与晚风已开启，可随时关":"🔇 氛围音已关闭");
+    }
+    c2AudioBtn.onclick=c2Ambient;
+    c2ApplyLite();
+    c2AudioBtn.textContent=c2State().ambient?"🎧 氛围音：开":"🎧 氛围音：关";
+    c2AudioBtn.classList.toggle("on",!!c2State().ambient);
+
+    function c2Era(){
+      var d=PLAT.scenes.yeshi.day||1;
+      if(d>=30)return{n:4,name:"夜市核心黄金位",desc:"坚持三十天后，这条街终于给你留了最亮的位置"};
+      if(d>=16)return{n:3,name:"夜市中段",desc:"摊位搬进人流更旺的中段，故事也更多了"};
+      if(d>=8)return{n:2,name:"小灯牌摊位",desc:"你加了一盏小灯牌，街坊开始认得你了"};
+      return{n:1,name:"巷口简易摊位",desc:"从一张小桌开始，先把日子过起来"};
+    }
+    function c2ApplyEra(){
+      var e=c2Era();
+      for(var i=1;i<=4;i++)c2App.classList.remove("cy2-era-"+i);
+      c2App.classList.add("cy2-era-"+e.n);
+      var st=c2State();if(st.era!==e.n){st.era=e.n;save();if(e.n>1)toast("🏮 摊位外观升级："+e.name+" · "+e.desc)}
+    }
+
+    var c2OldBranch=cyBranch;
+    cyBranch=function(r,type){
+      c2OldBranch(r,type);
+      c2TaskAdd("meet",1);
+      if(type==="listen"||type==="recommend")c2TaskAdd("kind",1);
+      c2ProfileAdd(type==="recommend"?"strategy":"explore",1);
+      var book=cyEnsureRegularBook(),b=book[r.id]||{};
+      if((b.trust||0)>=4){
+        var food=null;
+        if(r.id==="laozhang"&&S.unlockedFoods.indexOf("naicha")<0)food="naicha";
+        if(r.id==="xiaoming"&&S.unlockedFoods.indexOf("malatang")<0)food="malatang";
+        if(food){S.unlockedFoods.push(food);save();toast("📜 熟客馈赠秘方：学会「"+FOODS[food].name+"」")}
+      }
+      c2RenderBadges();
+    };
+    var c2OldBook=cyOpenRegularBook;
+    cyOpenRegularBook=function(){c2ProfileAdd("explore",1);c2RenderBadges();c2OldBook()};
+    var c2OldShare=cyOpenReportShare;
+    cyOpenReportShare=function(){var st=c2State();st.telemetry.shareClicks=(st.telemetry.shareClicks||0)+1;save();c2ProfileAdd("explore",1);c2OldShare()};
+    var c2OldAuto=cyToggleAuto;
+    cyToggleAuto=function(){if(!PLAT.shared.autoMode){var st=c2State();st.telemetry.autoOpens=(st.telemetry.autoOpens||0)+1;c2ProfileAdd("relax",1)}c2OldAuto()};
+    var c2OldChallenge=$("cyChallengeBtn").onclick;
+    $("cyChallengeBtn").onclick=function(){var st=c2State();st.telemetry.challengeOpens=(st.telemetry.challengeOpens||0)+1;c2ProfileAdd("strategy",1);save();if(c2OldChallenge)c2OldChallenge.call(this);c2RenderProfile()};
+    CY_EVENTS.forEach(function(ev){
+      ev.choices.forEach(function(ch){
+        var old=ch.run;
+        ch.run=function(){old();if(ev.id==="haggle"||ev.id==="check")c2TaskAdd("kind",1);c2ProfileAdd(ev.id==="price"||ev.id==="haggle"?"realistic":"explore",1)};
+      });
+    });
+    var c2OldFire=cyFireNightEvent;
+    cyFireNightEvent=function(){
+      var label=c2ProfileLabel(),ids=[];
+      if(label==="探索型")ids=["friend","check","price","haggle"];
+      else if(label==="写实型"||label==="策略型")ids=["price","haggle","check","friend"];
+      else ids=["friend","haggle","check","price"];
+      var sorted=[];ids.forEach(function(id){var e=CY_EVENTS.filter(function(x){return x.id===id})[0];if(e)sorted.push(e)});
+      CY_EVENTS.forEach(function(e){if(sorted.indexOf(e)<0)sorted.push(e)});
+      CY_EVENTS.splice(0,CY_EVENTS.length);
+      sorted.forEach(function(e){CY_EVENTS.push(e)});
+      c2OldFire();
+    };
+
+    var c2OldCook=$("cookBtn").onclick;
+    $("cookBtn").onclick=function(){
+      var pre=(typeof cookPos==="number"&&typeof cookTarget==="number")?Math.abs(cookPos-cookTarget):999;
+      if(c2OldCook)c2OldCook.call(this);
+      if(pre<=5)c2TaskAdd("perfect",1);
+    };
+
+    var c2OldEnd=endDay;
+    endDay=function(){
+      var day=PLAT.scenes.yeshi.day||1,st=c2State();
+      if(G&&S.mode!=="extreme"){
+        if(day<=3){
+          var est=(G.revenue||0)-((G.stall&&G.stall.rent)||0)-(G.ingredientCost||0)-6+((G.bonusCoin||0)+(G.errandCoin||0));
+          if(est<-10){var help=Math.min(30,-10-est+8);G.bonusCoin=(G.bonusCoin||0)+help;toast("🌱 新手保底：今晚先给你补 "+help+" 元，别怕亏")}
+        }
+        if((st.lossStreak||0)>=3){G.bonusCoin=(G.bonusCoin||0)+10;st.lossStreak=0;toast("🤝 连续低谷后，一位老熟客照顾了你一单（+10 元）")}
+      }
+      c2OldEnd();
+      st.telemetry.days=(st.telemetry.days||0)+1;
+      var txt=(($("resProfit").textContent)||"0").replace(/[^0-9\-]/g,""),profit=parseInt(txt,10)||0;
+      st.lossStreak=profit<0?(st.lossStreak||0)+1:0;
+      if(profit>=0)c2ProfileAdd("realistic",1);
+      var left=0;try{left=yStockOf(G&&G.foodKey,PLAT.scenes.yeshi.day)}catch(e){}
+      if(left<=2)c2TaskAdd("stock",1);
+      c2TaskAdd("safe",profit>=-30?1:0);
+      c2TaskAdd("main",1);
+      if(day===1)c2Badge("firstnight","入行纪念","完整走过第一晚，无论盈亏都算数");
+      if(day===7&&S.mode==="extreme")c2Badge("windwalker","逆风行者","极限试炼连续撑过 7 天");
+      if(day===30)c2Badge("streetlegend","这条街记得你","第 30 天隐藏高光：你成了夜市的一部分");
+      c2ApplyEra();c2RenderPlan();c2RenderBadges();c2RenderProfile();c2RenderDaily();save();
+    };
+
+    var c2OldRenderHome=renderHome;
+    renderHome=function(){c2OldRenderHome();c2ApplyEra();c2RenderDaily();c2RenderProfile()};
+    var c2OldRenderStats=renderStats;
+    renderStats=function(){if(c2OldRenderStats)c2OldRenderStats();c2RenderBadges()};
+
+    setInterval(function(){
+      try{
+        if($("home")&&$("home").classList.contains("on"))c2RenderDaily();
+        if($("hub")&&$("hub").classList.contains("on"))c2RenderProfile();
+      }catch(e){}
+    },1000);
+
+    window.YESHI_ENHANCE_V2={
+      version:C2V,
+      profile:function(){return c2ProfileLabel()},
+      telemetry:function(){return c2State().telemetry},
+      daily:function(){var d=c2State().daily;return{date:d.date,pct:c2DailyPct(),tasks:d.tasks,progress:d.progress,rewarded:d.rewarded}},
+      badges:function(){return c2State().badges},
+      era:function(){return c2Era()},
+      lite:function(v){var st=c2State();if(v!==undefined){st.lite=!!v;save();c2ApplyLite()}return st.lite},
+      ambient:function(v){if(v!==undefined&&!!v!==!!c2State().ambient)c2AudioBtn.click();return c2State().ambient}
+    };
+    c2PickTasks();c2RenderDaily();c2RenderBadges();c2RenderPlan();c2RenderProfile();c2ApplyEra();save();
+  })();
   })();
 
 })();
