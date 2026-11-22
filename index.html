@@ -1923,6 +1923,10 @@
   function switchScene(name){if(!PLAT.scenes[name])return;PLAT.current=name;save()}
   function levelOf(){return Math.floor((PLAT.shared.totalRevenue||0)/300)+1}
   function today(){var d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
+  // CY3：统一渠道/推荐码读取与透传，打通主游戏→衍生游戏的裂变链
+  function hParam(n){try{var s=(location.search||'').replace(/^\?/,'').split('&');for(var i=0;i<s.length;i++){var p=s[i].split('=');if(decodeURIComponent(p[0])===n)return decodeURIComponent(p[1]||'')}}catch(e){}return ''}
+  var H_CH=hParam('ch')||'direct', H_INV=hParam('inviter')||hParam('ref')||'';
+  function hRefQS(){return '?ch=hub&inviter='+encodeURIComponent(H_INV)}
 
   /* ---------- UI 工具 ---------- */
   function show(id){var ss=document.querySelectorAll(".screen");for(var i=0;i<ss.length;i++)ss[i].classList.remove("on");$(id).classList.add("on")}
@@ -2075,7 +2079,7 @@
     if(s==="yeshi"){show("home");renderHome()}else{show("cityHome");renderCityHome()}
   }});
   Array.prototype.forEach.call(document.querySelectorAll('.scene-card[data-href]'),function(c){c.onclick=function(){
-    SFX.play('click');location.href=c.getAttribute("data-href")+"?ch=hub";
+    SFX.play('click');location.href=c.getAttribute("data-href")+hRefQS();
   }});
 
   /* ---------- 开场 ---------- */
@@ -2092,7 +2096,7 @@
     if(note)note.textContent="当前："+hMode().em+" "+hMode().name+"·"+hMode().sub+" · "+hMode().note+"（营业 "+hMode().sec+" 秒）";
     var box=$("archiveBox");
     if(box){
-      if(S.mode==="archive"){
+      if(PLAT.shared.archiveOpen){
         box.style.display="block";
         var g=hGrowth(),emo=hEmotion(),lv=S.lifeView||{},kb=S.kindBalance||{};
         var html="<div class='sub' style='line-height:1.8'>隐性成长（永不清零）：经验 "+g.experience+" · 手艺 "+g.craft+" · 共情 "+g.empathy+" · 抗压 "+g.resilience+" · 格局 "+g.perspective+" · 合计 <b style='color:var(--gold)'>"+g.total+"</b><br>当前心境："+emo.em+" "+emo.name+" · 累计复盘 "+(S.reviewDays||0)+" 天<br>今日状态："+((S.buffs||[]).join("、")||"无")+"</div>";
@@ -2107,7 +2111,12 @@
   Array.prototype.forEach.call(document.querySelectorAll(".mode-btn"),function(b){
     b.onclick=function(){
       var m=b.getAttribute("data-mode");
-      if(m==="archive"){SFX.play('click');renderModeUI();toast("📖 成长档案已展开，选择经营节奏即可继续");return}
+      if(m==="archive"){
+        // CY3：档案是只读查看态，不改变经营节奏；用独立标记控制展开，避免 mode 被污染成 sec=0 的档案态
+        PLAT.shared.archiveOpen=!PLAT.shared.archiveOpen;save();SFX.play('click');renderModeUI();
+        toast(PLAT.shared.archiveOpen?"📖 成长档案已展开，再点一次收起":"📖 成长档案已收起");return;
+      }
+      PLAT.shared.archiveOpen=false;
       S.mode=m;save();SFX.play('click');renderModeUI();
       toast("已切换："+hMode().name+"·"+hMode().sub+"（营业 "+hMode().sec+" 秒）");
     };
@@ -2121,10 +2130,11 @@
   /* ---------- 主页渲染 ---------- */
   var selStall="corner",selFood="jianbing",yStock=3;
   function renderHome(){
-    // 连续签到判定
+    // 连续签到判定（CY3：判定后立即写回 lastDay，避免反复渲染主页多次累加 streak）
     if(S.lastDay&&S.lastDay!==today()){
       var y=new Date();y.setDate(y.getDate()-1);var ys=y.getFullYear()+"-"+(y.getMonth()+1)+"-"+y.getDate();
       S.streak=(S.lastDay===ys)?S.streak+1:1;
+      S.lastDay=today();save();
     }
     $("dayTag").textContent="第 "+S.day+" 天";
     $("coins").textContent=S.coins;$("rep").textContent=S.rep.toFixed(1);$("streak").textContent=S.streak;
@@ -2313,7 +2323,8 @@
       if(Date.now()<G.pauseUntil)return;
 
       // 生成顾客（连续排队：只要没到客流上限就持续补位）
-      var totalTraffic=Math.max(3,G.stall.traffic+G.bonusTraffic);
+      // CY3：心境/隐性成长/善恶平衡真实修正客流
+      var totalTraffic=Math.max(3,(G.stall.traffic+G.bonusTraffic)*hFlowMod());
       var maxCustomers=Math.min(18,Math.round(totalTraffic/1.6));
       var wantQueue=Math.min(4,2+Math.floor(S.rep/2)); // 口碑越高，同时排队的人越多
       var stockLeft=yStockOf(G.foodKey,PLAT.scenes.yeshi.day);
@@ -2429,9 +2440,11 @@
     clockResume(G); // 服务完成，营业钟与耐心恢复流动
     clearInterval(cookTimer);$("cookModal").classList.remove("on");
     var diff=Math.abs(cookPos-cookTarget);
+    // CY3：手艺成长真实拓宽完美/良好判定窗口（最多各 +10 个百分点），成长可被玩家感知
+    var tol=hCraftTolerance(),perfectWin=5+tol*50,goodWin=17+tol*50;
     var quality,mult,good=false,perfectHit=false;
-    if(diff<=5){quality="完美出锅！";mult=1.5;good=true;perfectHit=true;G.perfect++;S.perfect++}
-    else if(diff<=17){quality="不错！";mult=1.1;good=true}
+    if(diff<=perfectWin){quality="完美出锅！";mult=1.5;good=true;perfectHit=true;G.perfect++;S.perfect++}
+    else if(diff<=goodWin){quality="不错！";mult=1.1;good=true}
     else{quality="有点糊了…";mult=0.6;good=false}
     // 连击系统：连续完美累加，增益收入
     if(perfectHit){G.combo=(G.combo||0)+1;if(G.combo>S.comboMax)S.comboMax=G.combo}
@@ -2544,6 +2557,21 @@
   function hEmotionAdd(d){S.emotion=Math.max(0,Math.min(100,(S.emotion||0)+d))}
   function hGrowth(){var g=S.growth||{};return{experience:Math.round(g.experience||0),craft:Math.round(g.craft||0),empathy:Math.round(g.empathy||0),resilience:Math.round(g.resilience||0),perspective:Math.round(g.perspective||S.perspective||0),total:Math.round((g.experience||0)+(g.craft||0)+(g.empathy||0)+(g.resilience||0)+(g.perspective||S.perspective||0))}}
   function hAddGrowth(k,v){if(!S.growth)S.growth={experience:0,craft:0,empathy:0,resilience:0,perspective:0};S.growth[k]=Math.max(0,(S.growth[k]||0)+v)}
+  // CY3 规则深化：隐性成长/心境/善恶平衡真正进入经营决策（克制幅度，玩家可感知但不失衡）
+  // 返回客流乘数：心境高→回头客多；共情/格局高→口碑引流；善恶失衡→轻微损耗
+  function hFlowMod(){
+    var emo=S.emotion||60,g=hGrowth(),kb=S.kindBalance||{good:0,bad:0,gov:0};
+    var m=1+(emo-60)/400;                       // 心境 0~100 → 0.85~1.15
+    m+=Math.min(0.08,g.empathy*0.002);          // 共情积累 → 最多 +8% 客流
+    m+=Math.min(0.06,g.perspective*0.0015);     // 经营格局 → 最多 +6%
+    var imbalance=Math.abs((kb.good||0)-(kb.bad||0));
+    if(imbalance>20)m-=Math.min(0.05,(imbalance-20)*0.001); // 善恶长期失衡 → 最多 -5%
+    var fatigue=Math.max(0,(S.fatigueDays||0)-2),loss=Math.max(0,(S.lossDays||0)-1);
+    m-=Math.min(0.06,fatigue*0.01+loss*0.01);   // 疲惫/连败 → 客流下滑
+    return Math.max(0.8,Math.min(1.2,m));
+  }
+  // 完美出锅容差：手艺越高，判定窗口越宽（真实降低失误，而非仅文案）
+  function hCraftTolerance(){return Math.min(0.10,(hGrowth().craft||0)*0.002)}
   function hRollEvents(){
     var good=HUMAN_EVENTS.filter(function(e){return e.kind==="good"}),bad=HUMAN_EVENTS.filter(function(e){return e.kind==="bad"}),gov=HUMAN_EVENTS.filter(function(e){return e.kind==="gov"});
     function pick(a){return a[Math.floor(Math.random()*a.length)]}
@@ -2954,9 +2982,11 @@
 
   function renderCityHome(){
     var c=PLAT.scenes.city;
+    // CY3：同主页修复，判定后写回 lastDay，防止重复渲染多次累加
     if(S.lastDay&&S.lastDay!==today()){
       var y=new Date();y.setDate(y.getDate()-1);var ys=y.getFullYear()+"-"+(y.getMonth()+1)+"-"+y.getDate();
       S.streak=(S.lastDay===ys)?S.streak+1:1;
+      S.lastDay=today();save();
     }
     $("cDay").textContent=c.day;
     $("cCoins").textContent=PLAT.shared.coins;
@@ -3506,7 +3536,10 @@
           var raw=($("cyImportText").value||"").trim();
           if(raw.indexOf("CJYS1.")===0)raw=raw.slice(6);
           var obj=JSON.parse(cyB64Dec(raw));
-          if(!obj||!obj.shared||!obj.scenes)throw new Error("bad save");
+          // CY3：导入前做结构校验，拒绝旧版/异源存档污染当前 PLAT 结构
+          if(!obj||!obj.shared||typeof obj.shared!=="object"||!obj.scenes||typeof obj.scenes!=="object"||!obj.scenes.yeshi||!obj.scenes.city)throw new Error("bad save");
+          var _s=obj.shared;
+          if(typeof _s.coins!=="number"||!isFinite(_s.coins)||!Array.isArray(_s.achv)||typeof _s.growth!=="object"||!_s.growth)throw new Error("bad shared");
           localStorage.setItem(KEY,JSON.stringify(obj));toast("✅ 导入成功，正在刷新…");setTimeout(function(){location.reload()},500);
         }catch(e){toast("❌ 存档码无效，请完整复制后再试")}
       };
@@ -3785,7 +3818,8 @@
       saveCode:function(){return cySaveCode()},
       loadCode:function(code){
         var raw=(code||"").trim();if(raw.indexOf("CJYS1.")===0)raw=raw.slice(6);
-        var obj=JSON.parse(cyB64Dec(raw));if(!obj||!obj.shared||!obj.scenes)throw new Error("bad save");
+        var obj=JSON.parse(cyB64Dec(raw));
+        if(!obj||!obj.shared||typeof obj.shared!=="object"||!obj.scenes||!obj.scenes.yeshi||!obj.scenes.city||typeof obj.shared.coins!=="number"||!isFinite(obj.shared.coins)||typeof obj.shared.growth!=="object")throw new Error("bad save");
         localStorage.setItem(KEY,JSON.stringify(obj));location.reload();
       },
       report:function(){return PLAT.shared.lastReport||null},

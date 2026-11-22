@@ -5,22 +5,37 @@
 var CONFIG = require('./config.js');
 
 var Store = (function () {
-  var KEY = 'lifesim_platform_v1';
+  // CY3：小游戏使用独立键，避免与浏览器主 H5 的同名键互毁存档。
+  // 首次运行时若旧键确为小游戏结构（有 scene、无 scenes）则平滑迁移。
+  var KEY = 'lifesim_mini_v1';
+  var KEY_LEGACY = 'lifesim_platform_v1';
   var isWx = (typeof wx !== 'undefined' && typeof wx.getStorageSync === 'function');
-  function read() {
-    try {
-      var raw = isWx ? wx.getStorageSync(KEY) : (typeof localStorage !== 'undefined' ? localStorage.getItem(KEY) : null);
-      if (!raw) return null;
-      return typeof raw === 'string' ? JSON.parse(raw) : raw;
-    } catch (e) { return null; }
+  function getRaw(k) {
+    try { return isWx ? wx.getStorageSync(k) : (typeof localStorage !== 'undefined' ? localStorage.getItem(k) : null); }
+    catch (e) { return null; }
   }
-  function write(obj) {
+  function setRaw(k, obj) {
     try {
-      if (isWx) wx.setStorageSync(KEY, obj);
-      else if (typeof localStorage !== 'undefined') localStorage.setItem(KEY, JSON.stringify(obj));
+      if (isWx) wx.setStorageSync(k, obj);
+      else if (typeof localStorage !== 'undefined') localStorage.setItem(k, JSON.stringify(obj));
     } catch (e) {}
   }
-  return { read: read, write: write, isWx: isWx };
+  function isMiniShape(raw) {
+    if (!raw || typeof raw !== 'object') return false;
+    return !!(raw.shared && raw.scene && !raw.scenes);
+  }
+  function read() {
+    var raw = getRaw(KEY);
+    if (!raw) {
+      var legacy = getRaw(KEY_LEGACY);
+      if (typeof legacy === 'string') { try { legacy = JSON.parse(legacy); } catch (e) { legacy = null; } }
+      if (isMiniShape(legacy)) { setRaw(KEY, legacy); return legacy; }
+    }
+    if (!raw) return null;
+    return typeof raw === 'string' ? JSON.parse(raw) : raw;
+  }
+  function write(obj) { setRaw(KEY, obj); }
+  return { read: read, write: write, isWx: isWx, KEY: KEY };
 })();
 
 function todayKey() {
@@ -492,13 +507,14 @@ function claimLife(save) {
   return { gained: gained, notes: notes };
 }
 
-// ---- 火候判定：口碑越高，稳定区越宽 ----
-function judgeCook(pos, rep) {
+// ---- 火候判定：口碑越高、手艺成长越高，稳定区越宽（tol 为手艺容差，按百分点折算）----
+function judgeCook(pos, rep, tol) {
   var r = Number(rep) || 3;
-  var goodLo = r >= 4 ? 35 : (r < 2.5 ? 41 : 38);
-  var goodHi = r >= 4 ? 65 : (r < 2.5 ? 59 : 62);
-  var perfectLo = r >= 4 ? 46 : 47;
-  var perfectHi = r >= 4 ? 54 : 53;
+  var t = Math.max(0, Math.min(10, Number(tol) || 0)); // 手艺容差百分点，最多 ±10
+  var goodLo = (r >= 4 ? 35 : (r < 2.5 ? 41 : 38)) - t;
+  var goodHi = (r >= 4 ? 65 : (r < 2.5 ? 59 : 62)) + t;
+  var perfectLo = (r >= 4 ? 46 : 47) - t;
+  var perfectHi = (r >= 4 ? 54 : 53) + t;
   if (pos >= perfectLo && pos <= perfectHi) return { quality: 'perfect', mult: 1.35, perfect: true };
   if (pos >= goodLo && pos <= goodHi) return { quality: 'good', mult: 1.0, perfect: false };
   return { quality: 'fail', mult: 0, perfect: false };
@@ -868,6 +884,23 @@ function addGrowth(save, key, v) {
   if (!save.shared.growth) save.shared.growth = { experience: 0, craft: 0, empathy: 0, resilience: 0, perspective: 0 };
   save.shared.growth[key] = Math.max(0, (save.shared.growth[key] || 0) + v);
 }
+// CY3 规则深化：隐性成长/心境/善恶平衡真正进入经营决策（与 H5 同口径，克制幅度）
+function flowModifier(save) {
+  var sh = save.shared, emo = Number(sh.emotion) || 60, g = growthSnapshot(save);
+  var kb = sh.kindBalance || { good: 0, bad: 0, gov: 0 };
+  var m = 1 + (emo - 60) / 400;
+  m += Math.min(0.08, (g.empathy || 0) * 0.002);
+  m += Math.min(0.06, (g.perspective || 0) * 0.0015);
+  var imbalance = Math.abs((kb.good || 0) - (kb.bad || 0));
+  if (imbalance > 20) m -= Math.min(0.05, (imbalance - 20) * 0.001);
+  var fatigue = Math.max(0, (sh.fatigueDays || 0) - 2), loss = Math.max(0, (sh.lossDays || 0) - 1);
+  m -= Math.min(0.06, fatigue * 0.01 + loss * 0.01);
+  return Math.max(0.8, Math.min(1.2, m));
+}
+// 火候完美区容差：手艺越高判定越宽（最多各 +10 个百分点）
+function cookTolerance(save) {
+  return Math.min(0.10, (growthSnapshot(save).craft || 0) * 0.002);
+}
 // 每日固定事件：正负强制对冲（2–4件，至少1正面+1负面）
 function rollHumanEvents(save) {
   var good = HUMAN_EVENTS.filter(function (e) { return e.kind === 'good'; });
@@ -908,11 +941,11 @@ function refreshBuffs(save, stats, profit) {
   sh.buffs = b;
   return b;
 }
-// 今日事件结算：把事件影响写入金币/口碑/情绪/隐性成长
+// 今日事件结算：把事件影响写入口碑/情绪/隐性成长；金币统一由 settleDay 经 profit 一次入账（CY3 防双重入账）
 function applyHumanEvents(save, events, stats) {
   var flowDelta = 0, coinDelta = 0, clearedBad = 0, lossReduce = 0;
   (events || []).forEach(function (e) {
-    if (e.coin) { coinDelta += e.coin; save.shared.coins = Math.max(0, save.shared.coins + e.coin); }
+    if (e.coin) { coinDelta += e.coin; }
     if (e.emotion) applyEmotion(save, e.emotion);
     if (e.rep) applyRep(save, e.rep);
     if (e.empathy) addGrowth(save, 'empathy', e.empathy);
@@ -1039,7 +1072,11 @@ function collectCity(save) {
 // 导出为可复制的紧凑字符串；导入做白名单字段校验，避免脏存档破坏游戏
 var CLOUD_KEYS = ['coins', 'rep', 'totalRevenue', 'totalCustomers', 'perfect', 'clues', 'chapter', 'streak',
   'rareMet', 'listClaimed', 'partners', 'partnerLog', 'bonds', 'ownedSkins', 'activeSkin',
-  'achClaimed', 'cityUnlocked', 'cityIncome', 'goodsFound', 'history', 'cloudSlotId'];
+  'achClaimed', 'cityUnlocked', 'cityIncome', 'goodsFound', 'history', 'cloudSlotId',
+  // CY3：补齐隐性成长账本，避免云备份/存档码丢失长期沉淀
+  'emotion', 'growth', 'mode', 'fatigueDays', 'lossDays', 'reviewDays', 'fixedCostPaid', 'perspective',
+  'lifeView', 'kindBalance', 'buffs', 'dayEvents', 'storyMet', 'tierClaimed', 'chestDay', 'chestStreak',
+  'badges', 'ref', 'highlight', 'bestCombo', 'bestProfit'];
 function exportCloud(save) {
   ensureDayState(save);
   var out = { v: 5, game: CONFIG.GAME_NAME, ts: Date.now(), shared: {}, scene: { day: save.scene.day } };
@@ -1062,6 +1099,26 @@ function importCloud(save, text) {
   if (typeof data.shared.cityUnlocked === 'boolean') save.shared.cityUnlocked = data.shared.cityUnlocked;
   if (typeof data.shared.activeSkin === 'string') save.shared.activeSkin = data.shared.activeSkin;
   if (typeof data.shared.cloudSlotId === 'string' && data.shared.cloudSlotId) save.shared.cloudSlotId = data.shared.cloudSlotId;
+  // CY3：恢复隐性成长/心境/善恶/推荐等长期账本，逐字段做类型校验，避免脏存档破坏运行时
+  var growKeys = ['experience', 'craft', 'empathy', 'resilience', 'perspective'];
+  if (data.shared.growth && typeof data.shared.growth === 'object') {
+    if (!save.shared.growth || typeof save.shared.growth !== 'object') save.shared.growth = {};
+    growKeys.forEach(function (k) {
+      var n = Number(data.shared.growth[k]);
+      if (isFinite(n) && n >= 0) save.shared.growth[k] = n;
+    });
+  }
+  var moreNums = ['fatigueDays', 'lossDays', 'reviewDays', 'fixedCostPaid', 'perspective', 'chestStreak', 'bestCombo', 'bestProfit'];
+  moreNums.forEach(function (k) { var n = Number(data.shared[k]); if (isFinite(n) && n >= 0) save.shared[k] = n; });
+  var emo = Number(data.shared.emotion); if (isFinite(emo)) save.shared.emotion = clamp(emo, 0, 100);
+  if (typeof data.shared.mode === 'string' && data.shared.mode) save.shared.mode = data.shared.mode;
+  if (typeof data.shared.chestDay === 'string') save.shared.chestDay = data.shared.chestDay;
+  ['lifeView', 'kindBalance', 'ref', 'highlight'].forEach(function (k) {
+    if (data.shared[k] && typeof data.shared[k] === 'object') save.shared[k] = data.shared[k];
+  });
+  ['buffs', 'dayEvents', 'storyMet', 'tierClaimed', 'badges'].forEach(function (k) {
+    if (Array.isArray(data.shared[k])) save.shared[k] = data.shared[k];
+  });
   if (data.scene && isFinite(Number(data.scene.day))) save.scene.day = Math.max(save.scene.day, Number(data.scene.day));
   ensureDayState(save); saveSave(save);
   return { ok: true, msg: '云存档已恢复' };
@@ -1207,6 +1264,7 @@ module.exports = {
   // 深度人性化·真实案例版 v8
   HUMAN_EVENTS: HUMAN_EVENTS, REGULAR_STORIES: REGULAR_STORIES,
   emotionState: emotionState, applyEmotion: applyEmotion, growthSnapshot: growthSnapshot, addGrowth: addGrowth,
+  flowModifier: flowModifier, cookTolerance: cookTolerance,
   rollHumanEvents: rollHumanEvents, refreshBuffs: refreshBuffs, applyHumanEvents: applyHumanEvents,
   settleGrowth: settleGrowth, buildReview: buildReview, fixedDailyCost: fixedDailyCost,
   rollEnvironment: rollEnvironment

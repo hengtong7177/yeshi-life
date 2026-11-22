@@ -196,7 +196,8 @@ function openCook(c) {
 function doCook() {
   if (!cook) return;
   var c = cook.customer;
-  var r = core.judgeCook(cook.pos, save.shared.rep);
+  // CY3：手艺成长拓宽火候判定窗口（百分点），成长可被玩家真实感知
+  var r = core.judgeCook(cook.pos, save.shared.rep, core.cookTolerance(save) * 100);
   var g = core.GOODS[save.scene.shelf];
   var batch = core.consumeStock(save, save.scene.shelf);
   if (!batch) { note('没货了'); scene = 'play'; cook = null; return; }
@@ -211,12 +212,13 @@ function doCook() {
     if (stats.combo >= 3) income += 5;
     stats.gross += income; stats.foodCost += batch.cost; stats.sold++;
     if (r.perfect) stats.perfect++;
-    save.shared.coins += income;
+    // CY3：销售收入在成交时已实时入账，计入 paidOut，收摊结算只补差额，避免重复入账
+    save.shared.coins += income; stats.paidOut = (stats.paidOut || 0) + income;
     qualityText = (r.perfect ? '完美出锅 +' : '出锅 +') + income;
     if (c.want === save.scene.shelf) qualityText += ' · 正合口味';
     if (stats.combo >= 3) qualityText += ' · 连击×' + stats.combo;
     if (c.rare && c.bonus > 0) {
-      stats.tips += c.bonus; save.shared.coins += c.bonus;
+      stats.tips += c.bonus; save.shared.coins += c.bonus; stats.paidOut = (stats.paidOut || 0) + c.bonus;
       qualityText += ' · 稀有客人 +' + c.bonus; c.bonus = 0;
     }
     if (c.regular) {
@@ -273,7 +275,8 @@ function doLoan() {
   var key = todayKey();
   if ((save.scene.debt || 0) > 0) { note('先把上一笔借款还清'); return; }
   if (save.shared.loanDay === key) { note('借款每天只能办一次'); return; }
-  save.shared.loanDay = key; save.shared.debt = 68; save.shared.coins += 60;
+  // CY3：借款统一写入 scene.debt，与 settleDay 的自动扣还字段一致（原误写 shared.debt 导致永远不还且锁死后续借款）
+  save.shared.loanDay = key; save.scene.debt = 68; save.shared.coins += 60;
   core.saveSave(save); note('借本钱 +60，收摊自动还 68');
 }
 function doDeposit() {
@@ -967,7 +970,8 @@ function loop(ts) {
       note('邻摊委托：' + stats.errandTask.def.from + ' · ' + stats.errandTask.def.title, 1600);
     }
 
-    var flow = Math.max(2, core.STALLS[save.scene.stall].flow + (stats.trafficBonus || 0) + core.skinFlowBonus(save));
+    // CY3：心境/隐性成长/善恶平衡真实修正客流，与 H5 口径一致
+    var flow = Math.max(2, (core.STALLS[save.scene.stall].flow + (stats.trafficBonus || 0) + core.skinFlowBonus(save)) * core.flowModifier(save));
     if (Math.random() < flow / 100000 * dt && customers.length < 4) spawnCustomer();
     if (stats.timeLeft <= 0) endBusiness();
   } else if (scene === 'cook' && cook) {
