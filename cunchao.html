@@ -24,16 +24,17 @@
 <body>
 <div class="app">
   <div class="topbar"><button class="iconbtn ghost" id="backBtn" type="button">‹ 游戏墙</button><div class="titlebox"><div class="gametitle">村超经理</div><div class="channel" id="channel">渠道：直接打开</div></div><button class="iconbtn" id="modeBtn" type="button">手动模式</button></div>
-  <section class="hero"><span class="kicker">一支村队，撑起一个村子的体面</span><h1>没钱、没外援、<br>只有一群真心爱踢球的人。</h1><p>赛季备战 → 赛季进行 → 赛季收官。会输球、会缺钱、会被嘲笑，也会在全村人的呐喊里赢下一场足以记很多年的比赛。</p><div class="row"><button class="iconbtn primary" id="posterBtn" type="button">生成赛季报告</button><button class="iconbtn" id="copyBtn" type="button">复制复盘文案</button><button class="iconbtn" id="shareBtn" type="button">喊乡亲来</button></div><div class="notice" id="dailyNotice">每次操作自动保存在本机浏览器；隔日回来领球队补给。</div></section>
+  <section class="hero"><span class="kicker">草根球场没有高薪球星，只有乡亲热爱</span><h1>村超逐光・球队经理<br>拼尽全力，守住球场烟火。</h1><p>草根球场没有高薪球星，只有乡亲热爱，拼尽全力，守住球场烟火。赛季备战 → 赛季进行 → 赛季收官；会输球、会缺钱、会被嘲笑，也会在全村人的呐喊里赢下一场足以记很多年的比赛。</p><div class="row"><button class="iconbtn primary" id="posterBtn" type="button">生成赛季报告</button><button class="iconbtn" id="copyBtn" type="button">复制复盘文案</button><button class="iconbtn" id="shareBtn" type="button">喊乡亲来</button></div><div class="notice" id="dailyNotice">每次操作自动保存在本机浏览器；隔日回来领球队补给。</div></section>
   <section class="stats" id="stats"></section>
   <section class="panel"><div class="phase" id="phase"></div><div id="playPanel"></div></section>
   <section class="panel"><h2>关系记忆簿 <small>你的选择会被记住</small></h2><div class="npcs" id="npcs"></div></section>
   <section class="panel"><h2>村里最近发生 <small>本机记录</small></h2><div class="logs" id="logs"></div></section>
 </div>
-<nav class="dnav"><div class="dnav-inner"><button type="button" data-nav="hub">广场</button><button type="button" class="active" data-nav="cunchao">村超</button><button type="button" data-nav="liuxue">留学</button></div></nav>
+<nav class="dnav"><div class="dnav-inner"><button type="button" data-nav="hub">广场</button><button type="button" data-nav="yeshi">城角</button><button type="button" class="active" data-nav="cunchao">村超</button><button type="button" data-nav="liuxue">留学</button></div></nav>
 <div class="toast" id="toast"></div>
 <div class="mask" id="modalMask"><div class="modal" id="modalBox"></div></div>
 <div class="mask" id="posterMask"><div style="width:100%;max-width:420px;text-align:center"><img class="poster" id="posterImg" alt="赛季人生报告"><div class="hint">微信里长按图片保存；发群/朋友圈时配上复制的复盘文案。</div><button class="iconbtn" id="posterClose" type="button" style="margin-top:10px">关闭</button></div></div>
+<script src="base.js"></script>
 <script>
 (function(){
 'use strict';
@@ -120,7 +121,17 @@ $('modeBtn').onclick=function(){S.auto=!S.auto;save();render();toast(S.auto?'已
 $('posterBtn').onclick=drawPoster;$('copyBtn').onclick=function(){copyText(reportText()).then(function(){toast('复盘文案已复制')})};
 $('shareBtn').onclick=function(){copyText('我在《村超经理》带了 '+S.season+' 个赛季，战绩 '+S.record.w+'胜'+S.record.d+'平'+S.record.l+'负。点开试试：'+shareLink()).then(function(){toast('分享文案与链接已复制')})};
 $('posterClose').onclick=function(){$('posterMask').classList.remove('show')};
-Array.prototype.forEach.call(document.querySelectorAll('[data-nav]'),function(b){b.onclick=function(){var t=b.getAttribute('data-nav');if(t==='hub')location.href=baseUrl()+'projects_hub.html?ch='+encodeURIComponent(ch)+refQS();else location.href=baseUrl()+t+'.html?ch='+encodeURIComponent(ch)+refQS()}});
+Array.prototype.forEach.call(document.querySelectorAll('[data-nav]'),function(b){b.onclick=function(){var t=b.getAttribute('data-nav');if(t==='hub')location.href=baseUrl()+'projects_hub.html?ch='+encodeURIComponent(ch)+refQS();else{var page=t==='yeshi'?'index':t;location.href=baseUrl()+page+'.html?ch='+encodeURIComponent(ch)+refQS()}}});
+window.MORTAL_GAME_HOOKS={game:'cunchao',grant:function(e,ev){
+  try{
+    e=e||{};
+    apply({cash:(e.cash||0)+(e.dayReward||0),rep:e.rep,form:e.form,support:e.support,pitch:e.pitch});
+    if(e.npc)for(var k in e.npc)applyNpc(k,e.npc[k]);
+    pushLog('底座奇遇：'+((ev&&ev.title)||'乡土小事')+' 已完成');
+    save();render();
+  }catch(err){}
+}};
+if(window.MortalBase)window.MortalBase.init('cunchao',{name:'村超经理'});
 returnBonus();render();
 })();
 </script>

@@ -435,7 +435,7 @@
   }
   function shareText() {
     var g = GAMES[scene];
-    if (!g) return '真实人生模拟器：村超经理、留学生活、城市人生，点击即玩。';
+    if (!g) return '凡人人生模拟器：城角夜市苑、留学生活模拟器、村超经理，点击即玩。';
     var tier = rewardTier(scene, st);
     var lines = [
       '我在《' + g.title + '》玩到第 ' + st.day + ' 天了，现在是「' + tier.name + '」。',
@@ -475,7 +475,7 @@
   }
   // 独立 H5（村超/留学）直接跳转对应单文件，避免与旧通用引擎形成两套玩法。
   // 城市人生仍使用本通用引擎（scene=chengshi）。
-  var STANDALONE = { cunchao: 'cunchao.html', liuxue: 'liuxue.html' };
+  var STANDALONE = { yeshi: 'index.html', cunchao: 'cunchao.html', liuxue: 'liuxue.html' };
   function navTo(target) {
     if (target && STANDALONE[target]) {
       var sUrl = baseLink() + STANDALONE[target] + '?ch=' + encodeURIComponent(ch);
@@ -519,7 +519,7 @@
     var cards = [
       { s: 'cunchao', icon: '⚽', bg: 'linear-gradient(135deg,#6e4a3a,#8e5a4a)', title: '村超经理', desc: '草根球队 · 赞助赛事 · 乡村热血' },
       { s: 'liuxue', icon: '🎓', bg: 'linear-gradient(135deg,#3a4a6e,#4a5a8e)', title: '留学生活', desc: '签证选课 · 海外打工 · 毕业求职' },
-      { s: 'chengshi', icon: '🌏', bg: 'linear-gradient(135deg,#5a3a6e,#7a4a8e)', title: '城市人生', desc: '北上广深 · 租房通勤 · 漂泊记忆' }
+      { s: 'yeshi', icon: '🏮', bg: 'linear-gradient(135deg,#6e3a2e,#a86b32)', title: '城角夜市苑', desc: '一晚夜市 · 谋生取舍 · 人间烟火' }
     ];
     cards.forEach(function (c) {
       var b = el('button', 'hubcard');

@@ -1029,6 +1029,7 @@
   <div class="sub">竖屏更适合单手经营、接客和查看账本</div>
 </div>
 
+<script src="base.js"></script>
 <script>
 (function(){
   "use strict";
@@ -4251,6 +4252,27 @@
     c2PickTasks();c2RenderDaily();c2RenderBadges();c2RenderPlan();c2RenderProfile();c2ApplyEra();save();
   })();
   })();
+
+  window.MORTAL_GAME_HOOKS={game:'yeshi',grant:function(e,ev,ch){
+    try{
+      e=e||{};
+      if(e.coins)S.coins=Math.max(0,(S.coins||0)+e.coins);
+      if(e.dayReward)S.coins=(S.coins||0)+e.dayReward;
+      if(e.growthCraft)hAddGrowth('craft',e.growthCraft);
+      if(e.growthEmpathy)hAddGrowth('empathy',e.growthEmpathy);
+      if(e.growthResilience)hAddGrowth('resilience',e.growthResilience);
+      if(e.growthPerspective)hAddGrowth('perspective',e.growthPerspective);
+      if(e.growthExperience)hAddGrowth('experience',e.growthExperience);
+      save();
+      // 底座奖励即时到账：同步刷新各场景金币数字，避免“到账但界面没变”
+      try{
+        var _cv=String(Math.round((S.coins||0)*100)/100);
+        ['coins','shopCoins','cCoins'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=_cv;});
+      }catch(_e){}
+      toast((ev&&ev.title?ev.title:'底座奇遇')+'：收益与成长已结算');
+    }catch(err){}
+  }};
+  if(window.MortalBase)window.MortalBase.init('yeshi',{name:'城角夜市苑'});
 
 })();
 </script>

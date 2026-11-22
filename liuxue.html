@@ -24,16 +24,17 @@
 <body>
 <div class="app">
   <div class="topbar"><button class="iconbtn ghost" id="backBtn" type="button">‹ 游戏墙</button><div class="titlebox"><div class="gametitle">留学生活模拟器</div><div class="channel" id="channel">渠道：直接打开</div></div><button class="iconbtn" id="modeBtn" type="button">手动模式</button></div>
-  <section class="hero"><span class="kicker">这一年留学，你能不能撑过去？</span><h1>孤独、成长、取舍，<br>不一定是完美毕业。</h1><p>开学规划 → 学期生活 → 期末复盘。允许挂科、负债、想家，也允许在某一个学期突然被生活温柔以待。</p><div class="row"><button class="iconbtn primary" id="posterBtn" type="button">生成学期报告</button><button class="iconbtn" id="copyBtn" type="button">复制复盘文案</button><button class="iconbtn" id="shareBtn" type="button">喊朋友来</button></div><div class="notice" id="dailyNotice">每次操作自动保存在本机浏览器；隔日回来领生活补给。</div></section>
+  <section class="hero"><span class="kicker">这一年留学，你能不能撑过去？</span><h1>他乡求学・扎根日记<br>没有开挂逆袭，只有一边取舍。</h1><p>他乡求学，没有开挂逆袭，只有一边取舍，一边慢慢扎根。开学规划 → 学期生活 → 期末复盘；允许挂科、负债、想家，也允许在某一个学期突然被生活温柔以待。</p><div class="row"><button class="iconbtn primary" id="posterBtn" type="button">生成学期报告</button><button class="iconbtn" id="copyBtn" type="button">复制复盘文案</button><button class="iconbtn" id="shareBtn" type="button">喊朋友来</button></div><div class="notice" id="dailyNotice">每次操作自动保存在本机浏览器；隔日回来领生活补给。</div></section>
   <section class="stats" id="stats"></section>
   <section class="panel"><div class="phase" id="phase"></div><div id="playPanel"></div></section>
   <section class="panel"><h2>关系记忆簿 <small>你的选择会被记住</small></h2><div class="npcs" id="npcs"></div></section>
   <section class="panel"><h2>最近发生 <small>本机记录</small></h2><div class="logs" id="logs"></div></section>
 </div>
-<nav class="dnav"><div class="dnav-inner"><button type="button" data-nav="hub">广场</button><button type="button" data-nav="cunchao">村超</button><button type="button" class="active" data-nav="liuxue">留学</button></div></nav>
+<nav class="dnav"><div class="dnav-inner"><button type="button" data-nav="hub">广场</button><button type="button" data-nav="yeshi">城角</button><button type="button" data-nav="cunchao">村超</button><button type="button" class="active" data-nav="liuxue">留学</button></div></nav>
 <div class="toast" id="toast"></div>
 <div class="mask" id="modalMask"><div class="modal" id="modalBox"></div></div>
 <div class="mask" id="posterMask"><div style="width:100%;max-width:420px;text-align:center"><img class="poster" id="posterImg" alt="学期人生报告"><div class="hint">微信里长按图片保存；发群/朋友圈时配上复制的复盘文案。</div><button class="iconbtn" id="posterClose" type="button" style="margin-top:10px">关闭</button></div></div>
+<script src="base.js"></script>
 <script>
 (function(){
 'use strict';
@@ -114,7 +115,17 @@ $('modeBtn').onclick=function(){S.auto=!S.auto;save();render();toast(S.auto?'已
 $('posterBtn').onclick=drawPoster;$('copyBtn').onclick=function(){copyText(reportText()).then(function(){toast('复盘文案已复制')})};
 $('shareBtn').onclick=function(){copyText('我在《留学生活模拟器》熬到了第'+S.term+'学期，GPA '+S.gpa.toFixed(1)+'。点开试试：'+shareLink()).then(function(){toast('分享文案与链接已复制')})};
 $('posterClose').onclick=function(){$('posterMask').classList.remove('show')};
-Array.prototype.forEach.call(document.querySelectorAll('[data-nav]'),function(b){b.onclick=function(){var t=b.getAttribute('data-nav');if(t==='hub')location.href=baseUrl()+'projects_hub.html?ch='+encodeURIComponent(ch)+refQS();else location.href=baseUrl()+t+'.html?ch='+encodeURIComponent(ch)+refQS()}});
+Array.prototype.forEach.call(document.querySelectorAll('[data-nav]'),function(b){b.onclick=function(){var t=b.getAttribute('data-nav');if(t==='hub')location.href=baseUrl()+'projects_hub.html?ch='+encodeURIComponent(ch)+refQS();else{var page=t==='yeshi'?'index':t;location.href=baseUrl()+page+'.html?ch='+encodeURIComponent(ch)+refQS()}}});
+window.MORTAL_GAME_HOOKS={game:'liuxue',grant:function(e,ev){
+  try{
+    e=e||{};
+    apply({cash:(e.cash||0)+(e.dayReward||0),gpa:e.gpa,mental:e.mental,social:e.social,visa:e.visa,language:e.language});
+    if(e.npc)for(var k in e.npc)applyNpc(k,e.npc[k]);
+    pushLog('底座奇遇：'+((ev&&ev.title)||'他乡小事')+' 已完成');
+    save();render();
+  }catch(err){}
+}};
+if(window.MortalBase)window.MortalBase.init('liuxue',{name:'留学生活模拟器'});
 returnBonus();render();
 })();
 </script>
