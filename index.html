@@ -3282,6 +3282,525 @@
     if(go==="cityHome"){show("cityHome");renderCityHome()}else{show("cityBook");renderCityBook()}
   }});
 
+  /* ---------- 深度改造增强层：P0/P1（补全而非重写） ---------- */
+  (function(){
+    var CY_VER="1.0.0";
+    var app=$("app")||document.body;
+    function cyEl(tag,id,cls,html,parent){
+      var e=document.createElement(tag);
+      if(id)e.id=id;
+      if(cls)e.className=cls;
+      if(html!==undefined&&html!==null)e.innerHTML=html;
+      (parent||app).appendChild(e);
+      return e;
+    }
+    var cyCss=document.createElement("style");
+    cyCss.textContent=[
+      ".btn,.nav{min-height:42px}",
+      ".cy-quick{position:absolute;top:72px;right:8px;z-index:31;display:none;gap:5px;flex-wrap:wrap;justify-content:flex-end;max-width:190px}",
+      ".cy-chip{border:1px solid var(--line);background:rgba(32,38,67,.94);color:var(--txt);border-radius:11px;padding:7px 9px;font-size:11px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.25)}",
+      ".cy-chip:active{transform:scale(.94)}",
+      ".cy-chip.on{background:linear-gradient(135deg,var(--gold),#ff9d4d);color:#12152a;border-color:transparent}",
+      ".cy-live{position:absolute;left:10px;right:10px;top:72px;z-index:17;background:rgba(12,16,34,.88);border:1px solid var(--line);border-radius:14px;padding:8px 10px;color:var(--txt);font-size:11px;line-height:1.5;display:none;box-shadow:0 6px 18px rgba(0,0,0,.35)}",
+      ".cy-live-row{display:flex;justify-content:space-between;gap:8px;align-items:center}",
+      ".cy-live-net{font-weight:800;font-size:13px;margin-top:3px}",
+      ".cy-live-tip{color:var(--sub);margin-top:2px}",
+      ".cy-overlay{position:absolute;inset:0;z-index:60;background:rgba(6,8,18,.82);display:none;align-items:center;justify-content:center;padding:14px}",
+      ".cy-overlay.on{display:flex}",
+      ".cy-sheet{width:100%;max-width:400px;max-height:88%;overflow:auto;background:linear-gradient(160deg,#242a50,#171b30);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 18px 60px rgba(0,0,0,.6)}",
+      ".cy-sheet h3{font-size:18px;margin:2px 0 10px}",
+      ".cy-head{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:10px}",
+      ".cy-head .em{font-size:24px}",
+      ".cy-head h3{flex:1}",
+      ".cy-close{border:1px solid var(--line);background:var(--card2);color:var(--txt);border-radius:10px;width:36px;height:36px;font-size:18px;cursor:pointer}",
+      ".cy-guide-step{text-align:center;padding:18px 8px 8px}",
+      ".cy-guide-step .em{font-size:50px;margin-bottom:10px}",
+      ".cy-guide-step h3{font-size:20px;margin-bottom:10px}",
+      ".cy-guide-step p{color:var(--sub);font-size:13px;line-height:1.85;text-align:left}",
+      ".cy-guide-dots{display:flex;justify-content:center;gap:6px;margin:14px 0}",
+      ".cy-guide-dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}",
+      ".cy-guide-dots i.on{background:var(--gold);width:20px;border-radius:5px}",
+      ".cy-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}",
+      ".cy-textarea{width:100%;height:96px;background:#10142a;color:var(--txt);border:1px solid var(--line);border-radius:12px;padding:9px;font-size:11px;line-height:1.5;resize:none;font-family:inherit;user-select:text;-webkit-user-select:text}",
+      ".cy-list{display:flex;flex-direction:column;gap:9px}",
+      ".cy-regular{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px}",
+      ".cy-regular-top{display:flex;align-items:center;gap:8px}",
+      ".cy-regular-top .em{font-size:25px}",
+      ".cy-regular-top b{flex:1;font-size:14px}",
+      ".cy-badge{background:var(--card2);border-radius:9px;padding:3px 7px;font-size:10px;color:var(--gold)}",
+      ".cy-log{color:var(--sub);font-size:11px;line-height:1.6;margin-top:5px}",
+      ".cy-feedback{position:absolute;left:50%;top:34%;transform:translateX(-50%);z-index:22;background:rgba(10,14,30,.92);border:1px solid var(--gold);color:var(--gold);border-radius:14px;padding:9px 14px;font-size:14px;font-weight:800;text-align:center;box-shadow:0 8px 28px rgba(0,0,0,.45);animation:cyPop 1.25s ease forwards;pointer-events:none;white-space:nowrap}",
+      ".cy-feedback.bad{border-color:var(--red);color:var(--red)}",
+      "@keyframes cyPop{0%{opacity:0;transform:translate(-50%,12px) scale(.85)}18%{opacity:1;transform:translate(-50%,0) scale(1.05)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-18px) scale(.98)}}",
+      ".cy-poster{width:100%;max-width:320px;display:block;margin:8px auto;border-radius:12px;border:1px solid var(--line)}",
+      ".cy-load{margin-top:12px;font-size:10px;color:var(--green)}",
+      ".stage.cy-rain .sky{background:linear-gradient(180deg,#11172c 0%,#1c2444 48%,#243252 72%,#101526 100%)}",
+      ".stage.cy-wind .lantern{animation-duration:1.6s}",
+      ".stage.cy-heat .sky{background:linear-gradient(180deg,#33203a 0%,#4a2b46 50%,#5a354a 100%)}"
+    ].join("\n");
+    document.head.appendChild(cyCss);
+
+    var cyLoadNote=cyEl("div","cyLoadNote","sub cy-load","✅ 本地加载完成 · 弱网/离线也能继续摆摊",$("intro"));
+    window.addEventListener("offline",function(){toast("📴 当前离线也可玩，进度保存在本机")});
+    window.addEventListener("online",function(){toast("🌐 网络已恢复，游戏进度不受影响")});
+
+    var CY_WEATHERS=[
+      {key:"sunny",icon:"☀️ 晴",name:"晴天",crowd:"旺盛",traffic:1,waste:0,desc:"逛街的人多，客流小幅增加"},
+      {key:"cloudy",icon:"⛅ 多云",name:"多云",crowd:"正常",traffic:0,waste:0,desc:"人流平稳，适合稳健备货"},
+      {key:"rain",icon:"🌧️ 雨",name:"雨天",crowd:"较少",traffic:-3,waste:1,desc:"客流明显下降，热食好卖但损耗增加"},
+      {key:"wind",icon:"💨 大风",name:"大风",crowd:"偏少",traffic:-1,waste:2,desc:"客流偏少，食材损耗加快"},
+      {key:"cool",icon:"🌙 凉风",name:"凉风",crowd:"略旺",traffic:1,waste:0,desc:"体感舒服，夜市人流小幅增加"},
+      {key:"heat",icon:"🔥 闷热",name:"闷热",crowd:"偏少",traffic:-1,waste:1,desc:"路人减少停留，冷饮更占便宜"}
+    ];
+    function cyEnsureWeather(){
+      var day=PLAT.scenes.yeshi.day||1;
+      if(PLAT.shared.weatherDay!==day||!PLAT.shared.weatherKey){
+        var w=CY_WEATHERS[Math.floor(Math.random()*CY_WEATHERS.length)];
+        PLAT.shared.weatherDay=day;PLAT.shared.weatherKey=w.key;save();
+      }
+      for(var i=0;i<CY_WEATHERS.length;i++)if(CY_WEATHERS[i].key===PLAT.shared.weatherKey)return CY_WEATHERS[i];
+      return CY_WEATHERS[1];
+    }
+    function cyApplyWeatherStage(w){
+      var stg=$("stage");if(!stg)return;
+      CY_WEATHERS.forEach(function(x){stg.classList.remove("cy-"+x.key)});
+      if(w)stg.classList.add("cy-"+w.key);
+    }
+
+    var CY_TASTE={laozhang:"家常热乎、别太花哨",xiaomei:"分量足、能吃饱",xiaoming:"实在、信得过",ayi:"干净、能唠两句"};
+    function cyEnsureRegularBook(){
+      if(!PLAT.shared.regularBook||typeof PLAT.shared.regularBook!=="object")PLAT.shared.regularBook={};
+      REGULARS.forEach(function(r){
+        var b=PLAT.shared.regularBook[r.id];
+        if(!b)b={trust:0,mood:"初识",last:"还没正式聊过",log:[]};
+        b.trust=PLAT.shared.bonds[r.id]||b.trust||0;
+        if(!b.log||!Array.isArray(b.log))b.log=[];
+        if(!b.taste)b.taste=CY_TASTE[r.id]||"记得他的老规矩";
+        PLAT.shared.regularBook[r.id]=b;
+      });
+      return PLAT.shared.regularBook;
+    }
+    function cyBranch(r,type){
+      var book=cyEnsureRegularBook(),b=book[r.id];
+      b.trust=(b.trust||0)+1;
+      b.log=b.log||[];
+      if(type==="listen"){
+        b.mood="被理解";b.last="你听他说完了一整晚的烦心事，他走时眼睛亮了些。";
+        hEmotionAdd(4);hAddGrowth("empathy",1);G.serviceFame=(G.serviceFame||0)+0.2;
+      }else if(type==="recommend"){
+        b.mood="主动吆喝";b.last="他答应下次带朋友一起来，说这里实在。";
+        G.bonusCoin=(G.bonusCoin||0)+5;S.rep=Math.max(1,Math.min(5,S.rep+0.02));hAddGrowth("experience",1);
+      }else{
+        b.mood="稳稳当当";b.last="他只说了一句：还是这个味儿，踏实。";
+        hAddGrowth("craft",0.4);G.serviceFame=(G.serviceFame||0)+0.1;
+      }
+      b.log.push(b.last);if(b.log.length>6)b.log.shift();
+      save();toast("💌 "+r.name+"："+b.last);
+    }
+
+    var cyGuideIndex=0,cyGuideTimer=null;
+    var CY_GUIDE=[
+      {em:"🧊",title:"第 1 步 · 先进货",text:"摆摊不是点一下就赚钱。先选摊位和小吃，再按保本份数进货。食材按 FIFO 从库存核销，卖不完会临期折价；雨天、大风更容易损耗。"},
+      {em:"🔥",title:"第 2 步 · 开门接客",text:"顾客排队后，点顾客选接待方式，再卡火候出锅。绿色区成功、金色区完美；手快接得多。想快速刷天数，可打开「自动经营」，系统替你稳稳出锅。"},
+      {em:"🧾",title:"第 3 步 · 收摊看账",text:"收摊不只看收入，还要看租金、食材、固定成本和环境波动。复盘会记录心境、隐性成长、熟客故事。熟客簿、存档码、成绩单都在右上角快捷入口。"}
+    ];
+    var cyGuide=cyEl("div","cyGuide","cy-overlay","<div class='cy-sheet'><div id='cyGuideBody'></div><div class='cy-guide-dots' id='cyGuideDots'></div><div class='cy-row'><button class='btn ghost sm' id='cyGuideSkip'>跳过引导</button><button class='btn sm' id='cyGuideNext' style='flex:1'>下一步</button></div></div>");
+    function cyRenderGuide(){
+      var s=CY_GUIDE[cyGuideIndex];
+      $("cyGuideBody").innerHTML="<div class='cy-guide-step'><div class='em'>"+s.em+"</div><h3>"+s.title+"</h3><p>"+s.text+"</p></div>";
+      var dots="";for(var i=0;i<CY_GUIDE.length;i++)dots+="<i class='"+(i===cyGuideIndex?"on":"")+"'></i>";
+      $("cyGuideDots").innerHTML=dots;
+      $("cyGuideNext").textContent=cyGuideIndex===CY_GUIDE.length-1?"开始今晚":"下一步";
+    }
+    function cyFinishGuide(){PLAT.shared.guideDone=1;save();cyGuide.classList.remove("on");if(cyGuideTimer)clearTimeout(cyGuideTimer)}
+    $("cyGuideSkip").onclick=cyFinishGuide;
+    $("cyGuideNext").onclick=function(){
+      if(cyGuideIndex>=CY_GUIDE.length-1){cyFinishGuide();return}
+      cyGuideIndex++;cyRenderGuide();SFX.play("click");
+    };
+    function cyOpenGuideIfNeeded(){
+      if(PLAT.shared.guideDone)return;
+      cyGuideIndex=0;cyRenderGuide();cyGuide.classList.add("on");
+      cyGuideTimer=setTimeout(cyFinishGuide,60000);
+    }
+    var cyOldStart=$("startBtn").onclick;
+    $("startBtn").onclick=function(){if(cyOldStart)cyOldStart.call(this);setTimeout(cyOpenGuideIfNeeded,180)};
+
+    var cyQuick=cyEl("div","cyQuick","cy-quick",
+      "<button class='cy-chip' id='cyBookBtn'>🤝 熟客簿</button>"+
+      "<button class='cy-chip' id='cySaveBtn'>💾 存档码</button>"+
+      "<button class='cy-chip' id='cyShareBtn'>📤 成绩单</button>"+
+      "<button class='cy-chip' id='cyAdBtn'>🎬 广告位</button>"+
+      "<button class='cy-chip' id='cyChallengeBtn'>⚡ 挑战</button>"+
+      "<button class='cy-chip' id='cyAutoHome'>🤖 自动：关</button>");
+    var cyOverlay=cyEl("div","cyOverlay","cy-overlay","<div class='cy-sheet'><div class='cy-head'><span class='em' id='cyOvEm'>🌃</span><h3 id='cyOvTitle'>提示</h3><button class='cy-close' id='cyOvClose'>×</button></div><div id='cyOvBody'></div></div>");
+    function cyOpenOverlay(em,title,html){$("cyOvEm").textContent=em;$("cyOvTitle").textContent=title;$("cyOvBody").innerHTML=html;cyOverlay.classList.add("on")}
+    $("cyOvClose").onclick=function(){cyOverlay.classList.remove("on")};
+    cyOverlay.onclick=function(e){if(e.target===cyOverlay)cyOverlay.classList.remove("on")};
+
+    var cyLive=cyEl("div","cyLive","cy-live",
+      "<div class='cy-live-row'><span id='cyLiveWeather'>🌤️</span><span id='cyLiveMode'>手动经营</span></div>"+
+      "<div class='cy-live-net' id='cyLiveNet'>今晚净额 +0 元 · 保本还差 3 份</div>"+
+      "<div class='cy-live-tip' id='cyLiveTip'>点顾客接单，卡火候出锅</div>"+
+      "<button class='cy-chip' id='cyAutoBtn' style='margin-top:6px;width:100%'>🤖 开启自动经营</button>",$("play"));
+
+    function cyToggleAuto(){
+      PLAT.shared.autoMode=PLAT.shared.autoMode?0:1;save();cyUpdateAutoUI();
+      toast(PLAT.shared.autoMode?"🤖 自动经营已开启：替你接客、稳火候、快速刷天数":"✋ 已回到手动经营");
+      SFX.play("click");
+    }
+    $("cyAutoHome").onclick=cyToggleAuto;
+    $("cyAutoBtn").onclick=cyToggleAuto;
+    $("cyChallengeBtn").onclick=function(){S.mode="extreme";save();if(typeof renderModeUI==="function")renderModeUI();toast("⚡ 生存挑战已选择：45 秒极限经营")};
+    function cyUpdateAutoUI(){
+      var on=!!PLAT.shared.autoMode;
+      $("cyAutoHome").textContent=on?"🤖 自动：开":"🤖 自动：关";
+      $("cyAutoHome").classList.toggle("on",on);
+      $("cyAutoBtn").textContent=on?"🤖 自动经营中 · 点击切回手动":"🤖 开启自动经营";
+      $("cyLiveMode").textContent=on?"自动经营":"手动经营";
+    }
+
+    function cyOpenRegularBook(){
+      var book=cyEnsureRegularBook(),html="<div class='sub' style='margin-bottom:10px'>熟客不是数据表，是你每晚认真对待的人。好感会改变他们下次说的话、带来的朋友和给你的收入。</div><div class='cy-list'>";
+      REGULARS.forEach(function(r){
+        var b=book[r.id];
+        html+="<div class='cy-regular'><div class='cy-regular-top'><span class='em'>"+r.em+"</span><b>"+r.name+"</b><span class='cy-badge'>好感 "+(b.trust||0)+" · "+b.mood+"</span></div>"+
+          "<div class='cy-log'>口味："+b.taste+"<br>最近："+b.last+"<br>小故事："+r.reward+"</div>"+
+          "<button class='btn ghost sm' style='width:100%;margin-top:7px' data-cy-chat='"+r.id+"'>记一次真诚互动</button></div>";
+      });
+      html+="</div><div class='sub' style='margin-top:10px'>🌃 夜市记忆碎片："+(PLAT.shared.memoryFragments||0)+" 片 · 第 3/7/15/30 天会解锁新故事与奖励。</div>";
+      cyOpenOverlay("🤝","熟客簿 · 人间关系账",html);
+      Array.prototype.forEach.call($("cyOvBody").querySelectorAll("[data-cy-chat]"),function(btn){
+        btn.onclick=function(){
+          var id=btn.getAttribute("data-cy-chat"),r=REGULARS.filter(function(x){return x.id===id})[0];
+          if(!r)return;
+          cyBranch(r,"steady");cyOpenRegularBook();
+        };
+      });
+    }
+    $("cyBookBtn").onclick=cyOpenRegularBook;
+
+    function cyB64Enc(str){
+      try{return btoa(String.fromCharCode.apply(null,new TextEncoder().encode(str)))}catch(e){return btoa(unescape(encodeURIComponent(str)))}
+    }
+    function cyB64Dec(str){
+      try{var bin=atob(str),arr=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);return new TextDecoder().decode(arr)}
+      catch(e){return decodeURIComponent(escape(atob(str)))}
+    }
+    function cySaveCode(){return "CJYS1."+cyB64Enc(JSON.stringify(PLAT))}
+    function cyCopyText(t){
+      function fallback(){var ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy")}catch(e){}document.body.removeChild(ta)}
+      if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).catch(fallback);else fallback();
+    }
+    function cyOpenSaveCode(){
+      var code=cySaveCode();
+      cyOpenOverlay("💾","存档码 · 防清缓存丢档",
+        "<div class='sub'>复制整段存档码保存。换手机、清缓存后粘贴导入即可恢复；存档码只在你本机使用，不上传服务器。</div>"+
+        "<textarea class='cy-textarea' id='cyCodeBox' readonly>"+code+"</textarea>"+
+        "<div class='cy-row'><button class='btn sm' id='cyCopyCode' style='flex:1'>复制存档码</button><button class='btn ghost sm' id='cyImportToggle' style='flex:1'>导入存档码</button></div>"+
+        "<div id='cyImportBox' style='display:none;margin-top:10px'><textarea class='cy-textarea' id='cyImportText' placeholder='在这里粘贴 CJYS1. 开头的存档码'></textarea><button class='btn sm' id='cyDoImport' style='width:100%;margin-top:7px'>确认导入并刷新</button></div>");
+      $("cyCopyCode").onclick=function(){cyCopyText(code);toast("📋 存档码已复制")};
+      $("cyImportToggle").onclick=function(){var b=$("cyImportBox");b.style.display=b.style.display==="none"?"block":"none"};
+      $("cyDoImport").onclick=function(){
+        try{
+          var raw=($("cyImportText").value||"").trim();
+          if(raw.indexOf("CJYS1.")===0)raw=raw.slice(6);
+          var obj=JSON.parse(cyB64Dec(raw));
+          if(!obj||!obj.shared||!obj.scenes)throw new Error("bad save");
+          localStorage.setItem(KEY,JSON.stringify(obj));toast("✅ 导入成功，正在刷新…");setTimeout(function(){location.reload()},500);
+        }catch(e){toast("❌ 存档码无效，请完整复制后再试")}
+      };
+    }
+    $("cySaveBtn").onclick=cyOpenSaveCode;
+
+    function cyOpenAdSlots(){
+      var html="<div class='sub'>激励广告位仅作商业位预埋：<b>自愿观看、看完才给奖励、绝不强制插屏</b>。当前演示版默认关闭，不影响任何核心玩法。</div>";
+      Object.keys(AD_SLOTS.placements).forEach(function(k){
+        var p=AD_SLOTS.placements[k];
+        html+="<div class='line' style='margin-top:8px'><span>"+p.label+"</span><b style='color:"+(AD_SLOTS.enabled&&p.unitId?"var(--green)":"var(--sub)")+"'>"+(AD_SLOTS.enabled&&p.unitId?"已配置":"演示关闭")+"</b></div>";
+      });
+      html+="<button class='btn sm' id='cyAdTry' style='width:100%;margin-top:10px'>"+(AD_SLOTS.enabled?"看一次自愿广告领线索片":"演示版未开启，无需观看")+"</button>";
+      cyOpenOverlay("🎬","激励广告位 · 自愿且克制",html);
+      $("cyAdTry").onclick=function(){
+        if(!AD_SLOTS.enabled){toast("演示版未开启广告，直接玩就好");return}
+        requestRewardAd("clue_extra","自愿领取线索片",function(res){
+          if(res&&res.completed){addClue("看了自愿广告，得到一条线索",1);toast("🎁 自愿广告奖励已到账")}
+          else toast("没关系，不 impacted 核心玩法");
+        });
+      };
+    }
+    $("cyAdBtn").onclick=cyOpenAdSlots;
+
+    function cyWrapText(ctx,text,x,y,maxW,lineH){
+      var line="",chars=(text||"").split("");
+      for(var i=0;i<chars.length;i++){
+        var test=line+chars[i];
+        if(ctx.measureText(test).width>maxW&&line){ctx.fillText(line,x,y);line=chars[i];y+=lineH}
+        else line=test;
+      }
+      if(line)ctx.fillText(line,x,y);
+      return y;
+    }
+    function cyOpenReportShare(){
+      var r=PLAT.shared.lastReport;
+      if(!r){toast("先完成一晚收摊，再生成成绩单");return}
+      var c=document.createElement("canvas");c.width=640;c.height=960;
+      var x=c.getContext("2d"),g=x.createLinearGradient(0,0,640,960);
+      g.addColorStop(0,"#2b2145");g.addColorStop(.5,"#15243a");g.addColorStop(1,"#0f1220");
+      x.fillStyle=g;x.fillRect(0,0,640,960);
+      x.fillStyle="rgba(255,207,92,.13)";x.beginPath();x.arc(540,120,150,0,Math.PI*2);x.fill();
+      x.fillStyle="#ffcf5c";x.font="bold 44px sans-serif";x.fillText("城角夜市苑",44,86);
+      x.fillStyle="#a8b0d8";x.font="22px sans-serif";x.fillText("第 "+r.day+" 天 · 今晚成绩单",44,126);
+      x.fillStyle=r.profit>=0?"#5ee6a8":"#ff6b8a";x.font="bold 86px sans-serif";x.fillText((r.profit>=0?"+":"")+r.profit+" 元",44,236);
+      x.fillStyle="#eef1ff";x.font="26px sans-serif";
+      var rows=[
+        "🌤️ 天气："+(r.weatherName||"—")+" · 🎚️ 模式："+(r.modeName||"—"),
+        "🍜 接待："+r.sold+" 位 · 🔥 完美："+r.perfect+" 次 · 😤 流失："+r.lost+" 位",
+        "⭐ 口碑："+r.rep+" · 😌 心境："+r.emotion,
+        "📈 隐性成长："+r.growth+" · 🤝 熟客好感："+r.bonds,
+        "🌃 "+r.title
+      ];
+      var y=310;rows.forEach(function(t){x.fillStyle="#eef1ff";y=cyWrapText(x,t,44,y,552,38)+30});
+      x.strokeStyle="#3a4270";x.lineWidth=2;x.beginPath();x.moveTo(44,690);x.lineTo(596,690);x.stroke();
+      x.fillStyle="#a8b0d8";x.font="24px sans-serif";
+      y=cyWrapText(x,r.summary,44,736,552,36);
+      x.fillStyle="#ffcf5c";x.font="bold 26px sans-serif";x.fillText("盈亏是生活，冷暖是人间，坚持是信仰。",44,900);
+      var img=c.toDataURL("image/png");
+      cyOpenOverlay("📤","今晚成绩单 · 长按保存",
+        "<img class='cy-poster' id='cyPoster' src='"+img+"' alt='成绩单分享图'>"+
+        "<div class='sub' style='margin-top:8px'>微信内请长按图片保存；其他浏览器可右键另存。</div>"+
+        "<button class='btn sm' id='cyCopyShare' style='width:100%;margin-top:9px'>复制分享文案</button>");
+      $("cyCopyShare").onclick=function(){cyCopyText(r.shareText||"我在《城角夜市苑》度过了另一个真实的夜晚。");toast("📋 分享文案已复制")};
+    }
+    $("cyShareBtn").onclick=cyOpenReportShare;
+    var cyShareBtn=cyEl("button","cyResultShare","btn ghost","📤 生成成绩单分享图",null);
+    if($("nextDayBtn")&&$("nextDayBtn").parentNode)$("nextDayBtn").parentNode.insertBefore(cyShareBtn,$("nextDayBtn"));
+    cyShareBtn.onclick=cyOpenReportShare;
+
+    var CY_EVENTS=[
+      {id:"friend",em:"🧑‍🤝‍🧑",title:"熟客带朋友来了",text:"老熟客招呼了两位朋友过来，说这里的味道值得分享。",choices:[
+        {label:"多备两份",sub:"客流+2，食材成本-2",run:function(){G.bonusTraffic=(G.bonusTraffic||0)+2;G.ingredientCost=Math.max(0,(G.ingredientCost||0)-2);toast("🤝 熟客带朋友：客流+2")}},
+        {label:"先照顾老客",sub:"好感+1，口碑小幅上升",run:function(){if(PLAT.shared.bonds.laozhang){}hEmotionAdd(2);S.rep=Math.min(5,S.rep+0.03);toast("💌 老朋友被照顾到了")}}
+      ]},
+      {id:"haggle",em:"🗣️",title:"有人开始砍价",text:"一位客人说隔壁便宜两块，问你能不能少收点。",choices:[
+        {label:"少收一点，留住人",sub:"收入-4，口碑+0.05",run:function(){G.revenue=Math.max(0,(G.revenue||0)-4);S.rep=Math.min(5,S.rep+0.05);toast("😊 让了一点价，口碑小涨")}},
+        {label:"坚持品质不降价",sub:"收入不变，心境+2",run:function(){hEmotionAdd(2);hAddGrowth("resilience",1);toast("🧭 守住价格，也守住品质")}}
+      ]},
+      {id:"check",em:"🔦",title:"临时卫生检查",text:"管理人员过来例行查看摊位卫生与证照。",choices:[
+        {label:"配合检查",sub:"暂停3秒，口碑+0.04",run:function(){G.pauseUntil=Date.now()+3000;S.rep=Math.min(5,S.rep+0.04);toast("📋 检查通过：口碑+0.04")}},
+        {label:"边做边解释",sub:"心境-1，客流-1",run:function(){hEmotionAdd(-1);G.bonusTraffic=(G.bonusTraffic||0)-1;toast("😅 有点手忙脚乱")}}
+      ]},
+      {id:"price",em:"📈",title:"批发价临时上涨",text:"供货商发消息说明晚原料要涨价，你得先扛一批。",choices:[
+        {label:"照常进货",sub:"食材成本+3",run:function(){G.ingredientCost=(G.ingredientCost||0)+3;toast("📦 成本上涨，已计入今晚账本")}},
+        {label:"改卖小份",sub:"客流-1，心境+1",run:function(){G.bonusTraffic=(G.bonusTraffic||0)-1;hEmotionAdd(1);toast("🪶 小份策略：少赚但更稳")}}
+      ]}
+    ];
+    var CY_EVENT={lastDay:0};
+    function cyFireNightEvent(){
+      if(!G||!$("play").classList.contains("on"))return;
+      var day=PLAT.scenes.yeshi.day;
+      if(CY_EVENT.lastDay===day)return;
+      var el=elapsedOf(G);
+      if(el<12||el>34)return;
+      if($("modal").classList.contains("on")||$("cookModal").classList.contains("on")||$("nDecision").classList.contains("on"))return;
+      CY_EVENT.lastDay=day;
+      var ev=CY_EVENTS[Math.floor(Math.random()*CY_EVENTS.length)];
+      clockPause(G);
+      var choices=ev.choices.map(function(c){return{label:c.label,sub:c.sub,run:function(){clockResume(G);c.run();save()}}});
+      choiceModal(ev.em,ev.title,ev.text,choices,"随机夜市事件 · 每晚至多触发一次，选择会改变今晚收益与心情。");
+    }
+
+    var CY_MILESTONES=[
+      {day:3,coins:20,title:"站稳脚跟",note:"熟客簿正式点亮",food:null},
+      {day:7,coins:50,title:"被街坊记住",note:"学会炸串",food:"zhachuan"},
+      {day:15,coins:120,title:"小有名气",note:"学会麻辣烫",food:"malatang"},
+      {day:30,coins:300,title:"这条街的老摊位",note:"学会烤鱿鱼",food:"kaoyu"}
+    ];
+    function cyApplyMilestones(completedDay){
+      if(!PLAT.shared.milestonesClaimed||!Array.isArray(PLAT.shared.milestonesClaimed))PLAT.shared.milestonesClaimed=[];
+      var got=[];
+      CY_MILESTONES.forEach(function(m){
+        if(completedDay!==m.day||PLAT.shared.milestonesClaimed.indexOf(m.day)>=0)return;
+        PLAT.shared.milestonesClaimed.push(m.day);
+        S.coins+=m.coins;
+        if(m.food&&S.unlockedFoods.indexOf(m.food)<0)S.unlockedFoods.push(m.food);
+        PLAT.shared.memoryFragments=(PLAT.shared.memoryFragments||0)+2;
+        got.push("第"+m.day+"天 · "+m.title+" +"+m.coins+"元 · "+m.note);
+      });
+      if(got.length){
+        save();SFX.play("levelup");
+        var note=$("ledNote");if(note)note.innerHTML+="<br>🏆 里程碑："+got.join("；")+"。夜市记忆碎片 +"+got.length*2+" 片。";
+        toast("🏆 "+got[got.length-1]);
+      }
+      return got;
+    }
+
+    var CY_AUTO={cookAt:0,lastServe:0};
+    function cyAutoTick(){
+      if(!PLAT.shared.autoMode)return;
+      if(!G||!$("play").classList.contains("on"))return;
+      if($("modal").classList.contains("on")&&$("modalChoices").style.display==="flex"){
+        var btns=$("modalChoices").querySelectorAll("button");
+        if(btns.length){btns[0].click();return}
+      }
+      if($("cookModal").classList.contains("on")){
+        if(!CY_AUTO.cookAt)CY_AUTO.cookAt=Date.now()+260+Math.random()*420;
+        if(Date.now()>=CY_AUTO.cookAt){
+          if(typeof cookPos==="number"&&typeof cookTarget==="number")cookPos=Math.max(0,Math.min(100,cookTarget+(Math.random()*6-3)));
+          CY_AUTO.cookAt=0;
+          if($("cookBtn").onclick)$("cookBtn").click();
+        }
+        return;
+      }
+      if($("nDecision").classList.contains("on")){
+        var opts=$("nDecOptions").querySelectorAll("button");
+        if(opts.length){opts[0].click();return}
+      }
+      if(Date.now()-CY_AUTO.lastServe<320)return;
+      var c=null;
+      for(var i=0;i<G.customers.length;i++){if(!G.customers[i].serving){c=G.customers[i];break}}
+      if(c&&c.el&&c.el.onclick){CY_AUTO.lastServe=Date.now();c.el.click()}
+    }
+
+    function cyUpdateLive(){
+      var playing=$("play").classList.contains("on");
+      cyQuick.style.display=(playing||$("intro").classList.contains("on"))?"none":"flex";
+      cyLive.style.display=playing?"block":"none";
+      cyUpdateAutoUI();
+      if(!playing||!G)return;
+      var w=cyEnsureWeather();
+      $("cyLiveWeather").textContent=w.icon+" "+w.name+" · 客流"+(w.traffic>=0?"+"+w.traffic:w.traffic);
+      var rent=G.stall&&G.stall.rent||0,ingredient=G.ingredientCost||0;
+      var tips=(G.bonusCoin||0)+(G.errandCoin||0);
+      var net=(G.revenue||0)-rent-ingredient+tips-6;
+      var margin=Math.max(1,(G.food&&G.food.price||14)-(G.food&&G.food.cost||6));
+      var need=Math.max(0,Math.ceil((rent+ingredient+6-tips-(G.revenue||0))/margin));
+      $("cyLiveNet").textContent=(net>=0?"✅ 已回本 · 今晚净额 +":"⚠️ 还没回本 · 今晚净额 ")+net+" 元"+(need?" · 约再卖 "+need+" 份":"");
+      $("cyLiveNet").style.color=net>=0?"var(--green)":"var(--red)";
+      $("cyLiveTip").textContent=(G.customers&&G.customers.length?("排队 "+G.customers.length+" 人 · "):"")+(PLAT.shared.autoMode?"自动经营正在接客与控火":"点顾客接单，卡准火候出锅");
+    }
+    setInterval(function(){
+      try{cyUpdateLive();cyFireNightEvent();cyAutoTick()}catch(e){}
+    },250);
+
+    var cyOldRenderHome=renderHome;
+    renderHome=function(){
+      cyOldRenderHome();
+      var w=cyEnsureWeather();
+      if($("weather"))$("weather").textContent=w.icon;
+      if($("crowd"))$("crowd").textContent=w.crowd;
+      if($("trafficInfo")){
+        var st=STALLS.filter(function(x){return x.id===selStall})[0],base=st?st.traffic:8;
+        $("trafficInfo").textContent="约 "+Math.max(3,base+w.traffic)+" 人（"+w.name+"）";
+      }
+      if($("costHint"))$("costHint").innerHTML+="<br>🌦️ "+w.name+"："+w.desc;
+      cyUpdateAutoUI();
+    };
+
+    var cyOldOpen=$("openBtn").onclick;
+    $("openBtn").onclick=function(){
+      var w=cyEnsureWeather(),prev=G;
+      G=null;
+      cyOldOpen.call(this);
+      if(!$("play").classList.contains("on")||!G){G=prev;return}
+      G.weather=w;
+      G.bonusTraffic=(G.bonusTraffic||0)+w.traffic;
+      if(w.waste){G.ingredientCost=(G.ingredientCost||0)+w.waste;toast("🌦️ "+w.name+"：食材损耗 +"+w.waste+" 元已计入今晚成本")}
+      cyApplyWeatherStage(w);
+      if(PLAT.scenes.yeshi.day===1&&!PLAT.shared.firstNightGuard){
+        G.stall=Object.assign({},G.stall,{rent:Math.max(5,(G.stall.rent||0)-5)});
+        G.bonusCoin=(G.bonusCoin||0)+8;
+        PLAT.shared.firstNightGuard=1;save();
+        toast("🌱 首晚保护：租金减 5 元 + 启动补贴 8 元，别怕亏");
+      }
+      CY_AUTO.cookAt=0;CY_AUTO.lastServe=0;CY_EVENT.lastDay=0;
+      cyUpdateLive();
+    };
+
+    var cyOldAddBond=addBond;
+    addBond=function(id){
+      var out=cyOldAddBond(id);
+      var book=cyEnsureRegularBook(),b=book[id];
+      if(b){b.trust=PLAT.shared.bonds[id]||0;b.mood=b.trust>=5?"自己人":b.trust>=3?"老朋友":b.trust>=1?"有印象":"初识";save()}
+      return out;
+    };
+    var cyOldNight=openNightService;
+    openNightService=function(el,c,r){
+      if(!r){return cyOldNight(el,c,r)}
+      clockPause(G);
+      var choices=[
+        {label:"听他聊两句",sub:"共情+1 · 心境+4 · 熟客更亲近",run:function(){cyBranch(r,"listen");cyOldNight(el,c,r)}},
+        {label:"稳稳出锅，不多说",sub:"手艺+0.4 · 出品更稳",run:function(){cyBranch(r,"steady");cyOldNight(el,c,r)}},
+        {label:"请他介绍朋友",sub:"小费+5 · 口碑小幅提升",run:function(){cyBranch(r,"recommend");cyOldNight(el,c,r)}}
+      ];
+      choiceModal(r.em,r.name+" · 今晚想怎么接待？",r.lines[Math.floor(Math.random()*r.lines.length)]+"<br><br>熟客不是固定台词：你的选择会写进熟客簿，也会改变后续对话。",choices,"2–3 选项分支 · 改变好感、心情与后续收入。");
+    };
+
+    var cyOldCook=$("cookBtn").onclick;
+    $("cookBtn").onclick=function(){
+      var preDiff=(typeof cookPos==="number"&&typeof cookTarget==="number")?Math.abs(cookPos-cookTarget):999;
+      var beforeRevenue=G&&G.revenue||0;
+      if(cyOldCook)cyOldCook.call(this);
+      var afterRevenue=G&&G.revenue||0;
+      var quality=preDiff<=5?"完美出锅！":preDiff<=17?"稳稳出锅":"有点糊了…";
+      var good=preDiff<=17;
+      hEmotionAdd(preDiff<=5?3:preDiff<=17?1:-2);
+      hAddGrowth("craft",preDiff<=5?0.5:preDiff<=17?0.2:0);
+      save();
+      var fb=document.createElement("div");
+      fb.className="cy-feedback"+(good?"":" bad");
+      fb.innerHTML=(preDiff<=5?"🌟":good?"🙂":"😵")+" "+quality+"<br><span style='font-size:11px'>本单 +"+(afterRevenue-beforeRevenue)+" 元 · 心境 "+(preDiff<=5?"+3":preDiff<=17?"+1":"-2")+"</span>";
+      $("stage").appendChild(fb);setTimeout(function(){if(fb.parentNode)fb.parentNode.removeChild(fb)},1300);
+      cyUpdateLive();
+    };
+
+    var cyOldEnd=endDay;
+    endDay=function(){
+      var completedDay=PLAT.scenes.yeshi.day;
+      var w=G&&G.weather||null;
+      cyOldEnd();
+      var profitTxt=(($("resProfit").textContent)||"0").replace(/[^0-9\-]/g,"");
+      var profit=parseInt(profitTxt,10)||0;
+      var emo=PLAT.shared.emotion||0,growth=hGrowth().total,bonds=0;
+      var book=cyEnsureRegularBook();REGULARS.forEach(function(r){bonds+=book[r.id].trust||0});
+      var mode=hMode();
+      PLAT.shared.lastReport={
+        day:completedDay,profit:profit,sold:G&&G.sold||0,perfect:G&&G.perfect||0,lost:G&&G.lost||0,
+        rep:(PLAT.shared.rep||0).toFixed(1),emotion:emo,growth:growth,bonds:bonds,
+        weatherName:w?w.name:"—",modeName:mode.name,
+        title:$("reviewTitle").textContent.replace(/^📖\s*/,""),
+        summary:$("reviewSummary").textContent||"今晚继续积累了真实经验。",
+        shareText:"我在《城角夜市苑》摆了"+completedDay+"天摊，今晚净赚"+profit+"元，接待"+(G&&G.sold||0)+"位客人，完美出锅"+(G&&G.perfect||0)+"次。盈亏是生活，冷暖是人间，来试试你能撑几天？"
+      };
+      cyApplyMilestones(completedDay);
+      save();
+      setTimeout(cyUpdateLive,50);
+    };
+
+    window.YESHI_ENHANCE={
+      version:CY_VER,
+      weather:function(){return cyEnsureWeather()},
+      auto:function(v){if(v!==undefined){PLAT.shared.autoMode=v?1:0;save();cyUpdateAutoUI()}return PLAT.shared.autoMode},
+      guide:function(){PLAT.shared.guideDone=0;save();cyOpenGuideIfNeeded()},
+      saveCode:function(){return cySaveCode()},
+      loadCode:function(code){
+        var raw=(code||"").trim();if(raw.indexOf("CJYS1.")===0)raw=raw.slice(6);
+        var obj=JSON.parse(cyB64Dec(raw));if(!obj||!obj.shared||!obj.scenes)throw new Error("bad save");
+        localStorage.setItem(KEY,JSON.stringify(obj));location.reload();
+      },
+      report:function(){return PLAT.shared.lastReport||null},
+      openShare:cyOpenReportShare,
+      openBook:cyOpenRegularBook,
+      openSave:cyOpenSaveCode,
+      regulars:function(){return cyEnsureRegularBook()},
+      milestones:function(){return PLAT.shared.milestonesClaimed||[]}
+    };
+    cyUpdateAutoUI();
+    cyEnsureRegularBook();
+    cyEnsureWeather();
+    save();
+  })();
+
 })();
 </script>
 </body>
